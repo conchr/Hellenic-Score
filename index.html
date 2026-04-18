@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hellenic Score & Tales | Hybrid Strategy Archive</title>
+    <title>Hellenic Score & Tales | Master Strategy Archive</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -16,6 +16,8 @@
             background-color: var(--dark-bg);
             color: #e5e7eb;
             font-family: 'Inter', sans-serif;
+            margin: 0;
+            overflow-x: hidden;
         }
         h1, h2, h3, .cinzel {
             font-family: 'Cinzel', serif;
@@ -132,29 +134,29 @@
             <div class="flex flex-col gap-1">
                 <div class="flex items-center gap-2 text-[10px] text-zinc-500 uppercase tracking-widest font-bold">
                     <span>Database Status:</span>
-                    <span id="db-status" class="text-emerald-500">Checking...</span>
+                    <span id="db-status" class="text-emerald-500">Initializing...</span>
                 </div>
                 <div class="flex gap-2 mt-1">
-                    <button onclick="exportDatabase()" class="text-[10px] py-1.5 px-4 border border-zinc-800 rounded-md hover:border-gold transition-all text-zinc-400">💾 Export Backup</button>
-                    <button onclick="importDatabase()" class="text-[10px] py-1.5 px-4 border border-zinc-800 rounded-md hover:border-gold transition-all text-zinc-400">📂 Restore Archive</button>
+                    <button onclick="exportDatabase()" class="text-[10px] py-1.5 px-4 border border-zinc-800 rounded-md hover:gold-text transition-all text-zinc-400">💾 Export Backup</button>
+                    <button onclick="importDatabase()" class="text-[10px] py-1.5 px-4 border border-zinc-800 rounded-md hover:gold-text transition-all text-zinc-400">📂 Restore Archive</button>
                     <input type="file" id="import-input" class="hidden" accept=".json" onchange="handleImport(this)">
                 </div>
             </div>
             <div class="text-right hidden md:block">
                 <p class="text-[10px] text-zinc-600 uppercase tracking-widest font-bold">Artist Strategy Engine</p>
-                <p class="text-xs gold-text cinzel">v7.5 Hybrid Edition</p>
+                <p class="text-xs gold-text cinzel">v8.1 Auth-Priority Edition</p>
             </div>
         </div>
 
         <header class="mb-12 text-center border-b border-zinc-800 pb-8">
             <h1 class="text-5xl font-bold gold-text mb-3">HELLENIC SCORE & TALES</h1>
-            <p class="text-zinc-500 italic tracking-[0.2em] uppercase text-sm">Strategic Content Archive</p>
+            <p class="text-zinc-500 italic tracking-[0.2em] uppercase text-sm font-semibold">Strategic Content Archive</p>
         </header>
 
         <!-- Stats & Add Action -->
         <div class="flex flex-col md:flex-row justify-between items-center gap-6 mb-10">
             <div class="flex gap-8">
-                <div class="glass-card px-10 py-5 text-center">
+                <div class="glass-card px-10 py-5 text-center shadow-xl">
                     <p class="text-[11px] text-zinc-500 uppercase font-black tracking-widest mb-1">Συνολικά Project</p>
                     <p id="stat-total" class="text-4xl font-bold gold-text">0</p>
                 </div>
@@ -166,11 +168,11 @@
         </div>
 
         <!-- Table -->
-        <div class="glass-card overflow-hidden">
+        <div class="glass-card overflow-hidden shadow-2xl">
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
                     <thead>
-                        <tr class="bg-zinc-900/80 border-b border-zinc-800 text-zinc-500 text-[11px] uppercase tracking-widest font-black">
+                        <tr class="bg-zinc-900 border-b border-zinc-800 text-zinc-500 text-[11px] uppercase tracking-widest font-black">
                             <th class="p-6 w-16 text-center">#</th>
                             <th class="p-6 w-12 text-center">Σειρά</th>
                             <th class="p-6">Project / Visual Art</th>
@@ -184,7 +186,7 @@
                     </tbody>
                 </table>
             </div>
-            <div id="empty-state" class="p-24 text-center text-zinc-700 cinzel text-xl hidden">
+            <div id="empty-state" class="p-24 text-center text-zinc-700 cinzel text-xl hidden animate-pulse">
                 The archives are empty. Begin the odyssey.
             </div>
         </div>
@@ -207,11 +209,11 @@
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
                         <div class="md:col-span-5 space-y-1">
-                            <label class="text-[10px] text-zinc-500 uppercase font-bold">Τίτλος</label>
+                            <label class="text-[10px] text-zinc-500 uppercase font-bold tracking-widest">Τίτλος</label>
                             <input type="text" id="main-title" required class="w-full" placeholder="π.χ. Achilles' Rage">
                         </div>
                         <div class="md:col-span-5 space-y-1">
-                            <label class="text-[10px] text-zinc-500 uppercase font-bold">YouTube / VEO Link</label>
+                            <label class="text-[10px] text-zinc-500 uppercase font-bold tracking-widest">YouTube / VEO Link</label>
                             <input type="url" id="main-link" class="w-full" placeholder="https://youtube.com/watch?v=...">
                         </div>
                         <div class="md:col-span-2 pb-3 flex justify-center">
@@ -251,22 +253,18 @@
     </div>
 
     <script type="module">
-        const hasFirebase = typeof __firebase_config !== 'undefined' && __firebase_config !== null;
+        // Detecting environment
+        const isInternalEnv = typeof __firebase_config !== 'undefined' && __firebase_config !== null;
         const dbStatus = document.getElementById('db-status');
         const loader = document.getElementById('loader');
         
         let projects = [];
         let dbMode = 'local';
+        let user = null;
 
-        // UI Setup
+        // UI Globals
         window.updateStats = () => { document.getElementById('stat-total').innerText = projects.length; };
-        
-        window.saveDataLocal = () => {
-            if (dbMode === 'local') {
-                localStorage.setItem('hst_hybrid_data', JSON.stringify(projects));
-            }
-        };
-
+        window.saveDataLocal = () => { if (dbMode === 'local') localStorage.setItem('hst_v8_local', JSON.stringify(projects)); };
         window.getYouTubeId = (url) => {
             if (!url) return null;
             const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?\s*v=|&v=)([^#&?]*).*/;
@@ -274,40 +272,67 @@
             return (match && match[2].length === 11) ? match[2] : null;
         };
 
-        // Main initialization
-        const initializeAppMode = async () => {
-            if (hasFirebase) {
+        const startApp = async () => {
+            if (isInternalEnv) {
                 try {
-                    // Dynamic Imports to avoid SyntaxError inside if block
                     const { initializeApp } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js");
-                    const { getAuth, signInAnonymously, onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js");
+                    const { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js");
                     const { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, updateDoc } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
 
                     dbMode = 'cloud';
-                    dbStatus.innerText = 'Cloud Sync Active';
-                    dbStatus.className = 'text-emerald-500';
+                    dbStatus.innerText = 'Connecting...';
 
                     const firebaseConfig = JSON.parse(__firebase_config);
                     const app = initializeApp(firebaseConfig);
                     const auth = getAuth(app);
                     const db = getFirestore(app);
-                    const appId = typeof __app_id !== 'undefined' ? __app_id : 'hst-hybrid-archive';
+                    const appId = typeof __app_id !== 'undefined' ? __app_id : 'hst-v8-archive';
 
-                    signInAnonymously(auth).then(() => {
-                        const projectsRef = collection(db, 'artifacts', appId, 'public', 'data', 'projects');
-                        onSnapshot(projectsRef, (snapshot) => {
-                            projects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                            projects.sort((a, b) => (b.orderIndex || 0) - (a.orderIndex || 0));
-                            renderProjects();
-                            updateStats();
-                            loader.classList.add('hidden');
-                        }, (err) => {
-                             console.error("Firestore error:", err);
-                             fallbackToLocal();
-                        });
-                    }).catch(fallbackToLocal);
+                    // Rule 3: Auth FIRST and await it
+                    const initAuth = async () => {
+                        try {
+                            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                                await signInWithCustomToken(auth, __initial_auth_token);
+                            } else {
+                                await signInAnonymously(auth);
+                            }
+                        } catch (e) {
+                            console.error("Auth Failed:", e);
+                            throw e;
+                        }
+                    };
+
+                    await initAuth();
+
+                    onAuthStateChanged(auth, (u) => {
+                        user = u;
+                        if (u) {
+                            dbStatus.innerText = 'Cloud Sync Active';
+                            dbStatus.className = 'text-emerald-500';
+                            
+                            // Guard every operation with if(!user)
+                            const projectsRef = collection(db, 'artifacts', appId, 'public', 'data', 'projects');
+                            onSnapshot(projectsRef, (snapshot) => {
+                                if (!auth.currentUser) return;
+                                projects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                                projects.sort((a, b) => (b.orderIndex || 0) - (a.orderIndex || 0));
+                                renderProjects();
+                                updateStats();
+                                loader.classList.add('hidden');
+                            }, (err) => { 
+                                console.error("Snapshot Error:", err); 
+                                if (err.code === 'permission-denied') {
+                                    showToast('Permission Denied. Retrying...');
+                                }
+                            });
+                        } else {
+                            dbStatus.innerText = 'Disconnected';
+                            dbStatus.className = 'text-red-500';
+                        }
+                    });
 
                     window.deleteProject = async (id) => {
+                        if (!auth.currentUser) return;
                         if (confirm('Οριστική διαγραφή;')) {
                             await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'projects', id));
                             showToast('DELETED');
@@ -315,81 +340,75 @@
                     };
 
                     window.moveProject = async (id, direction) => {
+                        if (!auth.currentUser) return;
                         const index = projects.findIndex(p => p.id === id);
                         if (direction === 'up' && index === 0) return;
                         if (direction === 'down' && index === projects.length - 1) return;
                         const targetIndex = direction === 'up' ? index - 1 : index + 1;
-                        const currentItem = projects[index]; const targetItem = projects[targetIndex];
-                        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'projects', currentItem.id), { orderIndex: targetItem.orderIndex || 0 });
-                        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'projects', targetItem.id), { orderIndex: currentItem.orderIndex || 0 });
+                        const current = projects[index]; const target = projects[targetIndex];
+                        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'projects', current.id), { orderIndex: target.orderIndex || 0 });
+                        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'projects', target.id), { orderIndex: current.orderIndex || 0 });
                     };
 
                     window.saveProjectToDB = async (id, data) => {
+                        if (!auth.currentUser) return;
                         await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'projects', id), data);
                     };
 
-                } catch (err) {
-                    console.error("Cloud initialization failed:", err);
-                    fallbackToLocal();
+                } catch (e) { 
+                    console.error("Critical Cloud Error:", e);
+                    fallbackToLocal(); 
                 }
-            } else {
-                fallbackToLocal();
-            }
+            } else { fallbackToLocal(); }
         };
 
         function fallbackToLocal() {
             dbMode = 'local';
-            dbStatus.innerText = 'Local App Storage';
+            dbStatus.innerText = 'GitHub Local Mode';
             dbStatus.className = 'text-amber-500';
-            const localData = localStorage.getItem('hst_hybrid_data');
-            projects = localData ? JSON.parse(localData) : [];
+            const data = localStorage.getItem('hst_v8_local');
+            projects = data ? JSON.parse(data) : [];
             projects.sort((a, b) => (b.orderIndex || 0) - (a.orderIndex || 0));
             renderProjects();
             updateStats();
             setTimeout(() => loader.classList.add('hidden'), 500);
 
             window.deleteProject = (id) => {
-                if (confirm('Οριστική διαγραφή;')) {
+                if (confirm('Διαγραφή;')) {
                     projects = projects.filter(p => p.id !== id);
-                    saveDataLocal();
-                    renderProjects();
-                    updateStats();
+                    saveDataLocal(); renderProjects(); updateStats();
                 }
             };
 
             window.moveProject = (id, direction) => {
-                const index = projects.findIndex(p => p.id === id);
-                if (direction === 'up' && index === 0) return;
-                if (direction === 'down' && index === projects.length - 1) return;
-                const targetIndex = direction === 'up' ? index - 1 : index + 1;
-                [projects[index].orderIndex, projects[targetIndex].orderIndex] = [projects[targetIndex].orderIndex, projects[index].orderIndex];
+                const idx = projects.findIndex(p => p.id === id);
+                if (direction === 'up' && idx === 0) return;
+                if (direction === 'down' && idx === projects.length - 1) return;
+                const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+                [projects[idx].orderIndex, projects[targetIdx].orderIndex] = [projects[targetIdx].orderIndex, projects[idx].orderIndex];
                 projects.sort((a, b) => b.orderIndex - a.orderIndex);
-                saveDataLocal();
-                renderProjects();
+                saveDataLocal(); renderProjects();
             };
 
             window.saveProjectToDB = (id, data) => {
-                const index = projects.findIndex(p => p.id === id);
-                if (index > -1) projects[index] = { ...data, id };
+                const idx = projects.findIndex(p => p.id === id);
+                if (idx > -1) projects[idx] = { ...data, id };
                 else projects.unshift({ ...data, id });
-                saveDataLocal();
-                renderProjects();
-                updateStats();
+                saveDataLocal(); renderProjects(); updateStats();
             };
         }
 
         window.renderProjects = () => {
-            const projectList = document.getElementById('project-list');
-            const emptyState = document.getElementById('empty-state');
-            if (projects.length === 0) { projectList.innerHTML = ''; emptyState.classList.remove('hidden'); return; }
-            emptyState.classList.add('hidden');
-            projectList.innerHTML = projects.map((p, index) => {
+            const list = document.getElementById('project-list');
+            const empty = document.getElementById('empty-state');
+            if (projects.length === 0) { list.innerHTML = ''; empty.classList.remove('hidden'); return; }
+            empty.classList.add('hidden');
+            list.innerHTML = projects.map((p, index) => {
                 const ytId = getYouTubeId(p.mainVideo.link);
-                const thumbUrl = ytId ? `https://img.youtube.com/vi/${ytId}/mqdefault.jpg` : null;
-
+                const thumb = ytId ? `https://img.youtube.com/vi/${ytId}/mqdefault.jpg` : null;
                 return `
                     <tr class="hover:bg-zinc-800/40 transition-all group">
-                        <td class="p-6 text-center text-zinc-600 font-mono text-xs border-r border-zinc-800/30">${index + 1}</td>
+                        <td class="p-6 text-center text-zinc-600 font-mono text-xs border-r border-zinc-800/30 font-bold">${index + 1}</td>
                         <td class="p-6 text-center">
                             <div class="flex flex-col gap-1 items-center opacity-20 group-hover:opacity-100 transition-opacity">
                                 <button onclick="moveProject('${p.id}', 'up')" class="reorder-btn ${index === 0 ? 'invisible' : ''}">▲</button>
@@ -398,17 +417,15 @@
                         </td>
                         <td class="p-6">
                             <div class="flex items-center gap-5">
-                                <a href="${p.mainVideo.link}" target="_blank" class="thumbnail-frame shadow-2xl" title="Άνοιγμα Βίντεο">
-                                    ${thumbUrl ? `<img src="${thumbUrl}" alt="Thumb">` : `<span class="text-[10px] text-zinc-700 font-bold uppercase tracking-tighter">No Visual</span>`}
+                                <a href="${p.mainVideo.link}" target="_blank" class="thumbnail-frame shadow-2xl">
+                                    ${thumb ? `<img src="${thumb}">` : `<span class="text-[10px] text-zinc-700 font-bold uppercase">No Visual</span>`}
                                 </a>
                                 <div class="overflow-hidden">
                                     <div class="flex items-center gap-2 mb-1">
                                         <span class="text-[8px] ${p.mainVideo.published ? 'published-tag' : 'draft-tag'}">●</span>
                                         <div class="font-black gold-text text-base uppercase tracking-tight truncate max-w-[250px] leading-tight">${p.mainVideo.title}</div>
                                     </div>
-                                    <a href="${p.mainVideo.link}" target="_blank" class="text-[10px] text-zinc-600 font-mono hover:text-gold transition-colors truncate block max-w-[200px]">
-                                        ${p.mainVideo.link || 'Χωρίς Σύνδεσμο'}
-                                    </a>
+                                    <a href="${p.mainVideo.link}" target="_blank" class="text-[10px] text-zinc-600 font-mono hover:text-gold transition-colors truncate block max-w-[200px]">Link ↗</a>
                                 </div>
                             </div>
                         </td>
@@ -434,8 +451,8 @@
                         </td>
                         <td class="p-6 text-right">
                             <div class="flex justify-end gap-5 opacity-10 group-hover:opacity-100 transition-opacity">
-                                <button onclick="openModal('${p.id}')" class="text-[10px] font-black uppercase hover:text-gold tracking-[0.2em] transition-colors">Edit</button>
-                                <button onclick="deleteProject('${p.id}')" class="text-[10px] font-black uppercase hover:text-red-600 tracking-[0.2em] transition-colors">Delete</button>
+                                <button onclick="openModal('${p.id}')" class="text-[10px] font-black uppercase hover:text-gold tracking-[0.2em]">Edit</button>
+                                <button onclick="deleteProject('${p.id}')" class="text-[10px] font-black uppercase hover:text-red-600 tracking-[0.2em]">Delete</button>
                             </div>
                         </td>
                     </tr>
@@ -444,12 +461,10 @@
         };
 
         window.openModal = function(id = null) {
-            const form = document.getElementById('project-form');
-            form.reset();
+            const f = document.getElementById('project-form'); f.reset();
             document.getElementById('shorts-container').innerHTML = ''; 
             document.getElementById('soundtracks-container').innerHTML = '';
             document.getElementById('edit-id').value = id || '';
-            
             if (id) {
                 const p = projects.find(item => item.id === id);
                 document.getElementById('main-title').value = p.mainVideo.title;
@@ -457,35 +472,31 @@
                 document.getElementById('main-status').checked = p.mainVideo.published;
                 p.shorts.forEach(s => addShortRow(s));
                 p.soundtracks.forEach(st => addSoundtrackRow(st));
-                document.getElementById('modal-title').innerText = "ΕΠΕΞΕΡΓΑΣΙΑ PROJECT";
-            } else {
-                document.getElementById('modal-title').innerText = "ΝΕΟ EPIC PROJECT";
-                addShortRow(); addSoundtrackRow();
-            }
+            } else { addShortRow(); addSoundtrackRow(); }
             document.getElementById('modal').classList.remove('hidden');
         };
 
         window.closeModal = () => document.getElementById('modal').classList.add('hidden');
 
-        window.addShortRow = function(data = {title: '', link: '', published: false}) {
+        window.addShortRow = function(d = {title: '', link: '', published: false}) {
             const div = document.createElement('div');
             div.className = "grid grid-cols-1 md:grid-cols-12 gap-3 items-center bg-zinc-800/20 p-3 rounded-lg border border-zinc-800/50";
             div.innerHTML = `
-                <div class="md:col-span-5"><input type="text" placeholder="Τίτλος Short" class="w-full short-title" value="${data.title}"></div>
-                <div class="md:col-span-5"><input type="url" placeholder="YouTube Link" class="w-full short-link" value="${data.link}"></div>
-                <div class="md:col-span-1 flex justify-center"><input type="checkbox" class="custom-checkbox short-status" ${data.published ? 'checked' : ''}></div>
+                <div class="md:col-span-5"><input type="text" placeholder="Τίτλος Short" class="w-full short-title" value="${d.title}"></div>
+                <div class="md:col-span-5"><input type="url" placeholder="Link" class="w-full short-link" value="${d.link}"></div>
+                <div class="md:col-span-1 flex justify-center"><input type="checkbox" class="custom-checkbox short-status" ${d.published ? 'checked' : ''}></div>
                 <div class="md:col-span-1 text-right"><button type="button" onclick="this.parentElement.parentElement.remove()" class="text-zinc-600 hover:text-red-500 transition-colors">✕</button></div>
             `;
             document.getElementById('shorts-container').appendChild(div);
         };
 
-        window.addSoundtrackRow = function(data = {title: '', link: '', published: false}) {
+        window.addSoundtrackRow = function(d = {title: '', link: '', published: false}) {
             const div = document.createElement('div');
             div.className = "grid grid-cols-1 md:grid-cols-12 gap-3 items-center bg-zinc-800/20 p-3 rounded-lg border border-zinc-800/50";
             div.innerHTML = `
-                <div class="md:col-span-5"><input type="text" placeholder="Τίτλος Soundtrack" class="w-full st-title" value="${data.title}"></div>
-                <div class="md:col-span-5"><input type="url" placeholder="Link" class="w-full st-link" value="${data.link}"></div>
-                <div class="md:col-span-1 flex justify-center"><input type="checkbox" class="custom-checkbox st-status" ${data.published ? 'checked' : ''}></div>
+                <div class="md:col-span-5"><input type="text" placeholder="Τίτλος Score" class="w-full st-title" value="${d.title}"></div>
+                <div class="md:col-span-5"><input type="url" placeholder="Link" class="w-full st-link" value="${d.link}"></div>
+                <div class="md:col-span-1 flex justify-center"><input type="checkbox" class="custom-checkbox st-status" ${d.published ? 'checked' : ''}></div>
                 <div class="md:col-span-1 text-right"><button type="button" onclick="this.parentElement.parentElement.remove()" class="text-zinc-600 hover:text-red-500 transition-colors">✕</button></div>
             `;
             document.getElementById('soundtracks-container').appendChild(div);
@@ -493,63 +504,42 @@
 
         document.getElementById('project-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const editId = document.getElementById('edit-id').value;
-            const id = editId || Date.now().toString();
-            
-            const shorts = Array.from(document.getElementById('shorts-container').children).map(row => ({
-                title: row.querySelector('.short-title').value, link: row.querySelector('.short-link').value, published: row.querySelector('.short-status').checked
-            })).filter(s => s.title);
-            
-            const soundtracks = Array.from(document.getElementById('soundtracks-container').children).map(row => ({
-                title: row.querySelector('.st-title').value, link: row.querySelector('.st-link').value, published: row.querySelector('.st-status').checked
-            })).filter(st => st.title);
-
-            const maxOrder = projects.length > 0 ? Math.max(...projects.map(p => p.orderIndex || 0)) : 0;
-            const orderIndex = editId ? projects.find(p => p.id === editId).orderIndex : (maxOrder + 1);
-
-            const projectData = {
+            const id = document.getElementById('edit-id').value || Date.now().toString();
+            const shorts = Array.from(document.getElementById('shorts-container').children).map(r => ({
+                title: r.querySelector('.short-title').value, link: r.querySelector('.short-link').value, published: r.querySelector('.short-status').checked
+            })).filter(x => x.title);
+            const soundtracks = Array.from(document.getElementById('soundtracks-container').children).map(r => ({
+                title: r.querySelector('.st-title').value, link: r.querySelector('.st-link').value, published: r.querySelector('.st-status').checked
+            })).filter(x => x.title);
+            const max = projects.length > 0 ? Math.max(...projects.map(p => p.orderIndex || 0)) : 0;
+            const order = document.getElementById('edit-id').value ? projects.find(p => p.id === id).orderIndex : (max + 1);
+            await window.saveProjectToDB(id, {
                 mainVideo: { title: document.getElementById('main-title').value, link: document.getElementById('main-link').value, published: document.getElementById('main-status').checked },
-                shorts, soundtracks, orderIndex, date: editId ? projects.find(p => p.id === editId).date : new Date().toISOString()
-            };
-
-            await window.saveProjectToDB(id, projectData);
-            showToast('PROJECT SAVED');
-            closeModal();
+                shorts, soundtracks, orderIndex: order, date: new Date().toISOString()
+            });
+            showToast('ARCHIVED'); closeModal();
         });
 
-        window.showToast = function(msg) {
-            const toast = document.getElementById('toast');
-            toast.innerText = msg; toast.classList.remove('hidden');
-            setTimeout(() => toast.classList.add('hidden'), 3000);
+        window.showToast = (m) => { const t = document.getElementById('toast'); t.innerText = m; t.classList.remove('hidden'); setTimeout(() => t.classList.add('hidden'), 3000); };
+        window.exportDatabase = () => {
+            const data = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(projects, null, 2));
+            const a = document.createElement('a'); a.href = data; a.download = `hst_v8_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
         };
-
-        window.exportDatabase = function() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(projects, null, 2));
-            const dl = document.createElement('a'); dl.setAttribute("href", dataStr);
-            dl.setAttribute("download", `hst_archive_v7_5_${new Date().toISOString().split('T')[0]}.json`);
-            document.body.appendChild(dl); dl.click(); dl.remove();
-        };
-
         window.importDatabase = () => document.getElementById('import-input').click();
-        window.handleImport = (input) => {
-            const file = input.files[0]; if (!file) return;
-            const reader = new FileReader(); reader.onload = async (e) => {
-                try {
-                    const imported = JSON.parse(e.target.result);
-                    if (Array.isArray(imported)) {
-                        for (let p of imported) await window.saveProjectToDB(p.id || Date.now() + Math.random(), p);
-                        showToast('RESTORE COMPLETE');
-                    }
-                } catch (err) { alert('Format Error.'); }
-            }; reader.readAsText(file);
+        window.handleImport = (i) => {
+            const f = i.files[0]; if (!f) return;
+            const r = new FileReader(); r.onload = async (e) => {
+                const imp = JSON.parse(e.target.result);
+                if (Array.isArray(imp)) { for (let x of imp) await window.saveProjectToDB(x.id || Date.now() + Math.random(), x); showToast('RESTORED'); }
+            }; r.readAsText(f);
         };
 
-        // Start app
-        initializeAppMode();
+        startApp();
     </script>
 
     <footer class="mt-24 border-t border-zinc-900 pt-12 pb-16 text-center space-y-6">
-        <p class="cinzel text-[11px] tracking-[0.5em] text-zinc-600 uppercase">Hellenic Score & Tales | Pure Archive</p>
+        <p class="cinzel text-[11px] tracking-[0.5em] text-zinc-600 uppercase">Hellenic Score & Tales | Master Archive</p>
         <div class="flex justify-center gap-8 text-[9px] text-zinc-700 uppercase tracking-widest font-bold">
             <span>Soundscapes</span>
             <span class="text-gold">•</span>
