@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hellenic Score & Tales | Ultra Stability v13.1</title>
+    <title>Hellenic Score & Tales | Universal Access v13.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -56,7 +56,7 @@
         .thumbnail-frame { width: 100px; height: 56px; border: 1px solid var(--gold); border-radius: 4px; overflow: hidden; background: #000; flex-shrink: 0; }
         .thumbnail-frame img { width: 100%; height: 100%; object-fit: cover; }
         .stat-badge { font-size: 9px; background: rgba(255,255,255,0.03); padding: 2px 5px; border-radius: 3px; color: #aaa; display: inline-flex; align-items: center; gap: 4px; border: 1px solid rgba(197, 160, 89, 0.1); }
-        .loading-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .loading-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: flex; align-items: center; justify-content: center; z-index: 1000; transition: opacity 0.5s; }
         .pipeline-input { background: transparent !important; border: none !important; border-bottom: 1px solid #333 !important; font-size: 10px !important; padding: 2px 0 !important; border-radius: 0 !important; width: 100%; }
         .pipeline-input:focus { border-bottom-color: var(--gold) !important; outline: none; }
         .asset-row { background: rgba(0,0,0,0.4); border-top: 1px solid rgba(197, 160, 89, 0.1); }
@@ -88,7 +88,7 @@
     <div id="loader" class="loading-overlay">
         <div class="text-center">
             <div class="inline-block animate-spin text-3xl mb-3">🔱</div>
-            <p class="cinzel gold-text tracking-widest text-[10px] uppercase font-bold">ΠΥΛΗ ΣΕ ΑΝΑΜΟΝΗ...</p>
+            <p id="loader-text" class="cinzel gold-text tracking-widest text-[10px] uppercase font-bold">ΠΥΛΗ ΣΕ ΑΝΑΜΟΝΗ...</p>
         </div>
     </div>
 
@@ -110,7 +110,7 @@
             <div class="flex flex-col gap-1">
                 <div class="flex items-center gap-2 text-[9px] text-zinc-500 uppercase tracking-widest font-bold">
                     <span>Database Status:</span>
-                    <span id="db-status" class="text-emerald-500 font-black tracking-tighter">Syncing...</span>
+                    <span id="db-status" class="text-zinc-500 font-black tracking-tighter uppercase">Checking Environment...</span>
                 </div>
                 <div class="flex gap-2 mt-1">
                     <button onclick="exportDatabase()" class="text-[9px] py-1.5 px-4 border border-zinc-800 rounded hover:gold-text text-zinc-400 font-bold uppercase">💾 Backup JSON</button>
@@ -125,8 +125,8 @@
                 <button onclick="switchTab('pipeline')" id="tab-pipeline" class="nav-btn cinzel">Παραγωγή (Pipeline)</button>
             </div>
             <div class="text-right hidden md:block">
-                <p class="text-[9px] text-zinc-600 uppercase font-bold">Strategic Core</p>
-                <p class="text-[10px] gold-text cinzel">v13.1 Ultra Stability</p>
+                <p class="text-[9px] text-zinc-600 uppercase font-bold">Strategic Control</p>
+                <p class="text-[10px] gold-text cinzel">v13.2 Universal Access</p>
             </div>
         </div>
 
@@ -167,7 +167,7 @@
         <!-- Pipeline View -->
         <div id="view-pipeline" class="hidden">
             <div class="flex justify-between items-center mb-8 border-l-4 border-gold pl-6">
-                <div><h2 class="text-2xl gold-text cinzel uppercase tracking-[0.1em]">PRODUCTION PIPELINE</h2><p class="text-[10px] text-zinc-500 uppercase tracking-widest">Διαχείριση Assets & Προόδου</p></div>
+                <div><h2 class="text-2xl gold-text cinzel uppercase tracking-[0.1em]">PRODUCTION PIPELINE</h2><p class="text-[10px] text-zinc-500 uppercase tracking-widest italic">Asset & Progress Tracker</p></div>
                 <button onclick="openPipelineModal()" class="px-8 py-4 bg-zinc-800 text-gold font-black uppercase rounded-xl hover:bg-zinc-700 transition-all text-[10px] tracking-widest border border-gold/20 shadow-xl">🔨 NEW PRODUCTION</button>
             </div>
             <div id="pipeline-container" class="space-y-10 pb-40"></div>
@@ -208,6 +208,8 @@
     <script type="module">
         const isInternalEnv = typeof __firebase_config !== 'undefined' && __firebase_config !== null;
         const loader = document.getElementById('loader');
+        const dbStatus = document.getElementById('db-status');
+        
         let projects = [], pipelineProjects = [], channelStats = { views: '0', retention: '0%' }, user = null;
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'hst-v12-production';
         const CORE_STEPS = ['scenario', 'narration', 'artworks', 'video', 'subtitles', 'multilanguage', 'descriptions'];
@@ -222,46 +224,121 @@
 
         const startApp = async () => {
             if (isInternalEnv) {
-                const { initializeApp } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js");
-                const { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js");
-                const firestore = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
-                
-                db = firestore.getFirestore(initializeApp(JSON.parse(__firebase_config)));
-                deleteDoc = firestore.deleteDoc; doc = firestore.doc; setDoc = firestore.setDoc; 
-                updateDoc = firestore.updateDoc; collection = firestore.collection; onSnapshot = firestore.onSnapshot;
+                try {
+                    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js");
+                    const { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js");
+                    const firestore = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
+                    
+                    db = firestore.getFirestore(initializeApp(JSON.parse(__firebase_config)));
+                    deleteDoc = firestore.deleteDoc; doc = firestore.doc; setDoc = firestore.setDoc; 
+                    updateDoc = firestore.updateDoc; collection = firestore.collection; onSnapshot = firestore.onSnapshot;
 
-                const auth = getAuth();
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) await signInWithCustomToken(auth, __initial_auth_token); 
-                else await signInAnonymously(auth);
+                    const auth = getAuth();
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) await signInWithCustomToken(auth, __initial_auth_token); 
+                    else await signInAnonymously(auth);
 
-                onAuthStateChanged(auth, async (u) => {
-                    user = u; if (u) {
-                        document.getElementById('db-status').innerText = 'Cloud Synced';
-                        onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'projects'), (snap) => {
-                            projects = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b) => (a.orderIndex || 0) - (b.orderIndex || 0));
-                            renderProjects(); updateStats(); loader.classList.add('hidden');
-                        });
-                        onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'pipeline'), (snap) => {
-                            pipelineProjects = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                            renderPipeline();
-                        });
-                        onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'channel'), (snap) => { if (snap.exists()) { channelStats = snap.data(); updateStats(); } });
-                    }
-                });
+                    onAuthStateChanged(auth, async (u) => {
+                        user = u; if (u) {
+                            dbStatus.innerText = 'Cloud Synced';
+                            dbStatus.className = 'text-emerald-500 font-black tracking-tighter uppercase';
+                            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'projects'), (snap) => {
+                                projects = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b) => (a.orderIndex || 0) - (b.orderIndex || 0));
+                                renderProjects(); updateStats(); hideLoader();
+                            });
+                            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'pipeline'), (snap) => {
+                                pipelineProjects = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                                renderPipeline();
+                            });
+                            onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'channel'), (snap) => { if (snap.exists()) { channelStats = snap.data(); updateStats(); } });
+                        }
+                    });
 
-                window.saveProjectToDB = async (id, data) => { if (user) await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'projects', id), data); };
-                window.savePipelineToDB = async (id, data) => { if (user) await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pipeline', id), data); };
-                window.deletePipelineProject = async (id) => { if (user && confirm('Διαγραφή από την Παραγωγή;')) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pipeline', id)); };
-                window.deleteProject = async (id) => { if (user && confirm('Οριστική διαγραφή;')) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'projects', id)); };
-                window.saveChannelStats = async (data) => { if (user) await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'channel'), data); };
-                window.moveProject = async (id, dir) => {
-                    if (!user) return; const idx = projects.findIndex(p => p.id === id), tIdx = dir === 'up' ? idx - 1 : idx + 1;
-                    if (tIdx < 0 || tIdx >= projects.length) return;
-                    const p1 = projects[idx], p2 = projects[tIdx];
-                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'projects', p1.id), { orderIndex: p2.orderIndex });
-                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'projects', p2.id), { orderIndex: p1.orderIndex });
-                };
+                    window.saveProjectToDB = async (id, data) => { if (user) await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'projects', id), data); };
+                    window.savePipelineToDB = async (id, data) => { if (user) await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pipeline', id), data); };
+                    window.deletePipelineProject = async (id) => { if (user && confirm('Discard production project?')) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pipeline', id)); };
+                    window.deleteProject = async (id) => { if (user && confirm('Delete project forever?')) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'projects', id)); };
+                    window.saveChannelStats = async (data) => { if (user) await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'channel'), data); };
+                    window.moveProject = async (id, dir) => {
+                        if (!user) return; const idx = projects.findIndex(p => p.id === id), tIdx = dir === 'up' ? idx - 1 : idx + 1;
+                        if (tIdx < 0 || tIdx >= projects.length) return;
+                        const p1 = projects[idx], p2 = projects[tIdx];
+                        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'projects', p1.id), { orderIndex: p2.orderIndex });
+                        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'projects', p2.id), { orderIndex: p1.orderIndex });
+                    };
+                } catch (e) {
+                    fallbackToLocal();
+                }
+            } else {
+                fallbackToLocal();
             }
+        };
+
+        const hideLoader = () => { loader.style.opacity = '0'; setTimeout(() => loader.classList.add('hidden'), 500); };
+
+        const fallbackToLocal = () => {
+            dbStatus.innerText = 'Local Storage Mode';
+            dbStatus.className = 'text-amber-500 font-black tracking-tighter uppercase';
+            
+            const localP = localStorage.getItem('hst_projects');
+            const localPipe = localStorage.getItem('hst_pipeline');
+            const localStats = localStorage.getItem('hst_stats');
+
+            projects = localP ? JSON.parse(localP) : [];
+            pipelineProjects = localPipe ? JSON.parse(localPipe) : [];
+            channelStats = localStats ? JSON.parse(localStats) : { views: '0', retention: '0%' };
+
+            projects.sort((a,b) => (a.orderIndex || 0) - (b.orderIndex || 0));
+            
+            renderProjects();
+            renderPipeline();
+            updateStats();
+            hideLoader();
+
+            window.saveProjectToDB = (id, data) => {
+                const idx = projects.findIndex(p => p.id === id);
+                if(idx > -1) projects[idx] = { ...data, id }; else projects.push({ ...data, id });
+                projects.sort((a,b) => (a.orderIndex || 0) - (b.orderIndex || 0));
+                localStorage.setItem('hst_projects', JSON.stringify(projects));
+                renderProjects();
+            };
+
+            window.savePipelineToDB = (id, data) => {
+                const idx = pipelineProjects.findIndex(p => p.id === id);
+                if(idx > -1) pipelineProjects[idx] = { ...data, id }; else pipelineProjects.push({ ...data, id });
+                localStorage.setItem('hst_pipeline', JSON.stringify(pipelineProjects));
+                renderPipeline();
+            };
+
+            window.deleteProject = (id) => {
+                if(confirm('Delete project?')) {
+                    projects = projects.filter(p => p.id !== id);
+                    localStorage.setItem('hst_projects', JSON.stringify(projects));
+                    renderProjects(); updateStats();
+                }
+            };
+
+            window.deletePipelineProject = (id) => {
+                if(confirm('Discard production?')) {
+                    pipelineProjects = pipelineProjects.filter(p => p.id !== id);
+                    localStorage.setItem('hst_pipeline', JSON.stringify(pipelineProjects));
+                    renderPipeline();
+                }
+            };
+
+            window.saveChannelStats = (data) => {
+                channelStats = data;
+                localStorage.setItem('hst_stats', JSON.stringify(channelStats));
+                updateStats();
+            };
+
+            window.moveProject = (id, dir) => {
+                const idx = projects.findIndex(p => p.id === id), tIdx = dir === 'up' ? idx - 1 : idx + 1;
+                if (tIdx < 0 || tIdx >= projects.length) return;
+                [projects[idx].orderIndex, projects[tIdx].orderIndex] = [projects[tIdx].orderIndex, projects[idx].orderIndex];
+                projects.sort((a,b) => (a.orderIndex || 0) - (b.orderIndex || 0));
+                localStorage.setItem('hst_projects', JSON.stringify(projects));
+                renderProjects();
+            };
         };
 
         window.switchTab = (tab) => {
@@ -306,7 +383,6 @@
             await window.savePipelineToDB(pid, p);
         };
 
-        // --- Custom Confirmation Logic ---
         let currentMigrationId = null;
         window.showConfirmModal = (id) => {
             currentMigrationId = id;
@@ -321,41 +397,34 @@
         window.executeMigration = async (id) => {
             const p = pipelineProjects.find(item => item.id === id);
             if (!p) return;
-            
             window.hideConfirmModal();
             showToast('MIGRATING ASSETS...');
-            
             const btn = document.querySelector(`[data-pid="${id}"] .upload-btn`);
             if (btn) { btn.disabled = true; btn.innerText = 'MIGRATING...'; }
 
             try {
                 const newProjectId = Date.now().toString();
                 const currentMinOrder = projects.length > 0 ? Math.min(...projects.map(pr => pr.orderIndex || 0)) : 1000;
-                
                 const archiveData = {
-                    mainVideo: { 
-                        title: p.title || "Untitled", link: "", published: true, analytics: { views: "0", retention: "0%" } 
-                    },
-                    shorts: (p.shorts || []).map(s => ({ 
-                        title: s.title || "Untitled Short", published: s.done || false, analytics: { views: "0", retention: "0%" }
-                    })),
-                    soundtracks: (p.soundtracks || []).map(st => ({ 
-                        title: st.title || "Untitled Score", published: st.done || false, analytics: { views: "0", retention: "0%" }
-                    })),
-                    orderIndex: currentMinOrder - 1,
-                    date: new Date().toISOString()
+                    mainVideo: { title: p.title || "Untitled", link: "", published: true, analytics: { views: "0", retention: "0%" } },
+                    shorts: (p.shorts || []).map(s => ({ title: s.title || "Short", published: s.done || false, analytics: { views: "0", retention: "0%" } })),
+                    soundtracks: (p.soundtracks || []).map(st => ({ title: st.title || "Score", published: st.done || false, analytics: { views: "0", retention: "0%" } })),
+                    orderIndex: currentMinOrder - 1, date: new Date().toISOString()
                 };
                 
-                // Atomic Step 1: Save to Archives
-                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'projects', newProjectId), archiveData);
-                
-                // Atomic Step 2: Delete from Pipeline
-                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pipeline', p.id));
-                
+                if (isInternalEnv && user) {
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'projects', newProjectId), archiveData);
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pipeline', p.id));
+                } else {
+                    projects.unshift({ ...archiveData, id: newProjectId });
+                    pipelineProjects = pipelineProjects.filter(item => item.id !== id);
+                    localStorage.setItem('hst_projects', JSON.stringify(projects));
+                    localStorage.setItem('hst_pipeline', JSON.stringify(pipelineProjects));
+                    renderProjects(); renderPipeline(); updateStats();
+                }
                 showToast('MIGRATION COMPLETE');
                 switchTab('archive');
             } catch (err) {
-                console.error("Migration Error:", err);
                 showToast('ERROR IN SYNC');
                 if (btn) { btn.disabled = false; btn.innerText = 'UPLOAD'; }
             }
@@ -388,7 +457,7 @@
                                     <td class="p-5 text-left">
                                         <input type="text" class="pipeline-input gold-text font-black !text-xs mb-1 uppercase tracking-tighter" value="${p.title}" oninput="updatePipelineField('${p.id}', 'title', this.value)">
                                         <div class="progress-bar w-full"><div class="progress-fill" style="width: ${pct}%"></div></div>
-                                        <div class="text-[7px] text-zinc-500 mt-1 uppercase font-bold tracking-widest">${pct}% PROGRESS</div>
+                                        <div class="text-[7px] text-zinc-500 mt-1 uppercase font-bold tracking-widest">${pct}% COMPLETE</div>
                                     </td>
                                     ${CORE_STEPS.map(s => `<td class="p-2"><input type="checkbox" class="pipeline-checkbox" ${p[s] ? 'checked' : ''} onchange="togglePipelineStep('${p.id}', '${s}')"></td>`).join('')}
                                     <td class="p-4 bg-emerald-900/5"><button onclick="showConfirmModal('${p.id}')" class="upload-btn">UPLOAD</button></td>
@@ -420,9 +489,9 @@
                                                 <div class="space-y-3">
                                                     ${(p.soundtracks || []).map((st, idx) => `
                                                         <div class="flex items-center gap-5 bg-zinc-950/50 p-2.5 rounded-lg border border-zinc-800">
-                                                            <div class="flex flex-col items-center gap-1"><span class="text-[6px] text-zinc-500 font-bold">READY</span><input type="checkbox" class="pipeline-checkbox scale-90" ${st.done ? 'checked' : ''} onchange="updatePipelineAsset('${p.id}', 'soundtracks', ${idx}, 'done', this.checked)"></div>
+                                                            <div class="flex flex-col items-center gap-1"><span class="text-[6px] text-zinc-500 font-bold tracking-tighter uppercase">Ready</span><input type="checkbox" class="pipeline-checkbox scale-90" ${st.done ? 'checked' : ''} onchange="updatePipelineAsset('${p.id}', 'soundtracks', ${idx}, 'done', this.checked)"></div>
                                                             <input type="text" class="pipeline-input !text-[10px] flex-1" value="${st.title}" placeholder="Score Name..." oninput="updatePipelineAsset('${p.id}', 'soundtracks', ${idx}, 'title', this.value)">
-                                                            <div class="flex flex-col items-center gap-1"><span class="text-[6px] text-zinc-500 font-bold">SPOTIFY</span><input type="checkbox" class="spotify-checkbox scale-90" ${st.spotifyDone ? 'checked' : ''} onchange="updatePipelineAsset('${p.id}', 'soundtracks', ${idx}, 'spotifyDone', this.checked)"></div>
+                                                            <div class="flex flex-col items-center gap-1"><span class="text-[6px] text-zinc-500 font-bold tracking-tighter uppercase">Spotify</span><input type="checkbox" class="spotify-checkbox scale-90" ${st.spotifyDone ? 'checked' : ''} onchange="updatePipelineAsset('${p.id}', 'soundtracks', ${idx}, 'spotifyDone', this.checked)"></div>
                                                             <button onclick="removePipelineAsset('${p.id}', 'soundtracks', ${idx})" class="text-zinc-700 hover:text-red-500 text-[10px]">✕</button>
                                                         </div>
                                                     `).join('')}
@@ -441,7 +510,7 @@
         window.renderProjects = () => {
             const list = document.getElementById('project-list');
             list.innerHTML = projects.map((p, i) => {
-                const m = p.mainVideo.link.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?\s*v=|&v=)([^#&?]*).*/);
+                const m = (p.mainVideo.link || "").match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?\s*v=|&v=)([^#&?]*).*/);
                 const ytId = m && m[2].length === 11 ? m[2] : null;
                 const isPending = !p.mainVideo.published;
                 return `
