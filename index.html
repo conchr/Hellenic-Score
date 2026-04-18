@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hellenic Score & Tales | Master Strategy Archive</title>
+    <title>Hellenic Score & Tales | Ultra Reliable Sync</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -11,6 +11,9 @@
             --gold: #c5a059;
             --dark-bg: #0a0a0b;
             --card-bg: #161618;
+            --spotify: #1DB954;
+            --up-green: #34d399;
+            --down-red: #f87171;
         }
         body {
             background-color: var(--dark-bg);
@@ -19,52 +22,25 @@
             margin: 0;
             overflow-x: hidden;
         }
-        h1, h2, h3, .cinzel {
-            font-family: 'Cinzel', serif;
-            letter-spacing: 0.05em;
-        }
+        h1, h2, h3, .cinzel { font-family: 'Cinzel', serif; letter-spacing: 0.05em; }
         .gold-text { color: var(--gold); }
         .gold-bg { background-color: var(--gold); }
-        .gold-border { border-color: var(--gold); }
-        
         .glass-card {
             background: var(--card-bg);
             border: 1px solid rgba(197, 160, 89, 0.2);
             border-radius: 12px;
-            transition: all 0.3s ease;
         }
-        
-        input, select {
+        input {
             background: #242427 !important;
             border: 1px solid #3f3f46 !important;
             color: white !important;
-            padding: 0.75rem !important;
-            border-radius: 6px !important;
+            padding: 0.4rem 0.6rem !important;
+            border-radius: 4px !important;
+            font-size: 0.8rem !important;
         }
-        input:focus { border-color: var(--gold) !important; outline: none; box-shadow: 0 0 0 2px rgba(197, 160, 89, 0.2); }
-        
-        .published-tag { color: #34d399; font-weight: bold; }
-        .draft-tag { color: #fb923c; opacity: 0.7; }
-
-        .custom-checkbox {
-            width: 1.25rem;
-            height: 1.25rem;
-            accent-color: var(--gold);
-            cursor: pointer;
-        }
-
-        .section-header {
-            border-left: 4px solid var(--gold);
-            padding-left: 1rem;
-            margin-bottom: 1rem;
-            background: rgba(197, 160, 89, 0.05);
-            padding-top: 0.5rem;
-            padding-bottom: 0.5rem;
-        }
-
         .thumbnail-frame {
-            width: 120px;
-            height: 68px;
+            width: 100px;
+            height: 56px;
             border: 1px solid var(--gold);
             border-radius: 4px;
             overflow: hidden;
@@ -72,32 +48,30 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            flex-shrink: 0;
-            transition: transform 0.2s;
         }
-        .thumbnail-frame:hover {
-            transform: scale(1.05);
-            border-color: white;
+        .thumbnail-frame img { width: 100%; height: 100%; object-fit: cover; }
+        .stat-badge {
+            font-size: 9px;
+            background: rgba(255,255,255,0.03);
+            padding: 2px 5px;
+            border-radius: 3px;
+            color: #aaa;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            border: 1px solid rgba(255,255,255,0.04);
         }
-        .thumbnail-frame img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+        .channel-stat-card {
+            background: linear-gradient(135deg, rgba(197, 160, 89, 0.12) 0%, rgba(22, 22, 24, 1) 100%);
+            border: 1px solid rgba(197, 160, 89, 0.3);
+            padding: 1.5rem 3rem;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            gap: 4rem;
         }
-
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: var(--dark-bg); }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
-
-        .reorder-btn {
-            padding: 4px;
-            border-radius: 4px;
-            transition: all 0.2s;
-            color: #444;
-        }
-        .reorder-btn:hover { color: var(--gold); background: #222; }
-        
+        .trend-up { color: var(--up-green); font-size: 10px; font-weight: bold; }
+        .trend-down { color: var(--down-red); font-size: 10px; font-weight: bold; }
         .loading-overlay {
             position: fixed;
             inset: 0;
@@ -107,170 +81,151 @@
             justify-content: center;
             z-index: 1000;
         }
-
-        .content-link {
-            transition: all 0.2s ease;
-            text-decoration: none;
-            cursor: pointer;
-        }
-        .content-link:hover {
-            color: var(--gold) !important;
-            text-decoration: underline;
-        }
+        .custom-checkbox { accent-color: var(--gold); }
     </style>
 </head>
-<body class="p-4 md:p-8">
+<body class="p-2 md:p-6">
 
     <div id="loader" class="loading-overlay">
         <div class="text-center">
-            <div class="inline-block animate-spin text-4xl mb-4">🔱</div>
-            <p class="cinzel gold-text tracking-widest text-xs uppercase">ΣΥΓΧΡΟΝΙΣΜΟΣ ΑΡΧΕΙΟΥ...</p>
+            <div class="inline-block animate-spin text-3xl mb-3">🔱</div>
+            <p class="cinzel gold-text tracking-widest text-[10px] uppercase">ΦΟΡΤΩΣΗ ΑΡΧΕΙΟΥ...</p>
         </div>
     </div>
 
     <div class="max-w-7xl mx-auto">
-        <!-- Header & DB Management -->
-        <div class="flex flex-col md:flex-row justify-between items-start mb-8 gap-4">
+        <div class="flex flex-col md:flex-row justify-between items-start mb-4 gap-3">
             <div class="flex flex-col gap-1">
-                <div class="flex items-center gap-2 text-[10px] text-zinc-500 uppercase tracking-widest font-bold">
+                <div class="flex items-center gap-2 text-[9px] text-zinc-500 uppercase tracking-widest font-bold">
                     <span>Database Status:</span>
                     <span id="db-status" class="text-emerald-500">Initializing...</span>
                 </div>
-                <div class="flex gap-2 mt-1">
-                    <button onclick="exportDatabase()" class="text-[10px] py-1.5 px-4 border border-zinc-800 rounded-md hover:gold-text transition-all text-zinc-400">💾 Export Backup</button>
-                    <button onclick="importDatabase()" class="text-[10px] py-1.5 px-4 border border-zinc-800 rounded-md hover:gold-text transition-all text-zinc-400">📂 Restore Archive</button>
+                <div class="flex gap-2 mt-0.5">
+                    <button onclick="exportDatabase()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text transition-all text-zinc-400 font-bold uppercase tracking-tighter">💾 Export JSON</button>
+                    <button onclick="importDatabase()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text transition-all text-zinc-400 font-bold uppercase tracking-tighter">📂 Import JSON</button>
+                    <button onclick="triggerAnalyticsImport()" class="text-[9px] py-1 px-3 border border-emerald-900 rounded hover:text-emerald-400 transition-all text-emerald-600 font-bold uppercase tracking-tighter">📊 Sync Analytics (Lifetime CSV)</button>
                     <input type="file" id="import-input" class="hidden" accept=".json" onchange="handleImport(this)">
+                    <input type="file" id="analytics-input" class="hidden" accept=".csv" onchange="handleAnalyticsImport(this)">
                 </div>
             </div>
             <div class="text-right hidden md:block">
-                <p class="text-[10px] text-zinc-600 uppercase tracking-widest font-bold">Artist Strategy Engine</p>
-                <p class="text-xs gold-text cinzel">v8.1 Auth-Priority Edition</p>
+                <p class="text-[9px] text-zinc-600 uppercase tracking-widest font-bold">Strategy Console</p>
+                <p class="text-[10px] gold-text cinzel">v11.7 Ultra Reliable Sync</p>
             </div>
         </div>
 
-        <header class="mb-12 text-center border-b border-zinc-800 pb-8">
-            <h1 class="text-5xl font-bold gold-text mb-3">HELLENIC SCORE & TALES</h1>
-            <p class="text-zinc-500 italic tracking-[0.2em] uppercase text-sm font-semibold">Strategic Content Archive</p>
-        </header>
-
-        <!-- Stats & Add Action -->
-        <div class="flex flex-col md:flex-row justify-between items-center gap-6 mb-10">
-            <div class="flex gap-8">
-                <div class="glass-card px-10 py-5 text-center shadow-xl">
-                    <p class="text-[11px] text-zinc-500 uppercase font-black tracking-widest mb-1">Συνολικά Project</p>
-                    <p id="stat-total" class="text-4xl font-bold gold-text">0</p>
+        <header class="mb-4 text-center">
+            <h1 class="text-3xl md:text-4xl font-bold gold-text mb-1 uppercase tracking-widest">HELLENIC SCORE & TALES</h1>
+            <p class="text-zinc-500 italic tracking-[0.25em] uppercase text-[10px] font-semibold mb-8">Strategic Archive</p>
+            
+            <div class="flex justify-center mb-12">
+                <div class="channel-stat-card shadow-2xl">
+                    <div class="text-left border-r border-zinc-800/50 pr-12">
+                        <p class="text-[10px] text-zinc-500 uppercase font-black tracking-widest mb-2 opacity-80">Συνολικές Προβολές</p>
+                        <div class="flex items-baseline gap-2">
+                            <h2 id="channel-views" class="text-4xl font-bold gold-text cinzel leading-none">0</h2>
+                            <span id="channel-views-trend" class="text-sm"></span>
+                        </div>
+                    </div>
+                    <div class="text-left">
+                        <p class="text-[10px] text-zinc-500 uppercase font-black tracking-widest mb-2 opacity-80">Average Retention</p>
+                        <div class="flex items-baseline gap-2">
+                            <h2 id="channel-retention" class="text-4xl font-bold gold-text cinzel leading-none">0%</h2>
+                            <span id="channel-retention-trend" class="text-sm"></span>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <button id="add-btn" onclick="openModal()" class="w-full md:w-auto px-12 py-5 gold-bg text-black font-black uppercase tracking-widest rounded-lg hover:scale-105 active:scale-95 transition-all shadow-2xl flex items-center gap-3">
-                <span class="text-2xl">🔱</span>
-                ΔΗΜΙΟΥΡΓΙΑ ΝΕΟΥ PROJECT
-            </button>
+        </header>
+
+        <div class="flex flex-row justify-between items-center gap-4 mb-6">
+            <div class="glass-card px-6 py-3 shadow-lg">
+                <p class="text-[9px] text-zinc-500 uppercase font-black tracking-widest mb-0.5">Projects</p>
+                <p id="stat-total" class="text-2xl font-bold gold-text leading-none">0</p>
+            </div>
+            <button onclick="openModal()" class="px-8 py-3.5 gold-bg text-black font-black uppercase tracking-widest rounded-lg hover:scale-105 transition-all shadow-xl text-xs">🔱 ΝΕΟ PROJECT</button>
         </div>
 
-        <!-- Table -->
         <div class="glass-card overflow-hidden shadow-2xl">
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
                     <thead>
-                        <tr class="bg-zinc-900 border-b border-zinc-800 text-zinc-500 text-[11px] uppercase tracking-widest font-black">
-                            <th class="p-6 w-16 text-center">#</th>
-                            <th class="p-6 w-12 text-center">Σειρά</th>
-                            <th class="p-6">Project / Visual Art</th>
-                            <th class="p-6">Shorts</th>
-                            <th class="p-6">Soundtracks</th>
-                            <th class="p-6 text-right">Ενέργειες</th>
+                        <tr class="bg-zinc-900/50 text-zinc-500 text-[10px] uppercase tracking-widest font-black">
+                            <th class="p-4 w-12 text-center">#</th>
+                            <th class="p-4 w-10 text-center">Σειρά</th>
+                            <th class="p-4">Project / Visual Art</th>
+                            <th class="p-4">Shorts</th>
+                            <th class="p-4">Soundtracks</th>
+                            <th class="p-4 text-right">Ενέργειες</th>
                         </tr>
                     </thead>
-                    <tbody id="project-list" class="divide-y divide-zinc-800/50">
-                        <!-- Content -->
-                    </tbody>
+                    <tbody id="project-list" class="divide-y divide-zinc-800/30"></tbody>
                 </table>
-            </div>
-            <div id="empty-state" class="p-24 text-center text-zinc-700 cinzel text-xl hidden animate-pulse">
-                The archives are empty. Begin the odyssey.
             </div>
         </div>
     </div>
 
-    <!-- Master Modal -->
+    <!-- Modal -->
     <div id="modal" class="fixed inset-0 bg-black/95 backdrop-blur-md hidden flex items-center justify-center p-4 z-50 overflow-y-auto">
-        <div class="glass-card w-full max-w-4xl my-8 bg-zinc-900 border-gold/30">
-            <div class="p-6 border-b border-zinc-800 flex justify-between items-center bg-zinc-950/50">
-                <h2 id="modal-title" class="text-2xl gold-text cinzel">ΔΙΑΧΕΙΡΙΣΗ PROJECT</h2>
-                <button onclick="closeModal()" class="text-zinc-500 hover:text-white transition-colors text-3xl">✕</button>
+        <div class="glass-card w-full max-w-5xl my-4 bg-zinc-900 border-gold/30 p-6">
+            <div class="flex justify-between items-center mb-6 border-b border-zinc-800 pb-4">
+                <h2 id="modal-title" class="text-xl gold-text cinzel uppercase">ΔΙΑΧΕΙΡΙΣΗ PROJECT</h2>
+                <button onclick="closeModal()" class="text-zinc-500 hover:text-white text-2xl">✕</button>
             </div>
-            
-            <form id="project-form" class="p-8 space-y-10 max-h-[80vh] overflow-y-auto">
+            <form id="project-form" class="space-y-6 max-h-[75vh] overflow-y-auto pr-2">
                 <input type="hidden" id="edit-id">
-
                 <section>
-                    <div class="section-header">
-                        <h3 class="gold-text font-bold text-sm tracking-widest uppercase">1. ΚΥΡΙΟ ΒΙΝΤΕΟ (Main Video)</h3>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
-                        <div class="md:col-span-5 space-y-1">
-                            <label class="text-[10px] text-zinc-500 uppercase font-bold tracking-widest">Τίτλος</label>
-                            <input type="text" id="main-title" required class="w-full" placeholder="π.χ. Achilles' Rage">
-                        </div>
-                        <div class="md:col-span-5 space-y-1">
-                            <label class="text-[10px] text-zinc-500 uppercase font-bold tracking-widest">YouTube / VEO Link</label>
-                            <input type="url" id="main-link" class="w-full" placeholder="https://youtube.com/watch?v=...">
-                        </div>
-                        <div class="md:col-span-2 pb-3 flex justify-center">
-                            <label class="flex flex-col items-center gap-1 cursor-pointer">
-                                <span class="text-[10px] text-zinc-500 uppercase">Live</span>
-                                <input type="checkbox" id="main-status" class="custom-checkbox">
-                            </label>
-                        </div>
+                    <div class="section-header"><h3 class="gold-text font-bold text-[11px] tracking-widest uppercase">1. ΚΥΡΙΟ ΒΙΝΤΕΟ</h3></div>
+                    <div class="grid grid-cols-12 gap-4 items-end">
+                        <div class="col-span-4 space-y-1"><label class="text-[9px] text-zinc-500 uppercase font-bold">Τίτλος</label><input type="text" id="main-title" required class="w-full"></div>
+                        <div class="col-span-4 space-y-1"><label class="text-[9px] text-zinc-500 uppercase font-bold">YouTube Link</label><input type="url" id="main-link" class="w-full"></div>
+                        <div class="col-span-2 space-y-1"><label class="text-[9px] text-zinc-500 uppercase font-bold">Views</label><input type="text" id="main-views" class="w-full"></div>
+                        <div class="col-span-1 space-y-1"><label class="text-[9px] text-zinc-500 uppercase font-bold">Ret %</label><input type="text" id="main-retention" class="w-full"></div>
+                        <div class="col-span-1 pb-1 flex justify-center"><input type="checkbox" id="main-status" class="custom-checkbox"></div>
                     </div>
                 </section>
-
-                <section>
-                    <div class="section-header flex justify-between items-center">
-                        <h3 class="gold-text font-bold text-sm tracking-widest uppercase">2. SHORTS</h3>
-                        <button type="button" onclick="addShortRow()" class="text-[10px] bg-zinc-800 px-4 py-1.5 rounded border border-zinc-700 hover:border-gold transition-all uppercase font-bold tracking-widest">+ ΠΡΟΣΘΗΚΗ SHORT</button>
-                    </div>
-                    <div id="shorts-container" class="space-y-3"></div>
-                </section>
-
-                <section>
-                    <div class="section-header flex justify-between items-center">
-                        <h3 class="gold-text font-bold text-sm tracking-widest uppercase">3. SOUNDTRACKS</h3>
-                        <button type="button" onclick="addSoundtrackRow()" class="text-[10px] bg-zinc-800 px-4 py-1.5 rounded border border-zinc-700 hover:border-gold transition-all uppercase font-bold tracking-widest">+ ΠΡΟΣΘΗΚΗ SCORE</button>
-                    </div>
-                    <div id="soundtracks-container" class="space-y-3"></div>
-                </section>
-
-                <div class="pt-8 border-t border-zinc-800 flex justify-end gap-6">
-                    <button type="button" onclick="closeModal()" class="text-zinc-500 hover:text-white uppercase text-xs font-bold tracking-widest">Ακύρωση</button>
-                    <button type="submit" class="px-12 py-4 gold-bg text-black font-black rounded hover:brightness-110 transition-all uppercase text-sm tracking-widest shadow-lg">Αποθήκευση στο Αρχείο</button>
+                <div id="shorts-container" class="space-y-3"><div class="section-header flex justify-between items-center"><h3 class="gold-text font-bold text-[11px] uppercase">2. SHORTS</h3><button type="button" onclick="addShortRow()" class="text-[9px] bg-zinc-800 px-3 py-1 rounded">+ ΝΕΟ</button></div></div>
+                <div id="soundtracks-container" class="space-y-3"><div class="section-header flex justify-between items-center"><h3 class="gold-text font-bold text-[11px] uppercase">3. SOUNDTRACKS</h3><button type="button" onclick="addSoundtrackRow()" class="text-[9px] bg-zinc-800 px-3 py-1 rounded">+ ΝΕΟ</button></div></div>
+                <div class="pt-6 border-t border-zinc-800 flex justify-end gap-4">
+                    <button type="button" onclick="closeModal()" class="text-zinc-500 uppercase text-[10px] font-bold tracking-widest">Ακύρωση</button>
+                    <button type="submit" class="px-10 py-3 gold-bg text-black font-black rounded uppercase text-[11px] tracking-widest shadow-lg">Αποθήκευση</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 gold-bg text-black px-12 py-5 rounded-full hidden shadow-2xl z-[100] font-black text-xs uppercase tracking-widest">
-    </div>
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 gold-bg text-black px-10 py-4 rounded-full hidden shadow-2xl z-[100] font-black text-[10px] uppercase tracking-widest"></div>
 
     <script type="module">
-        // Detecting environment
         const isInternalEnv = typeof __firebase_config !== 'undefined' && __firebase_config !== null;
         const dbStatus = document.getElementById('db-status');
         const loader = document.getElementById('loader');
-        
         let projects = [];
+        let channelStats = { views: '0', retention: '0%', previousViews: null, previousRetention: null };
         let dbMode = 'local';
         let user = null;
 
-        // UI Globals
-        window.updateStats = () => { document.getElementById('stat-total').innerText = projects.length; };
-        window.saveDataLocal = () => { if (dbMode === 'local') localStorage.setItem('hst_v8_local', JSON.stringify(projects)); };
-        window.getYouTubeId = (url) => {
-            if (!url) return null;
-            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?\s*v=|&v=)([^#&?]*).*/;
-            const match = url.match(regExp);
-            return (match && match[2].length === 11) ? match[2] : null;
+        const cleanForMatch = (str) => {
+            if (!str) return "";
+            return str.toString()
+                .toLowerCase()
+                .trim()
+                .replace(/["'“”‘’]/g, '') // Remove all types of quotes
+                .replace(/[^\w\s\u0370-\u03ff]/gi, '') // Keep letters (including Greek), numbers and spaces
+                .replace(/\s+/g, '') // Remove ALL spaces for a pure character match
+                .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // Remove tones/accents
         };
+
+        window.updateStats = () => { 
+            document.getElementById('stat-total').innerText = projects.length;
+            document.getElementById('channel-views').innerText = channelStats.views || '0';
+            document.getElementById('channel-retention').innerText = channelStats.retention || '0%';
+            document.getElementById('channel-views-trend').innerHTML = getTrendIcon(channelStats.views, channelStats.previousViews);
+            document.getElementById('channel-retention-trend').innerHTML = getTrendIcon(channelStats.retention, channelStats.previousRetention);
+        };
+
+        window.saveDataLocal = () => { if (dbMode === 'local') { localStorage.setItem('hst_v11_local', JSON.stringify(projects)); localStorage.setItem('hst_v11_channel', JSON.stringify(channelStats)); } };
+        window.getYouTubeId = (url) => { if (!url) return null; const match = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?\s*v=|&v=)([^#&?]*).*/); return (match && match[2].length === 11) ? match[2] : null; };
 
         const startApp = async () => {
             if (isInternalEnv) {
@@ -278,183 +233,77 @@
                     const { initializeApp } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js");
                     const { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js");
                     const { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, updateDoc } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
-
                     dbMode = 'cloud';
-                    dbStatus.innerText = 'Connecting...';
-
-                    const firebaseConfig = JSON.parse(__firebase_config);
-                    const app = initializeApp(firebaseConfig);
-                    const auth = getAuth(app);
-                    const db = getFirestore(app);
-                    const appId = typeof __app_id !== 'undefined' ? __app_id : 'hst-v8-archive';
-
-                    // Rule 3: Auth FIRST and await it
-                    const initAuth = async () => {
-                        try {
-                            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                                await signInWithCustomToken(auth, __initial_auth_token);
-                            } else {
-                                await signInAnonymously(auth);
-                            }
-                        } catch (e) {
-                            console.error("Auth Failed:", e);
-                            throw e;
-                        }
-                    };
-
-                    await initAuth();
-
-                    onAuthStateChanged(auth, (u) => {
-                        user = u;
-                        if (u) {
-                            dbStatus.innerText = 'Cloud Sync Active';
-                            dbStatus.className = 'text-emerald-500';
-                            
-                            // Guard every operation with if(!user)
-                            const projectsRef = collection(db, 'artifacts', appId, 'public', 'data', 'projects');
-                            onSnapshot(projectsRef, (snapshot) => {
-                                if (!auth.currentUser) return;
-                                projects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                                projects.sort((a, b) => (b.orderIndex || 0) - (a.orderIndex || 0));
-                                renderProjects();
-                                updateStats();
-                                loader.classList.add('hidden');
-                            }, (err) => { 
-                                console.error("Snapshot Error:", err); 
-                                if (err.code === 'permission-denied') {
-                                    showToast('Permission Denied. Retrying...');
-                                }
+                    const app = initializeApp(JSON.parse(__firebase_config));
+                    const auth = getAuth(app), db = getFirestore(app);
+                    const appId = typeof __app_id !== 'undefined' ? __app_id : 'hst-v11-chrono';
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) await signInWithCustomToken(auth, __initial_auth_token); else await signInAnonymously(auth);
+                    onAuthStateChanged(auth, async (u) => {
+                        user = u; if (u) {
+                            dbStatus.innerText = 'Cloud Active';
+                            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'projects'), (snap) => {
+                                projects = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b) => (a.orderIndex || 0) - (b.orderIndex || 0));
+                                updateStats(); renderProjects(); loader.classList.add('hidden');
                             });
-                        } else {
-                            dbStatus.innerText = 'Disconnected';
-                            dbStatus.className = 'text-red-500';
+                            onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'channel'), (snap) => { if (snap.exists()) { channelStats = snap.data(); updateStats(); } });
                         }
                     });
-
-                    window.deleteProject = async (id) => {
-                        if (!auth.currentUser) return;
-                        if (confirm('Οριστική διαγραφή;')) {
-                            await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'projects', id));
-                            showToast('DELETED');
-                        }
+                    window.saveProjectToDB = async (id, data) => { if (user) await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'projects', id), data); };
+                    window.saveChannelStats = async (data) => { if (user) await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'channel'), data); };
+                    window.deleteProject = async (id) => { if (user && confirm('Delete?')) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'projects', id)); };
+                    window.moveProject = async (id, dir) => {
+                        if (!user) return; const idx = projects.findIndex(p => p.id === id), targetIdx = dir === 'up' ? idx - 1 : idx + 1;
+                        if (targetIdx < 0 || targetIdx >= projects.length) return;
+                        const p1 = projects[idx], p2 = projects[targetIdx];
+                        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'projects', p1.id), { orderIndex: p2.orderIndex });
+                        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'projects', p2.id), { orderIndex: p1.orderIndex });
                     };
-
-                    window.moveProject = async (id, direction) => {
-                        if (!auth.currentUser) return;
-                        const index = projects.findIndex(p => p.id === id);
-                        if (direction === 'up' && index === 0) return;
-                        if (direction === 'down' && index === projects.length - 1) return;
-                        const targetIndex = direction === 'up' ? index - 1 : index + 1;
-                        const current = projects[index]; const target = projects[targetIndex];
-                        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'projects', current.id), { orderIndex: target.orderIndex || 0 });
-                        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'projects', target.id), { orderIndex: current.orderIndex || 0 });
-                    };
-
-                    window.saveProjectToDB = async (id, data) => {
-                        if (!auth.currentUser) return;
-                        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'projects', id), data);
-                    };
-
-                } catch (e) { 
-                    console.error("Critical Cloud Error:", e);
-                    fallbackToLocal(); 
-                }
+                } catch (e) { fallbackToLocal(); }
             } else { fallbackToLocal(); }
         };
 
         function fallbackToLocal() {
-            dbMode = 'local';
-            dbStatus.innerText = 'GitHub Local Mode';
-            dbStatus.className = 'text-amber-500';
-            const data = localStorage.getItem('hst_v8_local');
-            projects = data ? JSON.parse(data) : [];
-            projects.sort((a, b) => (b.orderIndex || 0) - (a.orderIndex || 0));
-            renderProjects();
-            updateStats();
-            setTimeout(() => loader.classList.add('hidden'), 500);
+            dbMode = 'local'; dbStatus.innerText = 'Local Mode';
+            const data = localStorage.getItem('hst_v11_local'), cData = localStorage.getItem('hst_v11_channel');
+            projects = data ? JSON.parse(data) : []; channelStats = cData ? JSON.parse(cData) : { views: '0', retention: '0%', previousViews: null, previousRetention: null };
+            projects.sort((a,b) => (a.orderIndex || 0) - (b.orderIndex || 0)); renderProjects(); updateStats(); loader.classList.add('hidden');
+            window.saveProjectToDB = (id, data) => { const idx = projects.findIndex(p => p.id === id); if (idx > -1) projects[idx] = { ...data, id }; else projects.push({ ...data, id }); saveDataLocal(); renderProjects(); };
+            window.saveChannelStats = (data) => { channelStats = data; saveDataLocal(); updateStats(); };
+            window.deleteProject = (id) => { if (confirm('Delete?')) { projects = projects.filter(p => p.id !== id); saveDataLocal(); renderProjects(); updateStats(); } };
+        }
 
-            window.deleteProject = (id) => {
-                if (confirm('Διαγραφή;')) {
-                    projects = projects.filter(p => p.id !== id);
-                    saveDataLocal(); renderProjects(); updateStats();
-                }
-            };
-
-            window.moveProject = (id, direction) => {
-                const idx = projects.findIndex(p => p.id === id);
-                if (direction === 'up' && idx === 0) return;
-                if (direction === 'down' && idx === projects.length - 1) return;
-                const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
-                [projects[idx].orderIndex, projects[targetIdx].orderIndex] = [projects[targetIdx].orderIndex, projects[idx].orderIndex];
-                projects.sort((a, b) => b.orderIndex - a.orderIndex);
-                saveDataLocal(); renderProjects();
-            };
-
-            window.saveProjectToDB = (id, data) => {
-                const idx = projects.findIndex(p => p.id === id);
-                if (idx > -1) projects[idx] = { ...data, id };
-                else projects.unshift({ ...data, id });
-                saveDataLocal(); renderProjects(); updateStats();
-            };
+        function getTrendIcon(cur, prev) {
+            const cNum = parseFloat(cur?.toString().replace(/[^0-9.]/g, '')) || 0, pNum = parseFloat(prev?.toString().replace(/[^0-9.]/g, '')) || 0;
+            if (!prev || cNum === pNum) return '<span class="text-zinc-700">-</span>';
+            return cNum > pNum ? '<span class="trend-up">▲</span>' : '<span class="trend-down">▼</span>';
         }
 
         window.renderProjects = () => {
             const list = document.getElementById('project-list');
-            const empty = document.getElementById('empty-state');
-            if (projects.length === 0) { list.innerHTML = ''; empty.classList.remove('hidden'); return; }
-            empty.classList.add('hidden');
-            list.innerHTML = projects.map((p, index) => {
+            list.innerHTML = projects.map((p, i) => {
                 const ytId = getYouTubeId(p.mainVideo.link);
                 const thumb = ytId ? `https://img.youtube.com/vi/${ytId}/mqdefault.jpg` : null;
                 return `
-                    <tr class="hover:bg-zinc-800/40 transition-all group">
-                        <td class="p-6 text-center text-zinc-600 font-mono text-xs border-r border-zinc-800/30 font-bold">${index + 1}</td>
-                        <td class="p-6 text-center">
-                            <div class="flex flex-col gap-1 items-center opacity-20 group-hover:opacity-100 transition-opacity">
-                                <button onclick="moveProject('${p.id}', 'up')" class="reorder-btn ${index === 0 ? 'invisible' : ''}">▲</button>
-                                <button onclick="moveProject('${p.id}', 'down')" class="reorder-btn ${index === projects.length - 1 ? 'invisible' : ''}">▼</button>
-                            </div>
+                    <tr class="group hover:bg-zinc-800/20">
+                        <td class="p-4 text-center text-[10px] text-zinc-600 border-r border-zinc-800/20 font-bold">${i+1}</td>
+                        <td class="p-2 text-center">
+                            <div class="flex flex-col gap-1 opacity-10 group-hover:opacity-100"><button onclick="moveProject('${p.id}', 'up')">▲</button><button onclick="moveProject('${p.id}', 'down')">▼</button></div>
                         </td>
-                        <td class="p-6">
-                            <div class="flex items-center gap-5">
-                                <a href="${p.mainVideo.link}" target="_blank" class="thumbnail-frame shadow-2xl">
-                                    ${thumb ? `<img src="${thumb}">` : `<span class="text-[10px] text-zinc-700 font-bold uppercase">No Visual</span>`}
-                                </a>
-                                <div class="overflow-hidden">
+                        <td class="p-4">
+                            <div class="flex items-center gap-4">
+                                <div class="thumbnail-frame">${thumb ? `<img src="${thumb}">` : ''}</div>
+                                <div>
                                     <div class="flex items-center gap-2 mb-1">
-                                        <span class="text-[8px] ${p.mainVideo.published ? 'published-tag' : 'draft-tag'}">●</span>
-                                        <div class="font-black gold-text text-base uppercase tracking-tight truncate max-w-[250px] leading-tight">${p.mainVideo.title}</div>
+                                        <span class="text-[8px] ${p.mainVideo.published ? 'text-emerald-500' : 'text-zinc-600'}">●</span>
+                                        <span class="gold-text font-black text-xs uppercase">${p.mainVideo.title}</span>
                                     </div>
-                                    <a href="${p.mainVideo.link}" target="_blank" class="text-[10px] text-zinc-600 font-mono hover:text-gold transition-colors truncate block max-w-[200px]">Link ↗</a>
+                                    <div class="flex gap-2"><span class="stat-badge">👁 ${p.mainVideo.analytics?.views || 0} ${getTrendIcon(p.mainVideo.analytics?.views, p.mainVideo.analytics?.previousViews)}</span><span class="stat-badge">⏱ ${p.mainVideo.analytics?.retention || '0%'}</span></div>
                                 </div>
                             </div>
                         </td>
-                        <td class="p-6">
-                            <div class="space-y-2">
-                                ${p.shorts.length > 0 ? p.shorts.map(s => `
-                                    <div class="text-[11px] flex items-center gap-2.5">
-                                        <span class="${s.published ? 'text-emerald-500 font-bold' : 'text-zinc-700'}">✓</span>
-                                        ${s.link ? `<a href="${s.link}" target="_blank" class="text-zinc-400 content-link truncate max-w-[140px] italic underline decoration-zinc-800">${s.title}</a>` : `<span class="text-zinc-600 truncate max-w-[140px]">${s.title}</span>`}
-                                    </div>
-                                `).join('') : '<span class="text-zinc-800 text-[10px] italic">No Shorts</span>'}
-                            </div>
-                        </td>
-                        <td class="p-6">
-                            <div class="space-y-2">
-                                ${p.soundtracks.length > 0 ? p.soundtracks.map(st => `
-                                    <div class="text-[11px] flex items-center gap-2.5">
-                                        <span class="${st.published ? 'text-emerald-500 font-bold' : 'text-zinc-700'}">✓</span>
-                                        ${st.link ? `<a href="${st.link}" target="_blank" class="text-zinc-400 content-link truncate max-w-[140px] italic underline decoration-zinc-800">${st.title}</a>` : `<span class="text-zinc-600 truncate max-w-[140px]">${st.title}</span>`}
-                                    </div>
-                                `).join('') : '<span class="text-zinc-800 text-[10px] italic">No Scores</span>'}
-                            </div>
-                        </td>
-                        <td class="p-6 text-right">
-                            <div class="flex justify-end gap-5 opacity-10 group-hover:opacity-100 transition-opacity">
-                                <button onclick="openModal('${p.id}')" class="text-[10px] font-black uppercase hover:text-gold tracking-[0.2em]">Edit</button>
-                                <button onclick="deleteProject('${p.id}')" class="text-[10px] font-black uppercase hover:text-red-600 tracking-[0.2em]">Delete</button>
-                            </div>
-                        </td>
+                        <td class="p-4"><div class="space-y-2">${p.shorts.map(s => `<div class="text-[10px]"><span class="text-zinc-500">${s.title}</span> ${s.analytics?.views ? `<span class="stat-badge ml-1">👁 ${s.analytics.views}</span>` : ''}</div>`).join('')}</div></td>
+                        <td class="p-4"><div class="space-y-2">${p.soundtracks.map(st => `<div class="text-[10px]"><span class="text-zinc-500">${st.title}</span> ${st.analytics?.views ? `<span class="stat-badge ml-1">👁 ${st.analytics.views}</span>` : ''}</div>`).join('')}</div></td>
+                        <td class="p-4 text-right"><button onclick="openModal('${p.id}')" class="text-[10px] gold-text hover:underline">EDIT</button></td>
                     </tr>
                 `;
             }).join('');
@@ -462,95 +311,137 @@
 
         window.openModal = function(id = null) {
             const f = document.getElementById('project-form'); f.reset();
-            document.getElementById('shorts-container').innerHTML = ''; 
-            document.getElementById('soundtracks-container').innerHTML = '';
+            document.querySelectorAll('.dynamic-row').forEach(r => r.remove());
             document.getElementById('edit-id').value = id || '';
             if (id) {
                 const p = projects.find(item => item.id === id);
                 document.getElementById('main-title').value = p.mainVideo.title;
                 document.getElementById('main-link').value = p.mainVideo.link;
                 document.getElementById('main-status').checked = p.mainVideo.published;
-                p.shorts.forEach(s => addShortRow(s));
-                p.soundtracks.forEach(st => addSoundtrackRow(st));
+                document.getElementById('main-views').value = p.mainVideo.analytics?.views || '';
+                document.getElementById('main-retention').value = p.mainVideo.analytics?.retention || '';
+                p.shorts.forEach(s => addShortRow(s)); p.soundtracks.forEach(st => addSoundtrackRow(st));
             } else { addShortRow(); addSoundtrackRow(); }
             document.getElementById('modal').classList.remove('hidden');
         };
 
         window.closeModal = () => document.getElementById('modal').classList.add('hidden');
 
-        window.addShortRow = function(d = {title: '', link: '', published: false}) {
-            const div = document.createElement('div');
-            div.className = "grid grid-cols-1 md:grid-cols-12 gap-3 items-center bg-zinc-800/20 p-3 rounded-lg border border-zinc-800/50";
-            div.innerHTML = `
-                <div class="md:col-span-5"><input type="text" placeholder="Τίτλος Short" class="w-full short-title" value="${d.title}"></div>
-                <div class="md:col-span-5"><input type="url" placeholder="Link" class="w-full short-link" value="${d.link}"></div>
-                <div class="md:col-span-1 flex justify-center"><input type="checkbox" class="custom-checkbox short-status" ${d.published ? 'checked' : ''}></div>
-                <div class="md:col-span-1 text-right"><button type="button" onclick="this.parentElement.parentElement.remove()" class="text-zinc-600 hover:text-red-500 transition-colors">✕</button></div>
-            `;
+        window.addShortRow = function(d = {title: '', analytics: {views: '', retention: ''}}) {
+            const div = document.createElement('div'); div.className = "dynamic-row grid grid-cols-12 gap-2";
+            div.innerHTML = `<input type="text" class="col-span-6 short-title" value="${d.title}" placeholder="Short Title"><input type="text" class="col-span-3 short-views" value="${d.analytics?.views || ''}" placeholder="Views"><input type="text" class="col-span-2 short-retention" value="${d.analytics?.retention || ''}" placeholder="Ret %"><button type="button" class="col-span-1" onclick="this.parentElement.remove()">✕</button>`;
             document.getElementById('shorts-container').appendChild(div);
         };
 
-        window.addSoundtrackRow = function(d = {title: '', link: '', published: false}) {
-            const div = document.createElement('div');
-            div.className = "grid grid-cols-1 md:grid-cols-12 gap-3 items-center bg-zinc-800/20 p-3 rounded-lg border border-zinc-800/50";
-            div.innerHTML = `
-                <div class="md:col-span-5"><input type="text" placeholder="Τίτλος Score" class="w-full st-title" value="${d.title}"></div>
-                <div class="md:col-span-5"><input type="url" placeholder="Link" class="w-full st-link" value="${d.link}"></div>
-                <div class="md:col-span-1 flex justify-center"><input type="checkbox" class="custom-checkbox st-status" ${d.published ? 'checked' : ''}></div>
-                <div class="md:col-span-1 text-right"><button type="button" onclick="this.parentElement.parentElement.remove()" class="text-zinc-600 hover:text-red-500 transition-colors">✕</button></div>
-            `;
+        window.addSoundtrackRow = function(d = {title: '', analytics: {views: '', retention: ''}}) {
+            const div = document.createElement('div'); div.className = "dynamic-row grid grid-cols-12 gap-2";
+            div.innerHTML = `<input type="text" class="col-span-6 st-title" value="${d.title}" placeholder="Score Title"><input type="text" class="col-span-3 st-views" value="${d.analytics?.views || ''}" placeholder="Views"><input type="text" class="col-span-2 st-retention" value="${d.analytics?.retention || ''}" placeholder="Ret %"><button type="button" class="col-span-1" onclick="this.parentElement.remove()">✕</button>`;
             document.getElementById('soundtracks-container').appendChild(div);
         };
 
         document.getElementById('project-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const id = document.getElementById('edit-id').value || Date.now().toString();
-            const shorts = Array.from(document.getElementById('shorts-container').children).map(r => ({
-                title: r.querySelector('.short-title').value, link: r.querySelector('.short-link').value, published: r.querySelector('.short-status').checked
-            })).filter(x => x.title);
-            const soundtracks = Array.from(document.getElementById('soundtracks-container').children).map(r => ({
-                title: r.querySelector('.st-title').value, link: r.querySelector('.st-link').value, published: r.querySelector('.st-status').checked
-            })).filter(x => x.title);
-            const max = projects.length > 0 ? Math.max(...projects.map(p => p.orderIndex || 0)) : 0;
-            const order = document.getElementById('edit-id').value ? projects.find(p => p.id === id).orderIndex : (max + 1);
-            await window.saveProjectToDB(id, {
-                mainVideo: { title: document.getElementById('main-title').value, link: document.getElementById('main-link').value, published: document.getElementById('main-status').checked },
-                shorts, soundtracks, orderIndex: order, date: new Date().toISOString()
-            });
-            showToast('ARCHIVED'); closeModal();
+            e.preventDefault(); const eid = document.getElementById('edit-id').value, id = eid || Date.now().toString(), ex = projects.find(p => p.id === id);
+            const shorts = Array.from(document.querySelectorAll('#shorts-container .dynamic-row')).map(r => ({ title: r.querySelector('.short-title').value, analytics: { views: r.querySelector('.short-views').value, retention: r.querySelector('.short-retention').value } })).filter(x => x.title);
+            const scores = Array.from(document.querySelectorAll('#soundtracks-container .dynamic-row')).map(r => ({ title: r.querySelector('.st-title').value, analytics: { views: r.querySelector('.st-views').value, retention: r.querySelector('.st-retention').value } })).filter(x => x.title);
+            const data = { mainVideo: { title: document.getElementById('main-title').value, link: document.getElementById('main-link').value, published: document.getElementById('main-status').checked, analytics: { views: document.getElementById('main-views').value, retention: document.getElementById('main-retention').value, previousViews: ex?.mainVideo.analytics?.views || null } }, shorts, soundtracks: scores, orderIndex: eid ? ex.orderIndex : projects.length, date: new Date().toISOString() };
+            await window.saveProjectToDB(id, data); showToast('SAVED'); closeModal();
         });
 
-        window.showToast = (m) => { const t = document.getElementById('toast'); t.innerText = m; t.classList.remove('hidden'); setTimeout(() => t.classList.add('hidden'), 3000); };
-        window.exportDatabase = () => {
-            const data = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(projects, null, 2));
-            const a = document.createElement('a'); a.href = data; a.download = `hst_v8_${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
+        window.triggerAnalyticsImport = () => document.getElementById('analytics-input').click();
+        
+        window.handleAnalyticsImport = (input) => {
+            const file = input.files[0]; if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const text = e.target.result;
+                const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+                const delimiter = lines[0].includes(';') ? ';' : ',';
+                const splitCSV = (s) => s.split(new RegExp(`${delimiter}(?=(?:(?:[^"]*"){2})*[^"]*$)`)).map(c => c.trim().replace(/^"|"$/g, ''));
+                const headers = splitCSV(lines[0]).map(h => h.toLowerCase());
+                
+                const cIdx = headers.findIndex(h => h.includes('content') || h.includes('περιεχόμενο'));
+                const tIdx = headers.findIndex(h => h.includes('video title') || h.includes('τίτλος βίντεο'));
+                const vIdx = headers.findIndex(h => h.includes('views') || h.includes('προβολές'));
+                const rIdx = headers.findIndex(h => h.includes('average percentage') || h.includes('μέσο ποσοστό') || h.includes('%') || h.includes('retention'));
+
+                if (vIdx === -1) { alert('Σφάλμα: Δεν βρέθηκε στήλη Views.'); return; }
+
+                let matchesCount = 0;
+                let updatedProjectsMap = new Map();
+                let tempChannelStats = { ...channelStats };
+
+                for (let i = 1; i < lines.length; i++) {
+                    const row = splitCSV(lines[i]);
+                    const csvContent = cleanForMatch(row[cIdx] || "");
+                    const csvTitle = cleanForMatch(row[tIdx] || "");
+                    const views = row[vIdx];
+                    const ret = rIdx !== -1 ? row[rIdx] : '0%';
+
+                    if (csvContent === 'total' || csvContent === 'συνολο') {
+                        tempChannelStats = { views, retention: ret, previousViews: channelStats.views, previousRetention: channelStats.retention };
+                        continue;
+                    }
+
+                    projects.forEach(p => {
+                        let pMod = updatedProjectsMap.has(p.id) ? updatedProjectsMap.get(p.id) : JSON.parse(JSON.stringify(p));
+                        let changed = false;
+                        const mainT = cleanForMatch(p.mainVideo.title);
+                        if (csvContent === mainT || csvTitle === mainT) {
+                            pMod.mainVideo.analytics = { views, retention: ret, previousViews: p.mainVideo.analytics?.views || null };
+                            changed = true;
+                        }
+                        pMod.shorts.forEach(s => {
+                            if (csvContent === cleanForMatch(s.title) || csvTitle === cleanForMatch(s.title)) {
+                                s.analytics = { views, retention: ret, previousViews: s.analytics?.views || null };
+                                changed = true;
+                            }
+                        });
+                        pMod.soundtracks.forEach(st => {
+                            if (csvContent === cleanForMatch(st.title) || csvTitle === cleanForMatch(st.title)) {
+                                st.analytics = { views, retention: ret, previousViews: st.analytics?.views || null };
+                                changed = true;
+                            }
+                        });
+                        if (changed) { updatedProjectsMap.set(p.id, pMod); matchesCount++; }
+                    });
+                }
+
+                // Update UI first
+                channelStats = tempChannelStats;
+                for (let [id, data] of updatedProjectsMap) {
+                    const idx = projects.findIndex(p => p.id === id);
+                    if (idx > -1) projects[idx] = data;
+                }
+                renderProjects(); updateStats();
+                showToast(`Βρέθηκαν ${matchesCount} στοιχεία. Έναρξη συγχρονισμού...`);
+
+                // Sync to cloud with rate limiting
+                try {
+                    await window.saveChannelStats(tempChannelStats);
+                    const queue = Array.from(updatedProjectsMap.entries());
+                    for (let j = 0; j < queue.length; j++) {
+                        const [id, data] = queue[j];
+                        showToast(`Συγχρονισμός ${j + 1} από ${queue.length}...`);
+                        await new Promise(r => setTimeout(r, 600)); // 0.6s delay
+                        await window.saveProjectToDB(id, data);
+                    }
+                    showToast('ΟΛΟΚΛΗΡΩΘΗΚΕ ΕΠΙΤΥΧΩΣ!');
+                } catch (err) { alert("Quota Exceeded - Η βάση έχει φτάσει στο όριο για σήμερα."); }
+            };
+            reader.readAsText(file);
         };
+
+        window.showToast = (m) => { const t = document.getElementById('toast'); t.innerText = m; t.classList.remove('hidden'); setTimeout(() => t.classList.add('hidden'), 5000); };
+        window.exportDatabase = () => { const a = document.createElement('a'); a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({p: projects, c: channelStats})); a.download = `hst_backup.json`; a.click(); };
         window.importDatabase = () => document.getElementById('import-input').click();
         window.handleImport = (i) => {
             const f = i.files[0]; if (!f) return;
             const r = new FileReader(); r.onload = async (e) => {
                 const imp = JSON.parse(e.target.result);
-                if (Array.isArray(imp)) { for (let x of imp) await window.saveProjectToDB(x.id || Date.now() + Math.random(), x); showToast('RESTORED'); }
+                let pD = imp.p || imp; if (pD.length) { for (let x of pD) await window.saveProjectToDB(x.id || Date.now().toString(), x); if (imp.c) await window.saveChannelStats(imp.c); showToast('RESTORED'); }
             }; r.readAsText(f);
         };
-
         startApp();
     </script>
-
-    <footer class="mt-24 border-t border-zinc-900 pt-12 pb-16 text-center space-y-6">
-        <p class="cinzel text-[11px] tracking-[0.5em] text-zinc-600 uppercase">Hellenic Score & Tales | Master Archive</p>
-        <div class="flex justify-center gap-8 text-[9px] text-zinc-700 uppercase tracking-widest font-bold">
-            <span>Soundscapes</span>
-            <span class="text-gold">•</span>
-            <span>Cinematic AI</span>
-            <span class="text-gold">•</span>
-            <span>Epic Legacy</span>
-        </div>
-        <p class="text-[9px] text-zinc-800 italic max-w-lg mx-auto leading-relaxed border-t border-zinc-900/50 pt-6">
-            🇬🇷 Σημείωση: Η παραπάνω προσέγγιση αποτελεί ελεύθερη καλλιτεχνική και αφηγηματική έκφραση, εμπνευσμένη από τους μύθους και την αύρα του τόπου.
-        </p>
-    </footer>
-
 </body>
 </html>
