@@ -430,7 +430,7 @@
 
         window.addPipelineAsset = async (id, type) => {
             const p = pipelineProjects.find(item => item.id === id); if(!p) return; if(!p[type]) p[type] = [];
-            const newAsset = type === 'shorts' ? { title: `Short ${p.shorts.length + 1}`, done: false } : { title: '', done: false, spotifyDone: false, spotifyLink: '' };
+            const newAsset = type === 'shorts' ? { title: `Short ${p.shorts.length + 1}`, done: false } : { title: '', done: false, spotifyLink: '' };
             p[type].push(newAsset); await window.savePipelineToDB(id, p);
         };
 
@@ -461,8 +461,8 @@
                 const currentMinOrder = projects.length > 0 ? Math.min(...projects.map(pr => pr.orderIndex || 0)) : 1000;
                 const archiveData = {
                     mainVideo: { title: p.title || "Untitled", link: "", published: true, analytics: { views: "0", retention: "0%" } },
-                    shorts: (p.shorts || []).map(s => ({ title: s.title || "Short", published: s.done || false, analytics: { views: "0", retention: "0%" } })),
-                    soundtracks: (p.soundtracks || []).map(st => ({ title: st.title || "Score", published: st.done || false, spotifyLink: st.spotifyLink || "", analytics: { views: "0", retention: "0%" } })),
+                    shorts: (p.shorts || []).map(s => ({ title: s.title || "Short", published: s.done || false, analytics: { views: "0", retention: "0%" }, link: "" })),
+                    soundtracks: (p.soundtracks || []).map(st => ({ title: st.title || "Score", published: st.done || false, spotifyLink: st.spotifyLink || "", link: "", analytics: { views: "0", retention: "0%" } })),
                     orderIndex: currentMinOrder - 1, date: new Date().toISOString()
                 };
                 if (isCloud && user) {
@@ -567,7 +567,10 @@
                             <div class="space-y-2">
                                 ${(p.shorts || []).map(s => `
                                     <div class="flex flex-col gap-0.5 ${!s.published ? 'opacity-30' : ''}">
-                                        <div class="text-[10px] font-bold flex items-center gap-1.5"><span class="status-dot ${s.published ? 'status-live' : 'status-pending'}">🔱</span><span class="text-zinc-400 truncate max-w-[150px] leading-tight">${s.title}</span></div>
+                                        <div class="text-[10px] font-bold flex items-center gap-1.5">
+                                            <span class="status-dot ${s.published ? 'status-live' : 'status-pending'}">🔱</span>
+                                            ${s.link ? `<a href="${s.link}" target="_blank" class="text-zinc-400 truncate max-w-[150px] leading-tight hover:gold-text transition-colors">${s.title}</a>` : `<span class="text-zinc-400 truncate max-w-[150px] leading-tight">${s.title}</span>`}
+                                        </div>
                                         <div class="flex gap-2 pl-4"><span class="stat-badge scale-90 origin-left">👁 ${s.analytics?.views || 0} ${getTrendIcon(s.analytics?.views, s.analytics?.previousViews)}</span><span class="stat-badge scale-90 origin-left">⏱ ${s.analytics?.retention || '0%'}</span></div>
                                     </div>`).join('')}
                             </div>
@@ -576,7 +579,11 @@
                             <div class="space-y-2">
                                 ${(p.soundtracks || []).map(st => `
                                     <div class="flex flex-col gap-0.5 ${!st.published ? 'opacity-30' : ''}">
-                                        <div class="text-[10px] font-bold flex items-center gap-1.5"><span class="status-dot ${st.published ? 'status-live' : 'status-pending'}">🔱</span><span class="text-zinc-400 truncate max-w-[140px] leading-tight">${st.title} ${st.spotifyLink ? '<span class="spotify-tag ml-1">● Spotify</span>' : ''}</span></div>
+                                        <div class="text-[10px] font-bold flex items-center gap-1.5">
+                                            <span class="status-dot ${st.published ? 'status-live' : 'status-pending'}">🔱</span>
+                                            ${st.link ? `<a href="${st.link}" target="_blank" class="text-zinc-400 truncate max-w-[140px] leading-tight hover:gold-text transition-colors">${st.title}</a>` : `<span class="text-zinc-400 truncate max-w-[140px] leading-tight">${st.title}</span>`}
+                                            ${st.spotifyLink ? '<span class="spotify-tag ml-1">● Spotify</span>' : ''}
+                                        </div>
                                         <div class="flex gap-2 pl-4"><span class="stat-badge scale-90 origin-left">👁 ${st.analytics?.views || 0} ${getTrendIcon(st.analytics?.views, st.analytics?.previousViews)}</span><span class="stat-badge scale-90 origin-left">⏱ ${st.analytics?.retention || '0%'}</span></div>
                                     </div>`).join('')}
                             </div>
@@ -607,20 +614,24 @@
         
         window.closeModal = () => document.getElementById('modal').classList.add('hidden');
         
-        window.addShortRow = (d = {title: '', analytics: {views: '0', retention: '0%'}, published: false}) => {
+        window.addShortRow = (d = {title: '', analytics: {views: '0', retention: '0%'}, published: false, link: ''}) => {
             const div = document.createElement('div'); div.className = "dynamic-row bg-zinc-800/10 p-3 rounded-lg border border-zinc-800 space-y-3";
             div.innerHTML = `
                 <div class="grid grid-cols-12 gap-3 items-center">
                     <div class="col-span-1 flex justify-center"><input type="checkbox" class="pipeline-checkbox short-status" ${d.published ? 'checked' : ''}></div>
-                    <div class="col-span-10"><input type="text" class="w-full short-title" value="${d.title}" placeholder="Short Title"></div>
-                    <div class="col-span-1 text-right"><button type="button" onclick="this.parentElement.parentElement.remove()" class="text-zinc-600 hover:text-red-500 font-bold">✕</button></div>
+                    <div class="col-span-10"><input type="text" class="w-full short-title" value="${d.title.replace(/"/g, '&quot;')}" placeholder="Short Title"></div>
+                    <div class="col-span-1 text-right"><button type="button" onclick="this.closest('.dynamic-row').remove()" class="text-zinc-600 hover:text-red-500 font-bold">✕</button></div>
                 </div>
                 <div class="grid grid-cols-12 gap-3 items-center pl-10">
                     <div class="col-span-4 flex items-center gap-2">
+                        <span class="text-[8px] text-zinc-500 font-bold uppercase">YouTube Link:</span>
+                        <input type="url" class="w-full short-link !text-[10px]" value="${d.link || ''}" placeholder="https://youtube.com/...">
+                    </div>
+                    <div class="col-span-3 flex items-center gap-2">
                         <span class="text-[8px] text-zinc-500 font-bold uppercase">Views:</span>
                         <input type="text" class="w-full short-views !text-[10px]" value="${d.analytics?.views || '0'}">
                     </div>
-                    <div class="col-span-4 flex items-center gap-2">
+                    <div class="col-span-3 flex items-center gap-2">
                         <span class="text-[8px] text-zinc-500 font-bold uppercase">Retention:</span>
                         <input type="text" class="w-full short-retention !text-[10px]" value="${d.analytics?.retention || '0%'}">
                     </div>
@@ -628,21 +639,25 @@
             document.getElementById('shorts-container').appendChild(div);
         };
         
-        window.addSoundtrackRow = (d = {title: '', spotifyLink: '', analytics: {views: '0', retention: '0%'}, published: false}) => {
+        window.addSoundtrackRow = (d = {title: '', spotifyLink: '', link: '', analytics: {views: '0', retention: '0%'}, published: false}) => {
             const div = document.createElement('div'); div.className = "dynamic-row bg-zinc-800/10 p-4 rounded-lg border border-zinc-800 space-y-3";
             div.innerHTML = `
                 <div class="grid grid-cols-12 gap-3 items-center">
                     <div class="col-span-1 flex justify-center"><input type="checkbox" class="pipeline-checkbox st-status" ${d.published ? 'checked' : ''}></div>
-                    <div class="col-span-10"><input type="text" class="w-full st-title font-bold" value="${d.title}" placeholder="Soundtrack Name"></div>
-                    <div class="col-span-1 text-right"><button type="button" onclick="this.parentElement.remove()" class="text-zinc-600 hover:text-red-500 font-bold">✕</button></div>
+                    <div class="col-span-10"><input type="text" class="w-full st-title font-bold" value="${d.title.replace(/"/g, '&quot;')}" placeholder="Soundtrack Name"></div>
+                    <div class="col-span-1 text-right"><button type="button" onclick="this.closest('.dynamic-row').remove()" class="text-zinc-600 hover:text-red-500 font-bold">✕</button></div>
                 </div>
                 <div class="grid grid-cols-12 gap-3 items-center pl-10">
-                    <div class="col-span-5"><input type="text" class="w-full st-spotify-link !text-[9px] italic" value="${d.spotifyLink || ''}" placeholder="Spotify Link..."></div>
-                    <div class="col-span-3 flex items-center gap-2">
+                    <div class="col-span-4"><input type="text" class="w-full st-spotify-link !text-[9px] italic" value="${d.spotifyLink || ''}" placeholder="Spotify Link..."></div>
+                    <div class="col-span-4 flex items-center gap-2">
+                        <span class="text-[8px] text-zinc-500 font-bold uppercase">YouTube Link:</span>
+                        <input type="url" class="w-full st-link !text-[10px]" value="${d.link || ''}" placeholder="https://youtube.com/...">
+                    </div>
+                    <div class="col-span-2 flex items-center gap-2">
                         <span class="text-[8px] text-zinc-500 font-bold uppercase">Views:</span>
                         <input type="text" class="w-full st-views !text-[10px]" value="${d.analytics?.views || '0'}">
                     </div>
-                    <div class="col-span-3 flex items-center gap-2">
+                    <div class="col-span-2 flex items-center gap-2">
                         <span class="text-[8px] text-zinc-500 font-bold uppercase">Ret%:</span>
                         <input type="text" class="w-full st-retention !text-[10px]" value="${d.analytics?.retention || '0%'}">
                     </div>
@@ -657,19 +672,22 @@
                 const existingP = projects.find(p => p.id === id);
                 const shorts = Array.from(document.querySelectorAll('#shorts-container .dynamic-row')).map(r => {
                     const title = r.querySelector('.short-title').value;
+                    const link = r.querySelector('.short-link').value;
                     const views = r.querySelector('.short-views').value || '0';
                     const existingShort = existingP?.shorts?.find(s => cleanForMatch(s.title) === cleanForMatch(title));
                     return {
-                        title, published: r.querySelector('.short-status').checked,
+                        title, link, published: r.querySelector('.short-status').checked,
                         analytics: { views, retention: r.querySelector('.short-retention').value || '0%', previousViews: existingShort?.analytics?.views || null }
                     };
                 }).filter(x => x.title);
                 const soundtracks = Array.from(document.querySelectorAll('#soundtracks-container .dynamic-row')).map(r => {
                     const title = r.querySelector('.st-title').value;
+                    const spotifyLink = r.querySelector('.st-spotify-link').value;
+                    const link = r.querySelector('.st-link').value;
                     const views = r.querySelector('.st-views').value || '0';
                     const existingST = existingP?.soundtracks?.find(st => cleanForMatch(st.title) === cleanForMatch(title));
                     return {
-                        title, spotifyLink: r.querySelector('.st-spotify-link').value, published: r.querySelector('.st-status').checked,
+                        title, spotifyLink, link, published: r.querySelector('.st-status').checked,
                         analytics: { views, retention: r.querySelector('.st-retention').value || '0%', previousViews: existingST?.analytics?.views || null }
                     };
                 }).filter(x => x.title);
