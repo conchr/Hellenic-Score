@@ -340,7 +340,7 @@
         window.deleteProject = (id) => { pendingDeleteId = id; document.getElementById('delete-modal').classList.remove('hidden'); };
         document.getElementById('final-delete-btn').onclick = () => { if(pendingDeleteId) { projects = projects.filter(p => p.id !== pendingDeleteId); saveToLocal(); renderProjects(); updateStats(); hideDeleteModal(); showToast('DELETED'); } };
         
-        // YouTube OAuth & Sync (improved)
+        // YouTube OAuth & Sync
         window.connectYouTube = async () => {
             const clientId = document.getElementById('youtube-client-id').value.trim();
             const channelId = document.getElementById('youtube-channel-id').value.trim();
@@ -350,7 +350,7 @@
             await new Promise((resolve) => { const script = document.createElement('script'); script.src = 'https://accounts.google.com/gsi/client'; script.onload = resolve; document.head.appendChild(script); });
             const tokenClient = google.accounts.oauth2.initTokenClient({ 
                 client_id: clientId, 
-                scope: 'https://www.googleapis.com/auth/yt-analytics.readonly https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/youtube.force-ssl',
+                scope: 'https://www.googleapis.com/auth/yt-analytics.readonly https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/yt-analytics-monetary.readonly', 
                 callback: (tokenResponse) => { 
                     if(tokenResponse.access_token) { 
                         youtubeAccessToken = tokenResponse.access_token; 
@@ -358,7 +358,7 @@
                         document.getElementById('token-status').innerHTML = '✅ Connected'; 
                         showToast('YouTube connected successfully'); 
                     } else if(tokenResponse.error) {
-                        showToast('Connection failed: ' + tokenResponse.error);
+                        showToast('Error: ' + tokenResponse.error);
                     }
                 } 
             });
@@ -386,15 +386,11 @@
             const endDate = new Date().toISOString().split('T')[0];
             const startDate = new Date(Date.now() - 28*24*60*60*1000).toISOString().split('T')[0];
             try {
-                // Channel analytics (basic metrics only)
+                // Channel analytics
                 const channelMetrics = 'views,averageViewPercentage,subscribersGained,estimatedMinutesWatched';
                 const channelUrl = `https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3D${channelId}&startDate=${startDate}&endDate=${endDate}&metrics=${channelMetrics}`;
                 const channelRes = await fetch(channelUrl, { headers: { Authorization: `Bearer ${youtubeAccessToken}` } });
-                if(channelRes.status === 403) {
-                    const errorText = await channelRes.text();
-                    throw new Error(`Forbidden: ${errorText.substring(0,100)}. Make sure you are the owner of channel ${channelId} and the token has proper scopes.`);
-                }
-                if(!channelRes.ok) throw new Error(`HTTP ${channelRes.status}: ${channelRes.statusText}`);
+                if(channelRes.status === 403) throw new Error('Forbidden: Check that the channel ID belongs to the authenticated account and that the API scopes are correct.');
                 const channelData = await channelRes.json();
                 if(channelData.error) throw new Error(channelData.error.message);
                 const row = channelData.rows?.[0] || [];
@@ -404,13 +400,12 @@
                     subscribers: row[2]?.toString() || '0', 
                     watchTime: row[3] ? Math.round(row[3]/60).toString() : '0' 
                 };
-                let channelChanged = false; const newChannel = { ...channelStats };
+                let channelChanged = false; 
+                const newChannel = { ...channelStats };
                 if(totalStats.views !== channelStats.views) { newChannel.previousViews = channelStats.views; newChannel.views = totalStats.views; channelChanged = true; }
                 if(totalStats.retention !== channelStats.retention) { newChannel.previousRetention = channelStats.retention; newChannel.retention = totalStats.retention; channelChanged = true; }
                 if(totalStats.subscribers !== channelStats.subscribers) { newChannel.subscribers = totalStats.subscribers; channelChanged = true; }
                 if(totalStats.watchTime !== channelStats.watchTime) { newChannel.watchTime = totalStats.watchTime; channelChanged = true; }
-                if(channelStats.impressions === undefined) newChannel.impressions = '0';
-                if(channelStats.ctr === undefined) newChannel.ctr = '0%';
                 if(channelChanged) await window.saveChannelStats(newChannel);
                 
                 // Video analytics
@@ -418,7 +413,6 @@
                 const videoUrl = `https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3D${channelId}&startDate=${startDate}&endDate=${endDate}&metrics=${videoMetrics}&dimensions=video&sort=-views`;
                 const videoRes = await fetch(videoUrl, { headers: { Authorization: `Bearer ${youtubeAccessToken}` } });
                 if(videoRes.status === 403) throw new Error('Forbidden: Cannot fetch video analytics');
-                if(!videoRes.ok) throw new Error(`HTTP ${videoRes.status}: ${videoRes.statusText}`);
                 const videoData = await videoRes.json();
                 if(videoData.error) throw new Error(videoData.error.message);
                 const videoMap = new Map();
@@ -426,7 +420,6 @@
                 if(videoMap.size) {
                     const videoIds = Array.from(videoMap.keys());
                     const titlesRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoIds.join(',')}`, { headers: { Authorization: `Bearer ${youtubeAccessToken}` } });
-                    if(!titlesRes.ok) throw new Error(`Titles API error: ${titlesRes.status}`);
                     const titlesData = await titlesRes.json();
                     const titleMap = new Map();
                     if(titlesData.items) for(const item of titlesData.items) titleMap.set(item.id, item.snippet.title);
