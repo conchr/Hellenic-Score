@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hellenic Score & Tales | YouTube Direct Sync v18.1</title>
+    <title>Hellenic Score & Tales | YouTube Direct Sync v18.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -41,6 +41,7 @@
         .trend-steady { color: #71717a; margin-left: 2px; }
         .youtube-config { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 8px 16px; display: inline-flex; gap: 12px; align-items: center; flex-wrap: wrap; }
         .youtube-config input { width: 200px; font-size: 10px !important; }
+        .error-message { color: #ef4444; font-size: 9px; margin-top: 4px; display: block; }
     </style>
 </head>
 <body class="p-2 md:p-6">
@@ -52,7 +53,7 @@
         </div>
     </div>
 
-    <!-- Modals -->
+    <!-- Modals (Migration, Delete) -->
     <div id="confirm-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-4 z-[200]">
         <div class="glass-card max-w-sm w-full p-8 border-emerald-500/30 text-center">
             <h3 class="cinzel gold-text text-xl mb-4">ΕΠΙΒΕΒΑΙΩΣΗ UPLOAD</h3>
@@ -99,7 +100,7 @@
             </div>
             <div class="text-right hidden md:block">
                 <p class="text-[9px] text-zinc-600 uppercase font-bold">Strategic Control</p>
-                <p class="text-[10px] gold-text cinzel">v18.1 YouTube Direct Sync</p>
+                <p class="text-[10px] gold-text cinzel">v18.2 YouTube Direct Sync</p>
             </div>
         </div>
 
@@ -107,7 +108,7 @@
         <div class="flex flex-wrap justify-between items-center gap-3 mb-6 p-3 bg-zinc-900/40 rounded-xl border border-zinc-800">
             <div class="youtube-config">
                 <input type="text" id="youtube-client-id" placeholder="YouTube Client ID" class="!text-[10px] !py-1 w-64">
-                <input type="text" id="youtube-channel-id" placeholder="Channel ID" class="!text-[10px] !py-1 w-48">
+                <input type="text" id="youtube-channel-id" placeholder="Channel ID (UC...)" class="!text-[10px] !py-1 w-48">
                 <button onclick="connectYouTube()" class="bg-red-600/80 hover:bg-red-600 text-white font-black uppercase text-[9px] px-4 py-1.5 rounded tracking-widest transition-colors">🔑 Connect YouTube</button>
                 <span id="youtube-status" class="text-[8px] text-zinc-500 italic"></span>
             </div>
@@ -340,17 +341,18 @@
         window.deleteProject = (id) => { pendingDeleteId = id; document.getElementById('delete-modal').classList.remove('hidden'); };
         document.getElementById('final-delete-btn').onclick = () => { if(pendingDeleteId) { projects = projects.filter(p => p.id !== pendingDeleteId); saveToLocal(); renderProjects(); updateStats(); hideDeleteModal(); showToast('DELETED'); } };
         
-        // YouTube OAuth & Sync
+        // YouTube OAuth & Sync (v18.2 - improved error handling)
         window.connectYouTube = async () => {
             const clientId = document.getElementById('youtube-client-id').value.trim();
             const channelId = document.getElementById('youtube-channel-id').value.trim();
             if(!clientId || !channelId) { showToast('Please enter both Client ID and Channel ID'); return; }
+            if(!channelId.startsWith('UC')) { showToast('Channel ID should start with "UC" (e.g., UC...). Get it from YouTube advanced settings.'); return; }
             localStorage.setItem('youtube_client_id', clientId);
             localStorage.setItem('youtube_channel_id', channelId);
             await new Promise((resolve) => { const script = document.createElement('script'); script.src = 'https://accounts.google.com/gsi/client'; script.onload = resolve; document.head.appendChild(script); });
             const tokenClient = google.accounts.oauth2.initTokenClient({ 
                 client_id: clientId, 
-                scope: 'https://www.googleapis.com/auth/yt-analytics.readonly https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/yt-analytics-monetary.readonly', 
+                scope: 'https://www.googleapis.com/auth/yt-analytics.readonly https://www.googleapis.com/auth/youtube.readonly', 
                 callback: (tokenResponse) => { 
                     if(tokenResponse.access_token) { 
                         youtubeAccessToken = tokenResponse.access_token; 
@@ -358,7 +360,7 @@
                         document.getElementById('token-status').innerHTML = '✅ Connected'; 
                         showToast('YouTube connected successfully'); 
                     } else if(tokenResponse.error) {
-                        showToast('Error: ' + tokenResponse.error);
+                        showToast('OAuth Error: ' + tokenResponse.error);
                     }
                 } 
             });
@@ -386,13 +388,23 @@
             const endDate = new Date().toISOString().split('T')[0];
             const startDate = new Date(Date.now() - 28*24*60*60*1000).toISOString().split('T')[0];
             try {
+                // First, verify channel ownership using Channels API
+                const channelCheckUrl = `https://www.googleapis.com/youtube/v3/channels?part=id&id=${channelId}`;
+                const checkRes = await fetch(channelCheckUrl, { headers: { Authorization: `Bearer ${youtubeAccessToken}` } });
+                const checkData = await checkRes.json();
+                if(!checkData.items || checkData.items.length === 0) {
+                    throw new Error('Channel ID not found or not owned by authenticated user. Please check your Channel ID.');
+                }
+                
                 // Channel analytics
                 const channelMetrics = 'views,averageViewPercentage,subscribersGained,estimatedMinutesWatched';
                 const channelUrl = `https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3D${channelId}&startDate=${startDate}&endDate=${endDate}&metrics=${channelMetrics}`;
                 const channelRes = await fetch(channelUrl, { headers: { Authorization: `Bearer ${youtubeAccessToken}` } });
-                if(channelRes.status === 403) throw new Error('Forbidden: Check that the channel ID belongs to the authenticated account and that the API scopes are correct.');
+                if(!channelRes.ok) {
+                    const errText = await channelRes.text();
+                    throw new Error(`YouTube Analytics API error (${channelRes.status}): ${errText}`);
+                }
                 const channelData = await channelRes.json();
-                if(channelData.error) throw new Error(channelData.error.message);
                 const row = channelData.rows?.[0] || [];
                 const totalStats = { 
                     views: row[0]?.toString() || '0', 
@@ -412,9 +424,11 @@
                 const videoMetrics = 'views,averageViewPercentage';
                 const videoUrl = `https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3D${channelId}&startDate=${startDate}&endDate=${endDate}&metrics=${videoMetrics}&dimensions=video&sort=-views`;
                 const videoRes = await fetch(videoUrl, { headers: { Authorization: `Bearer ${youtubeAccessToken}` } });
-                if(videoRes.status === 403) throw new Error('Forbidden: Cannot fetch video analytics');
+                if(!videoRes.ok) {
+                    const errText = await videoRes.text();
+                    throw new Error(`Video analytics API error (${videoRes.status}): ${errText}`);
+                }
                 const videoData = await videoRes.json();
-                if(videoData.error) throw new Error(videoData.error.message);
                 const videoMap = new Map();
                 if(videoData.rows) for(const row of videoData.rows) videoMap.set(row[0], { views: row[1]?.toString()||'0', retention: row[2] ? (row[2]/100).toFixed(1)+'%' : '0%' });
                 if(videoMap.size) {
@@ -445,7 +459,7 @@
         window.handleAnalyticsImport = (input) => { const file = input.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = async (e) => { showToast('CSV import fallback - implement if needed'); }; reader.readAsText(file); };
         window.importDatabase = () => document.getElementById('import-input').click();
         window.handleImport = (i) => { const f = i.files[0]; if(!f) return; const r = new FileReader(); r.onload = async (e) => { try { const data = JSON.parse(e.target.result); if(data.p) for(const p of data.p) await window.saveProjectToDB(p.id||Date.now().toString(), p); if(data.c) await window.saveChannelStats(data.c); if(data.pipe) for(const pipe of data.pipe) await window.savePipelineToDB(pipe.id||Date.now().toString(), pipe); showToast('IMPORT SUCCESSFUL'); } catch(err) { alert('Format Error.'); } }; r.readAsText(f); };
-        window.exportDatabase = () => { const d = JSON.stringify({p:projects, c:channelStats, pipe:pipelineProjects}); const a = document.createElement('a'); a.href = "data:text/json;charset=utf-8,"+encodeURIComponent(d); a.download = `hst_backup.json`; a.click(); };
+        window.exportDatabase = () => { const d = JSON.stringify({p:projects, c:channelStats, pipe:pipelineProjects}); const a = document.createElement('a'); a.href = "data:text/json;charset=utf-8,"+encodeURIComponent(d); a.download = `hst_backup_v18.2.json`; a.click(); };
         
         window.switchTab = (tab) => {
             document.getElementById('tab-archive').classList.toggle('active', tab==='archive');
