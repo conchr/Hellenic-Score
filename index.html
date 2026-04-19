@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hellenic Score & Tales | YouTube Direct Sync v18.3</title>
+    <title>Hellenic Score & Tales | YouTube Direct Sync v18.4</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -99,7 +99,7 @@
             </div>
             <div class="text-right hidden md:block">
                 <p class="text-[9px] text-zinc-600 uppercase font-bold">Strategic Control</p>
-                <p class="text-[10px] gold-text cinzel">v18.3 YouTube Direct Sync</p>
+                <p class="text-[10px] gold-text cinzel">v18.4 YouTube Direct Sync</p>
             </div>
         </div>
 
@@ -207,13 +207,11 @@
         const CORE_STEPS = ['scenario', 'narration', 'artworks', 'video', 'subtitles', 'multilanguage', 'descriptions'];
         let saveTimeout = null;
 
-        // Helper functions
         const cleanForMatch = (s) => s ? s.toString().toLowerCase().trim().replace(/[^\w\s\u0370-\u03ff]/gi, '').normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
         const parseViews = (v) => { if(!v) return 0; let str = v.toString().toUpperCase().replace(/,/g, '').trim(); let factor = 1; if(str.endsWith('K')) { factor = 1000; str = str.slice(0, -1); } else if(str.endsWith('M')) { factor = 1000000; str = str.slice(0, -1); } return (parseFloat(str) || 0) * factor; };
         const getTrendIcon = (cur, prev) => { const c = parseViews(cur), p = parseViews(prev); if (!prev || c === p) return '<span class="trend-steady">—</span>'; return c > p ? '<span class="trend-up">▲</span>' : '<span class="trend-down">▼</span>'; };
         const showToast = (m) => { const t = document.getElementById('toast'); t.innerText = m; t.classList.remove('hidden'); setTimeout(() => t.classList.add('hidden'), 5000); };
         
-        // Save/Load from localStorage
         const saveToLocal = () => { localStorage.setItem('hst_projects', JSON.stringify(projects)); localStorage.setItem('hst_pipeline', JSON.stringify(pipelineProjects)); localStorage.setItem('hst_stats', JSON.stringify(channelStats)); };
         const loadFromLocal = () => { 
             projects = JSON.parse(localStorage.getItem('hst_projects') || '[]'); 
@@ -230,7 +228,6 @@
         window.saveChannelStats = (data) => { channelStats = data; saveToLocal(); updateStats(); };
         window.moveProject = (id, dir) => { const idx = projects.findIndex(p => p.id === id), tIdx = dir === 'up' ? idx-1 : idx+1; if(tIdx<0 || tIdx>=projects.length) return; const p1=projects[idx], p2=projects[tIdx]; [p1.orderIndex, p2.orderIndex] = [p2.orderIndex, p1.orderIndex]; projects.sort((a,b)=> (a.orderIndex||0)-(b.orderIndex||0)); saveToLocal(); renderProjects(); };
         
-        // Render functions
         window.renderProjects = () => {
             const list = document.getElementById('project-list');
             list.innerHTML = projects.map((p, i) => {
@@ -281,7 +278,6 @@
             document.getElementById('channel-watchtime').innerText = channelStats.watchTime || '0';
         };
         
-        // Modal and forms
         window.openModal = (id=null) => {
             document.getElementById('project-form').reset();
             document.getElementById('shorts-container').innerHTML = '';
@@ -312,7 +308,6 @@
             await window.saveProjectToDB(id, data); showToast('DATABASE UPDATED'); closeModal();
         });
         
-        // Pipeline actions
         window.updatePipelineField = (id, field, value) => { const p = pipelineProjects.find(item=>item.id===id); if(p) { p[field]=value; clearTimeout(saveTimeout); saveTimeout=setTimeout(()=>window.savePipelineToDB(id,p),800); } };
         window.togglePipelineStep = async (id, step) => { const p = pipelineProjects.find(item=>item.id===id); if(p) { p[step]=!p[step]; await window.savePipelineToDB(id,p); } };
         window.addPipelineAsset = async (id, type) => { const p = pipelineProjects.find(item=>item.id===id); if(p) { if(!p[type]) p[type]=[]; p[type].push(type==='shorts' ? {title:`Short ${p.shorts.length+1}`, done:false} : {title:'', done:false, spotifyLink:''}); await window.savePipelineToDB(id,p); } };
@@ -321,7 +316,6 @@
         window.openPipelineModal = () => { document.getElementById('pipeline-title-input').value=""; document.getElementById('pipeline-modal').classList.remove('hidden'); };
         window.addPipelineProject = async () => { const title = document.getElementById('pipeline-title-input').value; if(title) { await window.savePipelineToDB(Date.now().toString(), { title, scenario:false, narration:false, artworks:false, video:false, subtitles:false, multilanguage:false, descriptions:false, shorts:[], soundtracks:[], upload:false, dateCreated:new Date().toISOString() }); document.getElementById('pipeline-modal').classList.add('hidden'); showToast('PRODUCTION INITIATED'); } };
         
-        // Migration
         window.showConfirmModal = (id) => { currentMigrationId = id; document.getElementById('confirm-modal').classList.remove('hidden'); document.getElementById('final-confirm-btn').onclick = () => window.executeMigration(id); };
         window.hideConfirmModal = () => { document.getElementById('confirm-modal').classList.add('hidden'); currentMigrationId = null; };
         window.executeMigration = async (id) => {
@@ -335,12 +329,10 @@
             showToast('MIGRATION COMPLETE'); switchTab('archive');
         };
         
-        // Delete
         window.hideDeleteModal = () => { document.getElementById('delete-modal').classList.add('hidden'); pendingDeleteId = null; };
         window.deleteProject = (id) => { pendingDeleteId = id; document.getElementById('delete-modal').classList.remove('hidden'); };
         document.getElementById('final-delete-btn').onclick = () => { if(pendingDeleteId) { projects = projects.filter(p => p.id !== pendingDeleteId); saveToLocal(); renderProjects(); updateStats(); hideDeleteModal(); showToast('DELETED'); } };
         
-        // YouTube OAuth & Sync
         window.connectYouTube = async () => {
             const clientId = document.getElementById('youtube-client-id').value.trim();
             const channelId = document.getElementById('youtube-channel-id').value.trim();
@@ -387,7 +379,6 @@
             const endDate = new Date().toISOString().split('T')[0];
             const startDate = new Date(Date.now() - 28*24*60*60*1000).toISOString().split('T')[0];
             try {
-                // Verify channel ownership
                 const checkUrl = `https://www.googleapis.com/youtube/v3/channels?part=id&id=${channelId}`;
                 const checkRes = await fetch(checkUrl, { headers: { Authorization: `Bearer ${youtubeAccessToken}` } });
                 const checkData = await checkRes.json();
@@ -395,7 +386,6 @@
                     throw new Error('Channel ID not found or not owned by authenticated user. Please check your Channel ID.');
                 }
                 
-                // Channel analytics
                 const channelMetrics = 'views,averageViewPercentage,subscribersGained,estimatedMinutesWatched';
                 const channelUrl = `https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3D${channelId}&startDate=${startDate}&endDate=${endDate}&metrics=${channelMetrics}`;
                 const channelRes = await fetch(channelUrl, { headers: { Authorization: `Bearer ${youtubeAccessToken}` } });
@@ -416,7 +406,6 @@
                 if(totalStats.watchTime !== channelStats.watchTime) { newChannel.watchTime = totalStats.watchTime; channelChanged = true; }
                 if(channelChanged) await window.saveChannelStats(newChannel);
                 
-                // Video analytics
                 const videoMetrics = 'views,averageViewPercentage';
                 const videoUrl = `https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3D${channelId}&startDate=${startDate}&endDate=${endDate}&metrics=${videoMetrics}&dimensions=video&sort=-views`;
                 const videoRes = await fetch(videoUrl, { headers: { Authorization: `Bearer ${youtubeAccessToken}` } });
@@ -447,12 +436,11 @@
             } catch(err) { console.error(err); showToast('Error: '+err.message); }
         };
         
-        // Import/Export
         window.triggerAnalyticsImport = () => document.getElementById('analytics-input').click();
         window.handleAnalyticsImport = (input) => { const file = input.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = async (e) => { showToast('CSV import fallback'); }; reader.readAsText(file); };
         window.importDatabase = () => document.getElementById('import-input').click();
         window.handleImport = (i) => { const f = i.files[0]; if(!f) return; const r = new FileReader(); r.onload = async (e) => { try { const data = JSON.parse(e.target.result); if(data.p) for(const p of data.p) await window.saveProjectToDB(p.id||Date.now().toString(), p); if(data.c) await window.saveChannelStats(data.c); if(data.pipe) for(const pipe of data.pipe) await window.savePipelineToDB(pipe.id||Date.now().toString(), pipe); showToast('IMPORT SUCCESSFUL'); } catch(err) { alert('Format Error.'); } }; r.readAsText(f); };
-        window.exportDatabase = () => { const d = JSON.stringify({p:projects, c:channelStats, pipe:pipelineProjects}); const a = document.createElement('a'); a.href = "data:text/json;charset=utf-8,"+encodeURIComponent(d); a.download = `hst_backup_v18.3.json`; a.click(); };
+        window.exportDatabase = () => { const d = JSON.stringify({p:projects, c:channelStats, pipe:pipelineProjects}); const a = document.createElement('a'); a.href = "data:text/json;charset=utf-8,"+encodeURIComponent(d); a.download = `hst_backup_v18.4.json`; a.click(); };
         
         window.switchTab = (tab) => {
             document.getElementById('tab-archive').classList.toggle('active', tab==='archive');
@@ -464,7 +452,6 @@
             if(tab==='analytics') renderAnalytics();
         };
         
-        // Initialization
         const init = () => {
             loadFromLocal();
             renderProjects(); renderPipeline(); updateStats();
