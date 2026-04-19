@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hellenic Score & Tales | YouTube Direct Sync v18.0</title>
+    <title>Hellenic Score & Tales | YouTube Direct Sync v18.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -99,7 +99,7 @@
             </div>
             <div class="text-right hidden md:block">
                 <p class="text-[9px] text-zinc-600 uppercase font-bold">Strategic Control</p>
-                <p class="text-[10px] gold-text cinzel">v18.0 YouTube Direct Sync</p>
+                <p class="text-[10px] gold-text cinzel">v18.1 YouTube Direct Sync</p>
             </div>
         </div>
 
@@ -267,7 +267,7 @@
                 const aD = (p.shorts || []).reduce((acc, s) => acc + (s.done ? 1 : 0), 0) + (p.soundtracks || []).reduce((acc, s) => acc + (s.done ? 1 : 0), 0);
                 const target = CORE_STEPS.length + sL + stL;
                 const pct = target > 0 ? Math.round(((bD + aD) / target) * 100) : 0;
-                return `<div class="glass-card overflow-hidden shadow-2xl border-gold/5 bg-zinc-900/40" data-pid="${p.id}"><table class="w-full text-left text-xs"><thead><tr class="bg-zinc-950/80 text-zinc-500 text-[8px] uppercase font-black text-center tracking-[0.2em] border-b border-zinc-800"><th class="p-5 text-left w-72">Project Title</th>${CORE_STEPS.map(s => `<th class="p-2">${s}</th>`).join('')}<th class="p-5 bg-emerald-950/30 text-emerald-400 font-black">FINALIZE</th><th class="p-5 text-right">Actions</th></tr></thead><tbody><tr class="text-center border-b border-zinc-800/50"><td class="p-5 text-left"><input type="text" class="pipeline-input gold-text font-black !text-xs mb-1 uppercase tracking-tighter" value="${p.title}" oninput="updatePipelineField('${p.id}', 'title', this.value)"><div class="progress-bar w-full"><div class="progress-fill" style="width: ${pct}%"></div></div><div class="text-[7px] text-zinc-500 mt-1 uppercase font-bold tracking-widest">${pct}% COMPLETE</div></td>${CORE_STEPS.map(s => `<td class="p-2"><input type="checkbox" class="pipeline-checkbox" ${p[s] ? 'checked' : ''} onchange="togglePipelineStep('${p.id}', '${s}')"></td>`).join('')}<td class="p-4 bg-emerald-900/5"><button onclick="showConfirmModal('${p.id}')" class="upload-btn">UPLOAD</button></td><td class="p-5 text-right"><button onclick="deletePipelineProject('${p.id}')" class="text-[9px] text-zinc-600 hover:text-red-500 font-black uppercase tracking-widest">Discard</button></td><tr><tr class="bg-black/40"><td colspan="10" class="p-6"><div class="flex flex-col lg:flex-row gap-16"><div class="flex-1"><div class="flex justify-between items-center mb-4 pb-2 border-b border-zinc-800"><span class="text-[10px] gold-text uppercase font-black tracking-widest">Shorts Pipeline</span><button onclick="addPipelineAsset('${p.id}', 'shorts')" class="text-[8px] bg-zinc-800/50 px-3 py-1 rounded border border-zinc-700 hover:border-gold">+ NEW SHORT</button></div><div class="grid grid-cols-1 sm:grid-cols-2 gap-3">${(p.shorts || []).map((s, idx) => `<div class="flex items-center gap-3 bg-zinc-950/50 p-2 rounded-lg border border-zinc-800"><input type="checkbox" class="pipeline-checkbox scale-90" ${s.done ? 'checked' : ''} onchange="updatePipelineAsset('${p.id}', 'shorts', ${idx}, 'done', this.checked)"><input type="text" class="pipeline-input !text-[10px] flex-1" value="${s.title}" oninput="updatePipelineAsset('${p.id}', 'shorts', ${idx}, 'title', this.value)"><button onclick="removePipelineAsset('${p.id}', 'shorts', ${idx})" class="text-zinc-700 hover:text-red-500 text-[10px]">✕</button></div>`).join('')}</div></div><div class="flex-1"><div class="flex justify-between items-center mb-4 pb-2 border-b border-zinc-800"><span class="text-[10px] gold-text uppercase font-black tracking-widest">Music Assets</span><button onclick="addPipelineAsset('${p.id}', 'soundtracks')" class="text-[8px] bg-zinc-800/50 px-3 py-1 rounded border border-zinc-700 hover:border-gold">+ NEW SCORE</button></div><div class="space-y-3">${(p.soundtracks || []).map((st, idx) => `<div class="flex flex-col gap-2 bg-zinc-950/50 p-3 rounded-lg border border-zinc-800"><div class="flex items-center gap-4"><input type="checkbox" class="pipeline-checkbox scale-90" ${st.done ? 'checked' : ''} onchange="updatePipelineAsset('${p.id}', 'soundtracks', ${idx}, 'done', this.checked)"><input type="text" class="pipeline-input !text-[10px] flex-1 font-bold" value="${st.title}" oninput="updatePipelineAsset('${p.id}', 'soundtracks', ${idx}, 'title', this.value)"><button onclick="removePipelineAsset('${p.id}', 'soundtracks', ${idx})" class="text-zinc-700 hover:text-red-500 text-[10px]">✕</button></div><div class="flex items-center gap-3 pl-8"><span class="text-[8px] text-emerald-500 font-bold uppercase">Spotify Link:</span><input type="text" class="pipeline-input !text-[9px] flex-1 italic" value="${st.spotifyLink || ''}" oninput="updatePipelineAsset('${p.id}', 'soundtracks', ${idx}, 'spotifyLink', this.value)"></div></div>`).join('')}</div></div></div></td></tr></tbody></table></div>`;
+                return `<div class="glass-card overflow-hidden shadow-2xl border-gold/5 bg-zinc-900/40" data-pid="${p.id}"><table class="w-full text-left text-xs"><thead><tr class="bg-zinc-950/80 text-zinc-500 text-[8px] uppercase font-black text-center tracking-[0.2em] border-b border-zinc-800"><th class="p-5 text-left w-72">Project Title</th>${CORE_STEPS.map(s => `<th class="p-2">${s}</th>`).join('')}<th class="p-5 bg-emerald-950/30 text-emerald-400 font-black">FINALIZE</th><th class="p-5 text-right">Actions</th></tr></thead><tbody><tr class="text-center border-b border-zinc-800/50"><td class="p-5 text-left"><input type="text" class="pipeline-input gold-text font-black !text-xs mb-1 uppercase tracking-tighter" value="${p.title}" oninput="updatePipelineField('${p.id}', 'title', this.value)"><div class="progress-bar w-full"><div class="progress-fill" style="width: ${pct}%"></div></div><div class="text-[7px] text-zinc-500 mt-1 uppercase font-bold tracking-widest">${pct}% COMPLETE</div></td>${CORE_STEPS.map(s => `<td class="p-2"><input type="checkbox" class="pipeline-checkbox" ${p[s] ? 'checked' : ''} onchange="togglePipelineStep('${p.id}', '${s}')"></td>`).join('')}<td class="p-4 bg-emerald-900/5"><button onclick="showConfirmModal('${p.id}')" class="upload-btn">UPLOAD</button></td><td class="p-5 text-right"><button onclick="deletePipelineProject('${p.id}')" class="text-[9px] text-zinc-600 hover:text-red-500 font-black uppercase tracking-widest">Discard</button></td></tr><tr class="bg-black/40"><td colspan="10" class="p-6"><div class="flex flex-col lg:flex-row gap-16"><div class="flex-1"><div class="flex justify-between items-center mb-4 pb-2 border-b border-zinc-800"><span class="text-[10px] gold-text uppercase font-black tracking-widest">Shorts Pipeline</span><button onclick="addPipelineAsset('${p.id}', 'shorts')" class="text-[8px] bg-zinc-800/50 px-3 py-1 rounded border border-zinc-700 hover:border-gold">+ NEW SHORT</button></div><div class="grid grid-cols-1 sm:grid-cols-2 gap-3">${(p.shorts || []).map((s, idx) => `<div class="flex items-center gap-3 bg-zinc-950/50 p-2 rounded-lg border border-zinc-800"><input type="checkbox" class="pipeline-checkbox scale-90" ${s.done ? 'checked' : ''} onchange="updatePipelineAsset('${p.id}', 'shorts', ${idx}, 'done', this.checked)"><input type="text" class="pipeline-input !text-[10px] flex-1" value="${s.title}" oninput="updatePipelineAsset('${p.id}', 'shorts', ${idx}, 'title', this.value)"><button onclick="removePipelineAsset('${p.id}', 'shorts', ${idx})" class="text-zinc-700 hover:text-red-500 text-[10px]">✕</button></div>`).join('')}</div></div><div class="flex-1"><div class="flex justify-between items-center mb-4 pb-2 border-b border-zinc-800"><span class="text-[10px] gold-text uppercase font-black tracking-widest">Music Assets</span><button onclick="addPipelineAsset('${p.id}', 'soundtracks')" class="text-[8px] bg-zinc-800/50 px-3 py-1 rounded border border-zinc-700 hover:border-gold">+ NEW SCORE</button></div><div class="space-y-3">${(p.soundtracks || []).map((st, idx) => `<div class="flex flex-col gap-2 bg-zinc-950/50 p-3 rounded-lg border border-zinc-800"><div class="flex items-center gap-4"><input type="checkbox" class="pipeline-checkbox scale-90" ${st.done ? 'checked' : ''} onchange="updatePipelineAsset('${p.id}', 'soundtracks', ${idx}, 'done', this.checked)"><input type="text" class="pipeline-input !text-[10px] flex-1 font-bold" value="${st.title}" oninput="updatePipelineAsset('${p.id}', 'soundtracks', ${idx}, 'title', this.value)"><button onclick="removePipelineAsset('${p.id}', 'soundtracks', ${idx})" class="text-zinc-700 hover:text-red-500 text-[10px]">✕</button></div><div class="flex items-center gap-3 pl-8"><span class="text-[8px] text-emerald-500 font-bold uppercase">Spotify Link:</span><input type="text" class="pipeline-input !text-[9px] flex-1 italic" value="${st.spotifyLink || ''}" oninput="updatePipelineAsset('${p.id}', 'soundtracks', ${idx}, 'spotifyLink', this.value)"></div></div>`).join('')}</div></div></div></td></tr></tbody></table></div>`;
             }).join('');
         };
         
@@ -348,12 +348,38 @@
             localStorage.setItem('youtube_client_id', clientId);
             localStorage.setItem('youtube_channel_id', channelId);
             await new Promise((resolve) => { const script = document.createElement('script'); script.src = 'https://accounts.google.com/gsi/client'; script.onload = resolve; document.head.appendChild(script); });
-            const tokenClient = google.accounts.oauth2.initTokenClient({ client_id: clientId, scope: 'https://www.googleapis.com/auth/yt-analytics.readonly https://www.googleapis.com/auth/youtube.readonly', callback: (tokenResponse) => { if(tokenResponse.access_token) { youtubeAccessToken = tokenResponse.access_token; localStorage.setItem('youtube_access_token', youtubeAccessToken); document.getElementById('token-status').innerHTML = '✅ Connected'; showToast('YouTube connected successfully'); } } });
+            const tokenClient = google.accounts.oauth2.initTokenClient({ 
+                client_id: clientId, 
+                scope: 'https://www.googleapis.com/auth/yt-analytics.readonly https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/youtube.force-ssl',
+                callback: (tokenResponse) => { 
+                    if(tokenResponse.access_token) { 
+                        youtubeAccessToken = tokenResponse.access_token; 
+                        localStorage.setItem('youtube_access_token', youtubeAccessToken); 
+                        document.getElementById('token-status').innerHTML = '✅ Connected'; 
+                        showToast('YouTube connected successfully'); 
+                    } else if(tokenResponse.error) {
+                        showToast('Connection failed: ' + tokenResponse.error);
+                    }
+                } 
+            });
             tokenClient.requestAccessToken();
         };
         
         window.syncFromYouTube = async () => {
-            if(!youtubeAccessToken) { const storedToken = localStorage.getItem('youtube_access_token'); const clientId = localStorage.getItem('youtube_client_id'); const channelId = localStorage.getItem('youtube_channel_id'); if(storedToken && clientId && channelId) { youtubeAccessToken = storedToken; document.getElementById('youtube-client-id').value = clientId; document.getElementById('youtube-channel-id').value = channelId; document.getElementById('token-status').innerHTML = '✅ Connected'; } else { showToast('Please connect YouTube first'); return; } }
+            if(!youtubeAccessToken) { 
+                const storedToken = localStorage.getItem('youtube_access_token'); 
+                const clientId = localStorage.getItem('youtube_client_id'); 
+                const channelId = localStorage.getItem('youtube_channel_id'); 
+                if(storedToken && clientId && channelId) { 
+                    youtubeAccessToken = storedToken; 
+                    document.getElementById('youtube-client-id').value = clientId; 
+                    document.getElementById('youtube-channel-id').value = channelId; 
+                    document.getElementById('token-status').innerHTML = '✅ Connected'; 
+                } else { 
+                    showToast('Please connect YouTube first'); 
+                    return; 
+                } 
+            }
             const channelId = document.getElementById('youtube-channel-id').value.trim();
             if(!channelId) { showToast('Channel ID missing'); return; }
             showToast('Fetching data from YouTube...');
@@ -364,7 +390,11 @@
                 const channelMetrics = 'views,averageViewPercentage,subscribersGained,estimatedMinutesWatched';
                 const channelUrl = `https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3D${channelId}&startDate=${startDate}&endDate=${endDate}&metrics=${channelMetrics}`;
                 const channelRes = await fetch(channelUrl, { headers: { Authorization: `Bearer ${youtubeAccessToken}` } });
-                if(channelRes.status === 403) throw new Error('Forbidden: Check API scopes and channel ownership');
+                if(channelRes.status === 403) {
+                    const errorText = await channelRes.text();
+                    throw new Error(`Forbidden: ${errorText.substring(0,100)}. Make sure you are the owner of channel ${channelId} and the token has proper scopes.`);
+                }
+                if(!channelRes.ok) throw new Error(`HTTP ${channelRes.status}: ${channelRes.statusText}`);
                 const channelData = await channelRes.json();
                 if(channelData.error) throw new Error(channelData.error.message);
                 const row = channelData.rows?.[0] || [];
@@ -379,7 +409,6 @@
                 if(totalStats.retention !== channelStats.retention) { newChannel.previousRetention = channelStats.retention; newChannel.retention = totalStats.retention; channelChanged = true; }
                 if(totalStats.subscribers !== channelStats.subscribers) { newChannel.subscribers = totalStats.subscribers; channelChanged = true; }
                 if(totalStats.watchTime !== channelStats.watchTime) { newChannel.watchTime = totalStats.watchTime; channelChanged = true; }
-                // Keep impressions and CTR as they were (or set to '0' if undefined)
                 if(channelStats.impressions === undefined) newChannel.impressions = '0';
                 if(channelStats.ctr === undefined) newChannel.ctr = '0%';
                 if(channelChanged) await window.saveChannelStats(newChannel);
@@ -389,6 +418,7 @@
                 const videoUrl = `https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3D${channelId}&startDate=${startDate}&endDate=${endDate}&metrics=${videoMetrics}&dimensions=video&sort=-views`;
                 const videoRes = await fetch(videoUrl, { headers: { Authorization: `Bearer ${youtubeAccessToken}` } });
                 if(videoRes.status === 403) throw new Error('Forbidden: Cannot fetch video analytics');
+                if(!videoRes.ok) throw new Error(`HTTP ${videoRes.status}: ${videoRes.statusText}`);
                 const videoData = await videoRes.json();
                 if(videoData.error) throw new Error(videoData.error.message);
                 const videoMap = new Map();
@@ -396,6 +426,7 @@
                 if(videoMap.size) {
                     const videoIds = Array.from(videoMap.keys());
                     const titlesRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoIds.join(',')}`, { headers: { Authorization: `Bearer ${youtubeAccessToken}` } });
+                    if(!titlesRes.ok) throw new Error(`Titles API error: ${titlesRes.status}`);
                     const titlesData = await titlesRes.json();
                     const titleMap = new Map();
                     if(titlesData.items) for(const item of titlesData.items) titleMap.set(item.id, item.snippet.title);
