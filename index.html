@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hellenic Score & Tales | YouTube Direct Sync v17.3</title>
+    <title>Hellenic Score & Tales | YouTube Direct Sync v18.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -52,7 +52,7 @@
         </div>
     </div>
 
-    <!-- Modals (Migration, Delete) -->
+    <!-- Modals -->
     <div id="confirm-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-4 z-[200]">
         <div class="glass-card max-w-sm w-full p-8 border-emerald-500/30 text-center">
             <h3 class="cinzel gold-text text-xl mb-4">ΕΠΙΒΕΒΑΙΩΣΗ UPLOAD</h3>
@@ -99,7 +99,7 @@
             </div>
             <div class="text-right hidden md:block">
                 <p class="text-[9px] text-zinc-600 uppercase font-bold">Strategic Control</p>
-                <p class="text-[10px] gold-text cinzel">v17.3 YouTube Direct Sync</p>
+                <p class="text-[10px] gold-text cinzel">v18.0 YouTube Direct Sync</p>
             </div>
         </div>
 
@@ -213,9 +213,16 @@
         const getTrendIcon = (cur, prev) => { const c = parseViews(cur), p = parseViews(prev); if (!prev || c === p) return '<span class="trend-steady">—</span>'; return c > p ? '<span class="trend-up">▲</span>' : '<span class="trend-down">▼</span>'; };
         const showToast = (m) => { const t = document.getElementById('toast'); t.innerText = m; t.classList.remove('hidden'); setTimeout(() => t.classList.add('hidden'), 5000); };
         
-        // Save/Load from localStorage (fallback)
+        // Save/Load from localStorage
         const saveToLocal = () => { localStorage.setItem('hst_projects', JSON.stringify(projects)); localStorage.setItem('hst_pipeline', JSON.stringify(pipelineProjects)); localStorage.setItem('hst_stats', JSON.stringify(channelStats)); };
-        const loadFromLocal = () => { projects = JSON.parse(localStorage.getItem('hst_projects') || '[]'); pipelineProjects = JSON.parse(localStorage.getItem('hst_pipeline') || '[]'); channelStats = JSON.parse(localStorage.getItem('hst_stats') || '{ "views": "0", "retention": "0%", "subscribers": "0", "impressions": "0", "ctr": "0%", "watchTime": "0" }'); projects.sort((a,b) => (a.orderIndex||0) - (b.orderIndex||0)); };
+        const loadFromLocal = () => { 
+            projects = JSON.parse(localStorage.getItem('hst_projects') || '[]'); 
+            pipelineProjects = JSON.parse(localStorage.getItem('hst_pipeline') || '[]'); 
+            const savedStats = localStorage.getItem('hst_stats');
+            if(savedStats) channelStats = JSON.parse(savedStats);
+            else channelStats = { views: '0', retention: '0%', subscribers: '0', impressions: '0', ctr: '0%', watchTime: '0' };
+            projects.sort((a,b) => (a.orderIndex||0) - (b.orderIndex||0));
+        };
         
         window.saveProjectToDB = (id, data) => { const idx = projects.findIndex(p => p.id === id); if(idx > -1) projects[idx] = { ...data, id }; else projects.push({ ...data, id }); projects.sort((a,b) => (a.orderIndex||0) - (b.orderIndex||0)); saveToLocal(); renderProjects(); };
         window.savePipelineToDB = (id, data) => { const idx = pipelineProjects.findIndex(p => p.id === id); if(idx > -1) pipelineProjects[idx] = { ...data, id }; else pipelineProjects.push({ ...data, id }); saveToLocal(); renderPipeline(); };
@@ -260,11 +267,19 @@
                 const aD = (p.shorts || []).reduce((acc, s) => acc + (s.done ? 1 : 0), 0) + (p.soundtracks || []).reduce((acc, s) => acc + (s.done ? 1 : 0), 0);
                 const target = CORE_STEPS.length + sL + stL;
                 const pct = target > 0 ? Math.round(((bD + aD) / target) * 100) : 0;
-                return `<div class="glass-card overflow-hidden shadow-2xl border-gold/5 bg-zinc-900/40" data-pid="${p.id}"><table class="w-full text-left text-xs"><thead><tr class="bg-zinc-950/80 text-zinc-500 text-[8px] uppercase font-black text-center tracking-[0.2em] border-b border-zinc-800"><th class="p-5 text-left w-72">Project Title</th>${CORE_STEPS.map(s => `<th class="p-2">${s}</th>`).join('')}<th class="p-5 bg-emerald-950/30 text-emerald-400 font-black">FINALIZE</th><th class="p-5 text-right">Actions</th></tr></thead><tbody><tr class="text-center border-b border-zinc-800/50"><td class="p-5 text-left"><input type="text" class="pipeline-input gold-text font-black !text-xs mb-1 uppercase tracking-tighter" value="${p.title}" oninput="updatePipelineField('${p.id}', 'title', this.value)"><div class="progress-bar w-full"><div class="progress-fill" style="width: ${pct}%"></div></div><div class="text-[7px] text-zinc-500 mt-1 uppercase font-bold tracking-widest">${pct}% COMPLETE</div></td>${CORE_STEPS.map(s => `<td class="p-2"><input type="checkbox" class="pipeline-checkbox" ${p[s] ? 'checked' : ''} onchange="togglePipelineStep('${p.id}', '${s}')"></td>`).join('')}<td class="p-4 bg-emerald-900/5"><button onclick="showConfirmModal('${p.id}')" class="upload-btn">UPLOAD</button></td><td class="p-5 text-right"><button onclick="deletePipelineProject('${p.id}')" class="text-[9px] text-zinc-600 hover:text-red-500 font-black uppercase tracking-widest">Discard</button></td></tr><tr class="bg-black/40"><td colspan="10" class="p-6"><div class="flex flex-col lg:flex-row gap-16"><div class="flex-1"><div class="flex justify-between items-center mb-4 pb-2 border-b border-zinc-800"><span class="text-[10px] gold-text uppercase font-black tracking-widest">Shorts Pipeline</span><button onclick="addPipelineAsset('${p.id}', 'shorts')" class="text-[8px] bg-zinc-800/50 px-3 py-1 rounded border border-zinc-700 hover:border-gold">+ NEW SHORT</button></div><div class="grid grid-cols-1 sm:grid-cols-2 gap-3">${(p.shorts || []).map((s, idx) => `<div class="flex items-center gap-3 bg-zinc-950/50 p-2 rounded-lg border border-zinc-800"><input type="checkbox" class="pipeline-checkbox scale-90" ${s.done ? 'checked' : ''} onchange="updatePipelineAsset('${p.id}', 'shorts', ${idx}, 'done', this.checked)"><input type="text" class="pipeline-input !text-[10px] flex-1" value="${s.title}" oninput="updatePipelineAsset('${p.id}', 'shorts', ${idx}, 'title', this.value)"><button onclick="removePipelineAsset('${p.id}', 'shorts', ${idx})" class="text-zinc-700 hover:text-red-500 text-[10px]">✕</button></div>`).join('')}</div></div><div class="flex-1"><div class="flex justify-between items-center mb-4 pb-2 border-b border-zinc-800"><span class="text-[10px] gold-text uppercase font-black tracking-widest">Music Assets</span><button onclick="addPipelineAsset('${p.id}', 'soundtracks')" class="text-[8px] bg-zinc-800/50 px-3 py-1 rounded border border-zinc-700 hover:border-gold">+ NEW SCORE</button></div><div class="space-y-3">${(p.soundtracks || []).map((st, idx) => `<div class="flex flex-col gap-2 bg-zinc-950/50 p-3 rounded-lg border border-zinc-800"><div class="flex items-center gap-4"><input type="checkbox" class="pipeline-checkbox scale-90" ${st.done ? 'checked' : ''} onchange="updatePipelineAsset('${p.id}', 'soundtracks', ${idx}, 'done', this.checked)"><input type="text" class="pipeline-input !text-[10px] flex-1 font-bold" value="${st.title}" oninput="updatePipelineAsset('${p.id}', 'soundtracks', ${idx}, 'title', this.value)"><button onclick="removePipelineAsset('${p.id}', 'soundtracks', ${idx})" class="text-zinc-700 hover:text-red-500 text-[10px]">✕</button></div><div class="flex items-center gap-3 pl-8"><span class="text-[8px] text-emerald-500 font-bold uppercase">Spotify Link:</span><input type="text" class="pipeline-input !text-[9px] flex-1 italic" value="${st.spotifyLink || ''}" oninput="updatePipelineAsset('${p.id}', 'soundtracks', ${idx}, 'spotifyLink', this.value)"></div></div>`).join('')}</div></div></div></td></tr></tbody></table></div>`;
+                return `<div class="glass-card overflow-hidden shadow-2xl border-gold/5 bg-zinc-900/40" data-pid="${p.id}"><table class="w-full text-left text-xs"><thead><tr class="bg-zinc-950/80 text-zinc-500 text-[8px] uppercase font-black text-center tracking-[0.2em] border-b border-zinc-800"><th class="p-5 text-left w-72">Project Title</th>${CORE_STEPS.map(s => `<th class="p-2">${s}</th>`).join('')}<th class="p-5 bg-emerald-950/30 text-emerald-400 font-black">FINALIZE</th><th class="p-5 text-right">Actions</th></tr></thead><tbody><tr class="text-center border-b border-zinc-800/50"><td class="p-5 text-left"><input type="text" class="pipeline-input gold-text font-black !text-xs mb-1 uppercase tracking-tighter" value="${p.title}" oninput="updatePipelineField('${p.id}', 'title', this.value)"><div class="progress-bar w-full"><div class="progress-fill" style="width: ${pct}%"></div></div><div class="text-[7px] text-zinc-500 mt-1 uppercase font-bold tracking-widest">${pct}% COMPLETE</div></td>${CORE_STEPS.map(s => `<td class="p-2"><input type="checkbox" class="pipeline-checkbox" ${p[s] ? 'checked' : ''} onchange="togglePipelineStep('${p.id}', '${s}')"></td>`).join('')}<td class="p-4 bg-emerald-900/5"><button onclick="showConfirmModal('${p.id}')" class="upload-btn">UPLOAD</button></td><td class="p-5 text-right"><button onclick="deletePipelineProject('${p.id}')" class="text-[9px] text-zinc-600 hover:text-red-500 font-black uppercase tracking-widest">Discard</button></td><tr><tr class="bg-black/40"><td colspan="10" class="p-6"><div class="flex flex-col lg:flex-row gap-16"><div class="flex-1"><div class="flex justify-between items-center mb-4 pb-2 border-b border-zinc-800"><span class="text-[10px] gold-text uppercase font-black tracking-widest">Shorts Pipeline</span><button onclick="addPipelineAsset('${p.id}', 'shorts')" class="text-[8px] bg-zinc-800/50 px-3 py-1 rounded border border-zinc-700 hover:border-gold">+ NEW SHORT</button></div><div class="grid grid-cols-1 sm:grid-cols-2 gap-3">${(p.shorts || []).map((s, idx) => `<div class="flex items-center gap-3 bg-zinc-950/50 p-2 rounded-lg border border-zinc-800"><input type="checkbox" class="pipeline-checkbox scale-90" ${s.done ? 'checked' : ''} onchange="updatePipelineAsset('${p.id}', 'shorts', ${idx}, 'done', this.checked)"><input type="text" class="pipeline-input !text-[10px] flex-1" value="${s.title}" oninput="updatePipelineAsset('${p.id}', 'shorts', ${idx}, 'title', this.value)"><button onclick="removePipelineAsset('${p.id}', 'shorts', ${idx})" class="text-zinc-700 hover:text-red-500 text-[10px]">✕</button></div>`).join('')}</div></div><div class="flex-1"><div class="flex justify-between items-center mb-4 pb-2 border-b border-zinc-800"><span class="text-[10px] gold-text uppercase font-black tracking-widest">Music Assets</span><button onclick="addPipelineAsset('${p.id}', 'soundtracks')" class="text-[8px] bg-zinc-800/50 px-3 py-1 rounded border border-zinc-700 hover:border-gold">+ NEW SCORE</button></div><div class="space-y-3">${(p.soundtracks || []).map((st, idx) => `<div class="flex flex-col gap-2 bg-zinc-950/50 p-3 rounded-lg border border-zinc-800"><div class="flex items-center gap-4"><input type="checkbox" class="pipeline-checkbox scale-90" ${st.done ? 'checked' : ''} onchange="updatePipelineAsset('${p.id}', 'soundtracks', ${idx}, 'done', this.checked)"><input type="text" class="pipeline-input !text-[10px] flex-1 font-bold" value="${st.title}" oninput="updatePipelineAsset('${p.id}', 'soundtracks', ${idx}, 'title', this.value)"><button onclick="removePipelineAsset('${p.id}', 'soundtracks', ${idx})" class="text-zinc-700 hover:text-red-500 text-[10px]">✕</button></div><div class="flex items-center gap-3 pl-8"><span class="text-[8px] text-emerald-500 font-bold uppercase">Spotify Link:</span><input type="text" class="pipeline-input !text-[9px] flex-1 italic" value="${st.spotifyLink || ''}" oninput="updatePipelineAsset('${p.id}', 'soundtracks', ${idx}, 'spotifyLink', this.value)"></div></div>`).join('')}</div></div></div></td></tr></tbody></table></div>`;
             }).join('');
         };
         
-        window.updateStats = () => { document.getElementById('stat-total').innerText = projects.length; document.getElementById('channel-views').innerText = channelStats.views; document.getElementById('channel-retention').innerText = channelStats.retention; document.getElementById('channel-subs').innerText = channelStats.subscribers; document.getElementById('channel-impressions').innerText = channelStats.impressions; document.getElementById('channel-ctr').innerText = channelStats.ctr; document.getElementById('channel-watchtime').innerText = channelStats.watchTime; };
+        window.updateStats = () => { 
+            document.getElementById('stat-total').innerText = projects.length; 
+            document.getElementById('channel-views').innerText = channelStats.views || '0'; 
+            document.getElementById('channel-retention').innerText = channelStats.retention || '0%';
+            document.getElementById('channel-subs').innerText = channelStats.subscribers || '0';
+            document.getElementById('channel-impressions').innerText = channelStats.impressions || '0';
+            document.getElementById('channel-ctr').innerText = channelStats.ctr || '0%';
+            document.getElementById('channel-watchtime').innerText = channelStats.watchTime || '0';
+        };
         
         // Modal and forms
         window.openModal = (id=null) => {
@@ -325,7 +340,7 @@
         window.deleteProject = (id) => { pendingDeleteId = id; document.getElementById('delete-modal').classList.remove('hidden'); };
         document.getElementById('final-delete-btn').onclick = () => { if(pendingDeleteId) { projects = projects.filter(p => p.id !== pendingDeleteId); saveToLocal(); renderProjects(); updateStats(); hideDeleteModal(); showToast('DELETED'); } };
         
-        // YouTube OAuth & Sync
+        // YouTube OAuth & Sync (improved)
         window.connectYouTube = async () => {
             const clientId = document.getElementById('youtube-client-id').value.trim();
             const channelId = document.getElementById('youtube-channel-id').value.trim();
@@ -345,27 +360,42 @@
             const endDate = new Date().toISOString().split('T')[0];
             const startDate = new Date(Date.now() - 28*24*60*60*1000).toISOString().split('T')[0];
             try {
+                // Channel analytics (basic metrics only)
                 const channelMetrics = 'views,averageViewPercentage,subscribersGained,estimatedMinutesWatched';
-                const channelRes = await fetch(`https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3D${channelId}&startDate=${startDate}&endDate=${endDate}&metrics=${channelMetrics}`, { headers: { Authorization: `Bearer ${youtubeAccessToken}` } });
+                const channelUrl = `https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3D${channelId}&startDate=${startDate}&endDate=${endDate}&metrics=${channelMetrics}`;
+                const channelRes = await fetch(channelUrl, { headers: { Authorization: `Bearer ${youtubeAccessToken}` } });
+                if(channelRes.status === 403) throw new Error('Forbidden: Check API scopes and channel ownership');
                 const channelData = await channelRes.json();
                 if(channelData.error) throw new Error(channelData.error.message);
                 const row = channelData.rows?.[0] || [];
-                const totalStats = { views: row[0]?.toString() || '0', retention: (row[1] ? (row[1]/100).toFixed(1)+'%' : '0%'), subscribers: row[2]?.toString() || '0', watchTime: row[3] ? Math.round(row[3]/60).toString() : '0' };
+                const totalStats = { 
+                    views: row[0]?.toString() || '0', 
+                    retention: (row[1] !== undefined ? (row[1]/100).toFixed(1)+'%' : '0%'), 
+                    subscribers: row[2]?.toString() || '0', 
+                    watchTime: row[3] ? Math.round(row[3]/60).toString() : '0' 
+                };
                 let channelChanged = false; const newChannel = { ...channelStats };
                 if(totalStats.views !== channelStats.views) { newChannel.previousViews = channelStats.views; newChannel.views = totalStats.views; channelChanged = true; }
                 if(totalStats.retention !== channelStats.retention) { newChannel.previousRetention = channelStats.retention; newChannel.retention = totalStats.retention; channelChanged = true; }
                 if(totalStats.subscribers !== channelStats.subscribers) { newChannel.subscribers = totalStats.subscribers; channelChanged = true; }
                 if(totalStats.watchTime !== channelStats.watchTime) { newChannel.watchTime = totalStats.watchTime; channelChanged = true; }
+                // Keep impressions and CTR as they were (or set to '0' if undefined)
+                if(channelStats.impressions === undefined) newChannel.impressions = '0';
+                if(channelStats.ctr === undefined) newChannel.ctr = '0%';
                 if(channelChanged) await window.saveChannelStats(newChannel);
                 
+                // Video analytics
                 const videoMetrics = 'views,averageViewPercentage';
-                const videoRes = await fetch(`https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3D${channelId}&startDate=${startDate}&endDate=${endDate}&metrics=${videoMetrics}&dimensions=video&sort=-views`, { headers: { Authorization: `Bearer ${youtubeAccessToken}` } });
+                const videoUrl = `https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3D${channelId}&startDate=${startDate}&endDate=${endDate}&metrics=${videoMetrics}&dimensions=video&sort=-views`;
+                const videoRes = await fetch(videoUrl, { headers: { Authorization: `Bearer ${youtubeAccessToken}` } });
+                if(videoRes.status === 403) throw new Error('Forbidden: Cannot fetch video analytics');
                 const videoData = await videoRes.json();
                 if(videoData.error) throw new Error(videoData.error.message);
                 const videoMap = new Map();
                 if(videoData.rows) for(const row of videoData.rows) videoMap.set(row[0], { views: row[1]?.toString()||'0', retention: row[2] ? (row[2]/100).toFixed(1)+'%' : '0%' });
                 if(videoMap.size) {
-                    const titlesRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${Array.from(videoMap.keys()).join(',')}`, { headers: { Authorization: `Bearer ${youtubeAccessToken}` } });
+                    const videoIds = Array.from(videoMap.keys());
+                    const titlesRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoIds.join(',')}`, { headers: { Authorization: `Bearer ${youtubeAccessToken}` } });
                     const titlesData = await titlesRes.json();
                     const titleMap = new Map();
                     if(titlesData.items) for(const item of titlesData.items) titleMap.set(item.id, item.snippet.title);
