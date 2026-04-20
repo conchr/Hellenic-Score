@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hellenic Score & Tales | V1.3 – Analytics with Impressions & CTR</title>
+    <title>Hellenic Score & Tales | V1.4 – Analytics Fixed Impressions/CTR</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -37,7 +37,6 @@
         .soundtrack-title { word-break: break-word; max-width: 220px; display: inline-block; }
         .actions-cell { white-space: nowrap; text-align: right; }
         .action-buttons { display: inline-flex; gap: 0.75rem; justify-content: flex-end; flex-wrap: nowrap; }
-        /* Analytics table - νέες στήλες */
         .analytics-table { width: 100%; border-collapse: collapse; }
         .analytics-table th, .analytics-table td { padding: 0.75rem 0.5rem; vertical-align: middle; }
         .analytics-table th { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: #888; }
@@ -66,7 +65,7 @@
         <div class="text-center"><div class="inline-block animate-spin text-3xl mb-3">🔱</div><p class="cinzel gold-text text-[10px] uppercase font-bold">ΠΡΟΕΤΟΙΜΑΣΙΑ ΠΥΛΗΣ...</p></div>
     </div>
 
-    <!-- Modals -->
+    <!-- Modals (ίδια) -->
     <div id="confirm-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-4 z-50"><div class="glass-card max-w-sm w-full p-8 text-center"><h3 class="cinzel gold-text text-xl mb-4">ΕΠΙΒΕΒΑΙΩΣΗ UPLOAD</h3><p class="text-zinc-400 text-xs mb-8">Θέλετε να μεταφέρετε το project στο Αρχείο;</p><div class="flex justify-center gap-4"><button onclick="hideConfirmModal()" class="text-zinc-500 text-[10px] uppercase font-bold">ΑΚΥΡΟ</button><button id="final-confirm-btn" class="bg-emerald-500 text-black font-black text-[10px] px-8 py-3 rounded">ΜΕΤΑΦΟΡΑ</button></div></div></div>
     <div id="delete-modal" class="fixed inset-0 bg-black/95 backdrop-blur-xl hidden flex items-center justify-center p-4 z-50"><div class="glass-card max-w-sm w-full p-10 text-center"><div class="text-red-500 text-4xl mb-6">⚠️</div><h3 class="cinzel text-red-500 text-xl mb-4">ΔΙΑΓΡΑΦΗ PROJECT</h3><p class="text-zinc-500 text-xs mb-10">Μόνιμη ενέργεια. Είστε σίγουροι;</p><button id="final-delete-btn" class="bg-red-600 text-white font-black text-[11px] py-4 rounded w-full">ΝΑΙ, ΔΙΑΓΡΑΦΗ</button><button onclick="hideDeleteModal()" class="text-zinc-500 text-[10px] py-3 mt-2 w-full">ΑΚΥΡΩΣΗ</button></div></div>
 
@@ -74,7 +73,7 @@
         <div class="flex flex-col md:flex-row justify-between items-start mb-6 gap-3 border-b border-zinc-800/50 pb-4">
             <div class="flex flex-col gap-1"><div class="flex gap-2 text-[9px] text-zinc-500"><span>Database Status:</span><span id="db-status" class="text-zinc-400">Local Storage Mode</span></div><div class="flex gap-2 flex-wrap"><button onclick="exportDatabase()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text">💾 Backup</button><button onclick="importDatabase()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text">📂 Restore</button><button onclick="triggerAnalyticsImport()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text">📁 Import CSV</button><input type="file" id="import-input" class="hidden" accept=".json"><input type="file" id="analytics-input" class="hidden" accept=".csv"></div></div>
             <div class="flex gap-4"><button onclick="switchTab('archive')" id="tab-archive" class="nav-btn active cinzel">Αρχείο</button><button onclick="switchTab('pipeline')" id="tab-pipeline" class="nav-btn cinzel">Παραγωγή</button><button onclick="switchTab('analytics')" id="tab-analytics" class="nav-btn cinzel">Analytics</button></div>
-            <div class="text-right hidden md:block"><p class="text-[9px] text-zinc-600">Strategic Control</p><p class="text-[10px] gold-text cinzel">V1.3 – Analytics Extended</p></div>
+            <div class="text-right hidden md:block"><p class="text-[9px] text-zinc-600">Strategic Control</p><p class="text-[10px] gold-text cinzel">V1.4 – Analytics Fixed</p></div>
         </div>
 
         <!-- Archive View (αμετάβλητο) -->
@@ -90,20 +89,20 @@
                 </div>
             </header>
             <div class="flex justify-between mb-6"><div class="glass-card px-6 py-2"><p class="text-[9px] text-zinc-500">Live Projects</p><p id="stat-total" class="text-2xl font-bold gold-text">0</p></div><button onclick="openModal()" class="px-8 py-3 gold-bg text-black font-black rounded-xl text-[11px] shadow-2xl">🔱 NEW PROJECT</button></div>
-            <div class="glass-card overflow-hidden"><div class="overflow-x-auto"><table class="data-table"><thead><tr class="bg-zinc-900/70 text-zinc-500 text-[9px] uppercase font-black tracking-widest border-b border-zinc-800"><th class="p-2 text-center">#</th><th class="p-2 text-center">Order</th><th class="p-2">Project</th><th class="p-2">Shorts</th><th class="p-2">Soundtracks</th><th class="p-2 text-right">Actions</th><tr></thead><tbody id="project-list"></tbody></table></div></div>
+            <div class="glass-card overflow-hidden"><div class="overflow-x-auto"><table class="data-table"><thead><tr class="bg-zinc-900/70 text-zinc-500 text-[9px] uppercase font-black tracking-widest border-b border-zinc-800"><th class="p-2 text-center">#</th><th class="p-2 text-center">Order</th><th class="p-2">Project</th><th class="p-2">Shorts</th><th class="p-2">Soundtracks</th><th class="p-2 text-right">Actions</th></tr></thead><tbody id="project-list"></tbody></table></div></div>
         </div>
 
-        <!-- Pipeline View (αμετάβλητο) -->
+        <!-- Pipeline View -->
         <div id="view-pipeline" class="hidden"><div class="flex justify-between items-center mb-8 border-l-4 border-gold pl-6"><div><h2 class="text-2xl gold-text cinzel uppercase">PRODUCTION PIPELINE</h2></div><button onclick="openPipelineModal()" class="px-8 py-4 bg-zinc-800 text-gold font-black rounded-xl text-[10px] border border-gold/20">🔨 NEW PRODUCTION</button></div><div id="pipeline-container" class="space-y-10 pb-40"></div></div>
 
-        <!-- Analytics View (με Impressions & CTR) -->
+        <!-- Analytics View -->
         <div id="view-analytics" class="hidden">
             <div class="flex justify-between items-center mb-6 border-l-4 border-gold pl-6"><div><h2 class="text-2xl gold-text cinzel uppercase">CONTENT PERFORMANCE</h2><p class="text-[10px] text-zinc-500">Sorted by Global Reach</p></div></div>
             <div class="glass-card overflow-hidden shadow-2xl"><div class="overflow-x-auto"><table class="analytics-table w-full"><thead><tr class="bg-zinc-900/70 border-b border-zinc-800"><th class="text-center w-12">Rank</th><th class="text-left">Content Title</th><th class="text-center w-20">Type</th><th class="text-center w-20">Views</th><th class="text-center w-20">Retention</th><th class="text-center w-24">Impressions</th><th class="text-center w-20">CTR (%)</th></tr></thead><tbody id="analytics-list"></tbody></table></div></div>
         </div>
     </div>
 
-    <!-- Master Edit Modal (ίδιο, με Uploaded/Live) -->
+    <!-- Master Edit Modal (ίδιο) -->
     <div id="modal" class="fixed inset-0 bg-black/98 backdrop-blur-xl hidden flex items-center justify-center p-4 z-50 overflow-y-auto">
         <div class="glass-card w-full max-w-5xl my-4 bg-zinc-900 p-8 border-gold/40 shadow-2xl">
             <div class="flex justify-between items-center mb-8 border-b border-zinc-800 pb-4"><h2 class="text-2xl gold-text cinzel uppercase">ΣΤΟΙΧΕΙΑ PROJECT</h2><button onclick="closeModal()" class="text-zinc-500 text-3xl hover:text-white">✕</button></div>
@@ -133,7 +132,7 @@
     <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 gold-bg text-black px-8 py-3 rounded-full hidden z-50 text-xs font-black text-center whitespace-nowrap"></div>
 
     <script>
-        // GLOBAL STATE
+        // GLOBAL STATE (ίδιο)
         let projects = [], pipelineProjects = [], channelStats = { views: '0', retention: '0%', subscribers: '0', impressions: '0', ctr: '0%', watchTime: '0' };
         let pendingDeleteId = null;
         const CORE_STEPS = ['scenario', 'narration', 'artworks', 'video', 'subtitles', 'multilanguage', 'descriptions'];
@@ -200,7 +199,7 @@
             return 'title-red';
         }
         
-        // RENDER PROJECTS (αμετάβλητο, χωρίς Impressions/CTR)
+        // RENDER PROJECTS (αμετάβλητο)
         window.renderProjects = () => {
             const list = document.getElementById('project-list');
             list.innerHTML = projects.map((p, i) => {
@@ -218,7 +217,7 @@
             }).join('');
         };
         
-        // RENDER ANALYTICS (με Impressions & CTR)
+        // RENDER ANALYTICS (ίδιο)
         window.renderAnalytics = () => {
             const list = document.getElementById('analytics-list');
             let allItems = [];
@@ -292,7 +291,7 @@
             document.getElementById('channel-watchtime').innerText = channelStats.watchTime || '0';
         };
         
-        // MODAL & FORMS (με uploaded/live)
+        // MODAL & FORMS (ίδια)
         window.openModal = (id=null) => {
             document.getElementById('project-form').reset();
             document.getElementById('shorts-container').innerHTML = '';
@@ -454,7 +453,7 @@
         window.deleteProject = (id) => { pendingDeleteId = id; document.getElementById('delete-modal').classList.remove('hidden'); };
         document.getElementById('final-delete-btn').onclick = () => { if(pendingDeleteId) { projects = projects.filter(p => p.id !== pendingDeleteId); saveToLocal(); renderProjects(); updateStats(); hideDeleteModal(); showToast('DELETED'); } };
         
-        // CSV IMPORT (με υποστήριξη Impressions & CTR)
+        // ======================== CSV IMPORT (ΔΙΟΡΘΩΜΕΝΟ) ========================
         window.triggerAnalyticsImport = () => document.getElementById('analytics-input').click();
         window.handleAnalyticsImport = (inputEl) => {
             const file = inputEl.files[0];
@@ -467,13 +466,16 @@
                 const delimiter = (lines[0].match(/;/g) || []).length > (lines[0].match(/,/g) || []).length ? ';' : ',';
                 const splitCSV = (s) => s.split(new RegExp(`${delimiter}(?=(?:(?:[^"]*"){2})*[^"]*$)`)).map(c => c.trim().replace(/^"|"$/g, ''));
                 const headers = splitCSV(lines[0]).map(h => h.toLowerCase());
+                
+                // Ευέλικτη αναζήτηση στηλών
                 const titleIdx = headers.findIndex(h => h.includes('περιεχόμενο') || h.includes('content') || h.includes('video title') || h.includes('title'));
                 const viewsIdx = headers.findIndex(h => h.includes('προβολές') || h === 'views');
                 const retentionIdx = headers.findIndex(h => h.includes('μέσο ποσοστό προβολής') || h.includes('average percentage viewed') || (h.includes('%') && h.includes('retention')));
                 const subsIdx = headers.findIndex(h => h.includes('συνδρομητές') || h === 'subscribers');
-                const impressionsIdx = headers.findIndex(h => h.includes('εμφανίσεις') || h === 'impressions');
-                const ctrIdx = headers.findIndex(h => h.includes('προωθήσεις') || h.includes('click-through') || h === 'ctr');
+                const impressionsIdx = headers.findIndex(h => h.includes('impression') && !h.includes('click')); // "impression" ή "impressions"
+                const ctrIdx = headers.findIndex(h => h.includes('click-through') || h.includes('ctr') || (h.includes('impressions') && h.includes('click')));
                 const watchTimeIdx = headers.findIndex(h => h.includes('διάρκεια') || h.includes('watch time') || h === 'watch time');
+                
                 let totalStats = null;
                 const videoStats = new Map(); // title -> {views, retention, impressions, ctr}
                 for(let i = 1; i < lines.length; i++) {
@@ -517,7 +519,7 @@
                     if(isNonZero(totalStats.watchTime) && totalStats.watchTime !== channelStats.watchTime) { newStats.watchTime = totalStats.watchTime; changed = true; }
                     if(changed) await window.saveChannelStats(newStats);
                 }
-                // Update video stats (views, retention, impressions, ctr)
+                // Update video stats
                 let updatedCount = 0;
                 for(let project of projects) {
                     let projectModified = false;
@@ -572,7 +574,7 @@
             reader.readAsText(file);
         };
         
-        // IMPORT / EXPORT
+        // IMPORT / EXPORT (ίδια)
         window.importDatabase = () => document.getElementById('import-input').click();
         window.handleImport = (inputEl) => {
             const file = inputEl.files[0];
@@ -594,7 +596,7 @@
             const d = JSON.stringify({p:projects, c:channelStats, pipe:pipelineProjects});
             const a = document.createElement('a');
             a.href = "data:text/json;charset=utf-8,"+encodeURIComponent(d);
-            a.download = `hst_backup_V1.3_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`;
+            a.download = `hst_backup_V1.4_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`;
             a.click();
         };
         
