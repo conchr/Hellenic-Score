@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hellenic Score & Tales | V1.2 – Fixed Colors for Shorts & Soundtracks</title>
+    <title>Hellenic Score & Tales | V1.3 – Analytics with Impressions & CTR</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -37,6 +37,7 @@
         .soundtrack-title { word-break: break-word; max-width: 220px; display: inline-block; }
         .actions-cell { white-space: nowrap; text-align: right; }
         .action-buttons { display: inline-flex; gap: 0.75rem; justify-content: flex-end; flex-wrap: nowrap; }
+        /* Analytics table - νέες στήλες */
         .analytics-table { width: 100%; border-collapse: collapse; }
         .analytics-table th, .analytics-table td { padding: 0.75rem 0.5rem; vertical-align: middle; }
         .analytics-table th { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: #888; }
@@ -48,11 +49,9 @@
         .trend-down { color: #ef4444; font-weight: bold; margin-left: 2px; }
         .trend-steady { color: #71717a; margin-left: 2px; }
         .loading-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: flex; align-items: center; justify-content: center; z-index: 1000; transition: opacity 0.5s; }
-        /* Χρώματα τίτλων */
         .title-red { color: #ef4444; }
         .title-green { color: #10b981; }
         .title-white { color: #e5e7eb; }
-        /* Μεγαλύτερη γραμματοσειρά για shorts και soundtracks */
         .short-title-text, .soundtrack-title-text { font-size: 0.8rem; line-height: 1.3; font-weight: 500; }
         @media (max-width: 1200px) {
             .data-table th, .data-table td { padding: 0.4rem 0.3rem; }
@@ -75,10 +74,10 @@
         <div class="flex flex-col md:flex-row justify-between items-start mb-6 gap-3 border-b border-zinc-800/50 pb-4">
             <div class="flex flex-col gap-1"><div class="flex gap-2 text-[9px] text-zinc-500"><span>Database Status:</span><span id="db-status" class="text-zinc-400">Local Storage Mode</span></div><div class="flex gap-2 flex-wrap"><button onclick="exportDatabase()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text">💾 Backup</button><button onclick="importDatabase()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text">📂 Restore</button><button onclick="triggerAnalyticsImport()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text">📁 Import CSV</button><input type="file" id="import-input" class="hidden" accept=".json"><input type="file" id="analytics-input" class="hidden" accept=".csv"></div></div>
             <div class="flex gap-4"><button onclick="switchTab('archive')" id="tab-archive" class="nav-btn active cinzel">Αρχείο</button><button onclick="switchTab('pipeline')" id="tab-pipeline" class="nav-btn cinzel">Παραγωγή</button><button onclick="switchTab('analytics')" id="tab-analytics" class="nav-btn cinzel">Analytics</button></div>
-            <div class="text-right hidden md:block"><p class="text-[9px] text-zinc-600">Strategic Control</p><p class="text-[10px] gold-text cinzel">V1.2 – Fixed Colors</p></div>
+            <div class="text-right hidden md:block"><p class="text-[9px] text-zinc-600">Strategic Control</p><p class="text-[10px] gold-text cinzel">V1.3 – Analytics Extended</p></div>
         </div>
 
-        <!-- Archive View -->
+        <!-- Archive View (αμετάβλητο) -->
         <div id="view-archive">
             <header class="mb-10 text-center"><h1 class="text-4xl font-bold gold-text mb-1 uppercase tracking-[0.2em]">HELLENIC SCORE & TALES</h1>
                 <div class="flex flex-wrap justify-center gap-4 mt-6">
@@ -91,26 +90,25 @@
                 </div>
             </header>
             <div class="flex justify-between mb-6"><div class="glass-card px-6 py-2"><p class="text-[9px] text-zinc-500">Live Projects</p><p id="stat-total" class="text-2xl font-bold gold-text">0</p></div><button onclick="openModal()" class="px-8 py-3 gold-bg text-black font-black rounded-xl text-[11px] shadow-2xl">🔱 NEW PROJECT</button></div>
-            <div class="glass-card overflow-hidden"><div class="overflow-x-auto"><table class="data-table"><thead><tr class="bg-zinc-900/70 text-zinc-500 text-[9px] uppercase font-black tracking-widest border-b border-zinc-800"><th class="p-2 text-center">#</th><th class="p-2 text-center">Order</th><th class="p-2">Project</th><th class="p-2">Shorts</th><th class="p-2">Soundtracks</th><th class="p-2 text-right">Actions</th></tr></thead><tbody id="project-list"></tbody></table></div></div>
+            <div class="glass-card overflow-hidden"><div class="overflow-x-auto"><table class="data-table"><thead><tr class="bg-zinc-900/70 text-zinc-500 text-[9px] uppercase font-black tracking-widest border-b border-zinc-800"><th class="p-2 text-center">#</th><th class="p-2 text-center">Order</th><th class="p-2">Project</th><th class="p-2">Shorts</th><th class="p-2">Soundtracks</th><th class="p-2 text-right">Actions</th><tr></thead><tbody id="project-list"></tbody></table></div></div>
         </div>
 
-        <!-- Pipeline View (σύντομο, λειτουργικό) -->
+        <!-- Pipeline View (αμετάβλητο) -->
         <div id="view-pipeline" class="hidden"><div class="flex justify-between items-center mb-8 border-l-4 border-gold pl-6"><div><h2 class="text-2xl gold-text cinzel uppercase">PRODUCTION PIPELINE</h2></div><button onclick="openPipelineModal()" class="px-8 py-4 bg-zinc-800 text-gold font-black rounded-xl text-[10px] border border-gold/20">🔨 NEW PRODUCTION</button></div><div id="pipeline-container" class="space-y-10 pb-40"></div></div>
 
-        <!-- Analytics View -->
+        <!-- Analytics View (με Impressions & CTR) -->
         <div id="view-analytics" class="hidden">
             <div class="flex justify-between items-center mb-6 border-l-4 border-gold pl-6"><div><h2 class="text-2xl gold-text cinzel uppercase">CONTENT PERFORMANCE</h2><p class="text-[10px] text-zinc-500">Sorted by Global Reach</p></div></div>
-            <div class="glass-card overflow-hidden shadow-2xl"><div class="overflow-x-auto"><table class="analytics-table w-full"><thead><tr class="bg-zinc-900/70 border-b border-zinc-800"><th class="text-center w-12">Rank</th><th class="text-left">Content Title</th><th class="text-center w-24">Type</th><th class="text-center w-28">Views</th><th class="text-center w-28">Retention</th></tr></thead><tbody id="analytics-list"></tbody></table></div></div>
+            <div class="glass-card overflow-hidden shadow-2xl"><div class="overflow-x-auto"><table class="analytics-table w-full"><thead><tr class="bg-zinc-900/70 border-b border-zinc-800"><th class="text-center w-12">Rank</th><th class="text-left">Content Title</th><th class="text-center w-20">Type</th><th class="text-center w-20">Views</th><th class="text-center w-20">Retention</th><th class="text-center w-24">Impressions</th><th class="text-center w-20">CTR (%)</th></tr></thead><tbody id="analytics-list"></tbody></table></div></div>
         </div>
     </div>
 
-    <!-- Master Edit Modal (με Uploaded/Live checkboxes) -->
+    <!-- Master Edit Modal (ίδιο, με Uploaded/Live) -->
     <div id="modal" class="fixed inset-0 bg-black/98 backdrop-blur-xl hidden flex items-center justify-center p-4 z-50 overflow-y-auto">
         <div class="glass-card w-full max-w-5xl my-4 bg-zinc-900 p-8 border-gold/40 shadow-2xl">
             <div class="flex justify-between items-center mb-8 border-b border-zinc-800 pb-4"><h2 class="text-2xl gold-text cinzel uppercase">ΣΤΟΙΧΕΙΑ PROJECT</h2><button onclick="closeModal()" class="text-zinc-500 text-3xl hover:text-white">✕</button></div>
             <form id="project-form" class="space-y-8 max-h-[75vh] overflow-y-auto pr-3">
                 <input type="hidden" id="edit-id">
-                <!-- Κύριο Βίντεο -->
                 <section class="bg-black/20 p-6 rounded-xl border border-zinc-800">
                     <div class="flex justify-between items-center mb-2"><label class="text-[11px] gold-text uppercase font-black tracking-widest">Κύριο Βίντεο</label></div>
                     <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
@@ -122,9 +120,7 @@
                         <label><input type="checkbox" id="main-live" class="pipeline-checkbox"> Live</label>
                     </div>
                 </section>
-                <!-- Shorts -->
                 <div><div class="flex justify-between items-center mb-3"><p class="text-[11px] gold-text font-black uppercase tracking-widest">Shorts Production</p><button type="button" onclick="addShortRow()" class="text-[9px] bg-zinc-800 px-4 py-1.5 rounded border border-zinc-700 hover:border-gold font-bold uppercase">+ Add Short</button></div><div id="shorts-container" class="space-y-3"></div></div>
-                <!-- Soundtracks -->
                 <div><div class="flex justify-between items-center mb-3"><p class="text-[11px] gold-text font-black uppercase tracking-widest">Soundtracks & Scoring</p><button type="button" onclick="addSoundtrackRow()" class="text-[9px] bg-zinc-800 px-4 py-1.5 rounded border border-zinc-700 hover:border-gold font-bold uppercase">+ Add Score</button></div><div id="soundtracks-container" class="space-y-3"></div></div>
                 <div class="pt-10 flex justify-end gap-6 border-t border-zinc-800"><button type="button" onclick="closeModal()" class="text-zinc-500 font-black uppercase text-xs tracking-widest hover:text-white">Cancel</button><button type="submit" class="px-14 py-4 gold-bg text-black font-black rounded-xl uppercase text-xs tracking-[0.2em] shadow-2xl hover:brightness-110 transition-all">Save Project</button></div>
             </form>
@@ -155,19 +151,24 @@
             const savedStats = localStorage.getItem('hst_stats');
             if(savedStats) channelStats = JSON.parse(savedStats);
             projects.sort((a,b) => (a.orderIndex||0) - (b.orderIndex||0));
-            // Εξασφάλιση πεδίων uploaded/live για παλιά δεδομένα
             for(let p of projects) {
                 if(p.mainVideo) {
                     if(p.mainVideo.uploaded === undefined) p.mainVideo.uploaded = false;
                     if(p.mainVideo.live === undefined) p.mainVideo.live = false;
+                    if(p.mainVideo.analytics && p.mainVideo.analytics.impressions === undefined) p.mainVideo.analytics.impressions = '0';
+                    if(p.mainVideo.analytics && p.mainVideo.analytics.ctr === undefined) p.mainVideo.analytics.ctr = '0%';
                 }
                 if(p.shorts) for(let s of p.shorts) {
                     if(s.uploaded === undefined) s.uploaded = false;
                     if(s.live === undefined) s.live = false;
+                    if(s.analytics && s.analytics.impressions === undefined) s.analytics.impressions = '0';
+                    if(s.analytics && s.analytics.ctr === undefined) s.analytics.ctr = '0%';
                 }
                 if(p.soundtracks) for(let st of p.soundtracks) {
                     if(st.uploaded === undefined) st.uploaded = false;
                     if(st.live === undefined) st.live = false;
+                    if(st.analytics && st.analytics.impressions === undefined) st.analytics.impressions = '0';
+                    if(st.analytics && st.analytics.ctr === undefined) st.analytics.ctr = '0%';
                 }
             }
         };
@@ -193,14 +194,13 @@
         
         function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => m==='&'?'&amp;':m==='<'?'&lt;':'&gt;'); }
         
-        // Χρώμα τίτλου βάσει uploaded/live
         function getTitleClass(uploaded, live) {
-            if (live) return 'title-white';      // Live -> λευκό
-            if (uploaded) return 'title-green';  // Μόνο uploaded -> πράσινο
-            return 'title-red';                  // Κανένα -> κόκκινο
+            if (live) return 'title-white';
+            if (uploaded) return 'title-green';
+            return 'title-red';
         }
         
-        // RENDER PROJECTS (σταθερή χρυσή άρπα, χρώμα τίτλου ανάλογα με uploaded/live)
+        // RENDER PROJECTS (αμετάβλητο, χωρίς Impressions/CTR)
         window.renderProjects = () => {
             const list = document.getElementById('project-list');
             list.innerHTML = projects.map((p, i) => {
@@ -218,14 +218,38 @@
             }).join('');
         };
         
-        // RENDER ANALYTICS (unchanged)
+        // RENDER ANALYTICS (με Impressions & CTR)
         window.renderAnalytics = () => {
             const list = document.getElementById('analytics-list');
             let allItems = [];
             projects.forEach(p => {
-                if(p.mainVideo.title) allItems.push({ title: p.mainVideo.title, type: 'Main', views: p.mainVideo.analytics?.views || '0', prevViews: p.mainVideo.analytics?.previousViews, retention: p.mainVideo.analytics?.retention || '0%', link: p.mainVideo.link });
-                (p.shorts || []).forEach(s => allItems.push({ title: s.title, type: 'Short', views: s.analytics?.views || '0', prevViews: s.analytics?.previousViews, retention: s.analytics?.retention || '0%', link: s.link || "" }));
-                (p.soundtracks || []).forEach(st => allItems.push({ title: st.title, type: 'Music', views: st.analytics?.views || '0', prevViews: st.analytics?.previousViews, retention: st.analytics?.retention || '0%', link: st.spotifyLink || st.link || "" }));
+                if(p.mainVideo.title) allItems.push({ 
+                    title: p.mainVideo.title, type: 'Main', 
+                    views: p.mainVideo.analytics?.views || '0', 
+                    prevViews: p.mainVideo.analytics?.previousViews, 
+                    retention: p.mainVideo.analytics?.retention || '0%',
+                    impressions: p.mainVideo.analytics?.impressions || '0',
+                    ctr: p.mainVideo.analytics?.ctr || '0%',
+                    link: p.mainVideo.link 
+                });
+                (p.shorts || []).forEach(s => allItems.push({ 
+                    title: s.title, type: 'Short', 
+                    views: s.analytics?.views || '0', 
+                    prevViews: s.analytics?.previousViews, 
+                    retention: s.analytics?.retention || '0%',
+                    impressions: s.analytics?.impressions || '0',
+                    ctr: s.analytics?.ctr || '0%',
+                    link: s.link || "" 
+                }));
+                (p.soundtracks || []).forEach(st => allItems.push({ 
+                    title: st.title, type: 'Music', 
+                    views: st.analytics?.views || '0', 
+                    prevViews: st.analytics?.previousViews, 
+                    retention: st.analytics?.retention || '0%',
+                    impressions: st.analytics?.impressions || '0',
+                    ctr: st.analytics?.ctr || '0%',
+                    link: st.spotifyLink || st.link || "" 
+                }));
             });
             allItems.sort((a,b) => parseViews(b.views) - parseViews(a.views));
             list.innerHTML = allItems.map((item, idx) => {
@@ -240,6 +264,8 @@
                     <td class="text-center"><span class="${typeClass}">${item.type}</span></td>
                     <td class="text-center"><span class="stat-badge text-sm">👁 ${item.views} ${getTrendIcon(item.views, item.prevViews)}</span></td>
                     <td class="text-center"><span class="stat-badge text-sm">⏱ ${item.retention}</span></td>
+                    <td class="text-center"><span class="stat-badge text-sm">📊 ${item.impressions}</span></td>
+                    <td class="text-center"><span class="stat-badge text-sm">🎯 ${item.ctr}</span></td>
                 </tr>`;
             }).join('');
         };
@@ -252,7 +278,7 @@
                 const aD = (p.shorts || []).reduce((acc, s) => acc + (s.done ? 1 : 0), 0) + (p.soundtracks || []).reduce((acc, s) => acc + (s.done ? 1 : 0), 0);
                 const target = CORE_STEPS.length + sL + stL;
                 const pct = target > 0 ? Math.round(((bD + aD) / target) * 100) : 0;
-                return `<div class="glass-card overflow-hidden shadow-2xl border-gold/5 bg-zinc-900/40" data-pid="${p.id}"><table class="w-full text-left text-xs"><thead><tr class="bg-zinc-950/80 text-zinc-500 text-[8px] uppercase font-black text-center tracking-[0.2em] border-b border-zinc-800"><th class="p-5 text-left w-72">Project Title</th>${CORE_STEPS.map(s => `<th class="p-2">${s}</th>`).join('')}<th class="p-5 bg-emerald-950/30 text-emerald-400 font-black">FINALIZE</th><th class="p-5 text-right">Actions</th></tr></thead><tbody><tr class="text-center border-b border-zinc-800/50"><td class="p-5 text-left"><input type="text" class="pipeline-input gold-text font-black !text-xs mb-1 uppercase tracking-tighter" value="${escapeHtml(p.title)}" oninput="updatePipelineField('${p.id}', 'title', this.value)"><div class="progress-bar w-full"><div class="progress-fill" style="width: ${pct}%"></div></div><div class="text-[7px] text-zinc-500 mt-1 uppercase font-bold tracking-widest">${pct}% COMPLETE</div></td>${CORE_STEPS.map(s => `<td class="p-2"><input type="checkbox" class="pipeline-checkbox" ${p[s] ? 'checked' : ''} onchange="togglePipelineStep('${p.id}', '${s}')"></td>`).join('')}<td class="p-4 bg-emerald-900/5"><button onclick="showConfirmModal('${p.id}')" class="upload-btn">UPLOAD</button></td><td class="p-5 text-right"><button onclick="deletePipelineProject('${p.id}')" class="text-[9px] text-zinc-600 hover:text-red-500 font-black uppercase tracking-widest">Discard</button></td></tr><tr class="bg-black/40"><td colspan="10" class="p-6"><div class="flex flex-col lg:flex-row gap-16"><div class="flex-1"><div class="flex justify-between items-center mb-4 pb-2 border-b border-zinc-800"><span class="text-[10px] gold-text uppercase font-black tracking-widest">Shorts Pipeline</span><button onclick="addPipelineAsset('${p.id}', 'shorts')" class="text-[8px] bg-zinc-800/50 px-3 py-1 rounded border border-zinc-700 hover:border-gold">+ NEW SHORT</button></div><div class="grid grid-cols-1 sm:grid-cols-2 gap-3">${(p.shorts || []).map((s, idx) => `<div class="flex items-center gap-3 bg-zinc-950/50 p-2 rounded-lg border border-zinc-800"><input type="checkbox" class="pipeline-checkbox scale-90" ${s.done ? 'checked' : ''} onchange="updatePipelineAsset('${p.id}', 'shorts', ${idx}, 'done', this.checked)"><input type="text" class="pipeline-input !text-[10px] flex-1" value="${escapeHtml(s.title)}" oninput="updatePipelineAsset('${p.id}', 'shorts', ${idx}, 'title', this.value)"><button onclick="removePipelineAsset('${p.id}', 'shorts', ${idx})" class="text-zinc-700 hover:text-red-500 text-[10px]">✕</button></div>`).join('')}</div></div><div class="flex-1"><div class="flex justify-between items-center mb-4 pb-2 border-b border-zinc-800"><span class="text-[10px] gold-text uppercase font-black tracking-widest">Music Assets</span><button onclick="addPipelineAsset('${p.id}', 'soundtracks')" class="text-[8px] bg-zinc-800/50 px-3 py-1 rounded border border-zinc-700 hover:border-gold">+ NEW SCORE</button></div><div class="space-y-3">${(p.soundtracks || []).map((st, idx) => `<div class="flex flex-col gap-2 bg-zinc-950/50 p-3 rounded-lg border border-zinc-800"><div class="flex items-center gap-4"><input type="checkbox" class="pipeline-checkbox scale-90" ${st.done ? 'checked' : ''} onchange="updatePipelineAsset('${p.id}', 'soundtracks', ${idx}, 'done', this.checked)"><input type="text" class="pipeline-input !text-[10px] flex-1 font-bold" value="${escapeHtml(st.title)}" oninput="updatePipelineAsset('${p.id}', 'soundtracks', ${idx}, 'title', this.value)"><button onclick="removePipelineAsset('${p.id}', 'soundtracks', ${idx})" class="text-zinc-700 hover:text-red-500 text-[10px]">✕</button></div><div class="flex items-center gap-3 pl-8"><span class="text-[8px] text-emerald-500 font-bold uppercase">Spotify Link:</span><input type="text" class="pipeline-input !text-[9px] flex-1 italic" value="${st.spotifyLink || ''}" oninput="updatePipelineAsset('${p.id}', 'soundtracks', ${idx}, 'spotifyLink', this.value)"></div></div>`).join('')}</div></div></div></td><tr></tbody></table></div>`;
+                return `<div class="glass-card overflow-hidden shadow-2xl border-gold/5 bg-zinc-900/40" data-pid="${p.id}"><table class="w-full text-left text-xs"><thead><tr class="bg-zinc-950/80 text-zinc-500 text-[8px] uppercase font-black text-center tracking-[0.2em] border-b border-zinc-800"><th class="p-5 text-left w-72">Project Title</th>${CORE_STEPS.map(s => `<th class="p-2">${s}</th>`).join('')}<th class="p-5 bg-emerald-950/30 text-emerald-400 font-black">FINALIZE</th><th class="p-5 text-right">Actions</th></tr></thead><tbody><tr class="text-center border-b border-zinc-800/50"><td class="p-5 text-left"><input type="text" class="pipeline-input gold-text font-black !text-xs mb-1 uppercase tracking-tighter" value="${escapeHtml(p.title)}" oninput="updatePipelineField('${p.id}', 'title', this.value)"><div class="progress-bar w-full"><div class="progress-fill" style="width: ${pct}%"></div></div><div class="text-[7px] text-zinc-500 mt-1 uppercase font-bold tracking-widest">${pct}% COMPLETE</div></td>${CORE_STEPS.map(s => `<td class="p-2"><input type="checkbox" class="pipeline-checkbox" ${p[s] ? 'checked' : ''} onchange="togglePipelineStep('${p.id}', '${s}')"></td>`).join('')}<td class="p-4 bg-emerald-900/5"><button onclick="showConfirmModal('${p.id}')" class="upload-btn">UPLOAD</button></td><td class="p-5 text-right"><button onclick="deletePipelineProject('${p.id}')" class="text-[9px] text-zinc-600 hover:text-red-500 font-black uppercase tracking-widest">Discard</button></td></tr><tr class="bg-black/40"><td colspan="10" class="p-6"><div class="flex flex-col lg:flex-row gap-16"><div class="flex-1"><div class="flex justify-between items-center mb-4 pb-2 border-b border-zinc-800"><span class="text-[10px] gold-text uppercase font-black tracking-widest">Shorts Pipeline</span><button onclick="addPipelineAsset('${p.id}', 'shorts')" class="text-[8px] bg-zinc-800/50 px-3 py-1 rounded border border-zinc-700 hover:border-gold">+ NEW SHORT</button></div><div class="grid grid-cols-1 sm:grid-cols-2 gap-3">${(p.shorts || []).map((s, idx) => `<div class="flex items-center gap-3 bg-zinc-950/50 p-2 rounded-lg border border-zinc-800"><input type="checkbox" class="pipeline-checkbox scale-90" ${s.done ? 'checked' : ''} onchange="updatePipelineAsset('${p.id}', 'shorts', ${idx}, 'done', this.checked)"><input type="text" class="pipeline-input !text-[10px] flex-1" value="${escapeHtml(s.title)}" oninput="updatePipelineAsset('${p.id}', 'shorts', ${idx}, 'title', this.value)"><button onclick="removePipelineAsset('${p.id}', 'shorts', ${idx})" class="text-zinc-700 hover:text-red-500 text-[10px]">✕</button></div>`).join('')}</div></div><div class="flex-1"><div class="flex justify-between items-center mb-4 pb-2 border-b border-zinc-800"><span class="text-[10px] gold-text uppercase font-black tracking-widest">Music Assets</span><button onclick="addPipelineAsset('${p.id}', 'soundtracks')" class="text-[8px] bg-zinc-800/50 px-3 py-1 rounded border border-zinc-700 hover:border-gold">+ NEW SCORE</button></div><div class="space-y-3">${(p.soundtracks || []).map((st, idx) => `<div class="flex flex-col gap-2 bg-zinc-950/50 p-3 rounded-lg border border-zinc-800"><div class="flex items-center gap-4"><input type="checkbox" class="pipeline-checkbox scale-90" ${st.done ? 'checked' : ''} onchange="updatePipelineAsset('${p.id}', 'soundtracks', ${idx}, 'done', this.checked)"><input type="text" class="pipeline-input !text-[10px] flex-1 font-bold" value="${escapeHtml(st.title)}" oninput="updatePipelineAsset('${p.id}', 'soundtracks', ${idx}, 'title', this.value)"><button onclick="removePipelineAsset('${p.id}', 'soundtracks', ${idx})" class="text-zinc-700 hover:text-red-500 text-[10px]">✕</button></div><div class="flex items-center gap-3 pl-8"><span class="text-[8px] text-emerald-500 font-bold uppercase">Spotify Link:</span><input type="text" class="pipeline-input !text-[9px] flex-1 italic" value="${st.spotifyLink || ''}" oninput="updatePipelineAsset('${p.id}', 'soundtracks', ${idx}, 'spotifyLink', this.value)"></div></div>`).join('')}</div></div></div></td></tr></tbody></table></div>`;
             }).join('');
         };
         
@@ -290,18 +316,15 @@
         };
         window.closeModal = () => document.getElementById('modal').classList.add('hidden');
         
-        // Live checkbox αυτόματα τσεκάρει το Uploaded
         function setupLiveCheckbox(uploadedCheck, liveCheck) {
             if (liveCheck) {
                 liveCheck.addEventListener('change', function() {
-                    if (this.checked) {
-                        uploadedCheck.checked = true;
-                    }
+                    if (this.checked) uploadedCheck.checked = true;
                 });
             }
         }
         
-        window.addShortRow = (d={title:'', analytics:{views:'0',retention:'0%'}, uploaded:false, live:false, link:''}) => {
+        window.addShortRow = (d={title:'', analytics:{views:'0',retention:'0%',impressions:'0',ctr:'0%'}, uploaded:false, live:false, link:''}) => {
             const div = document.createElement('div'); div.className="dynamic-row bg-zinc-800/10 p-3 rounded-lg border border-zinc-800 space-y-3";
             div.innerHTML = `<div class="grid grid-cols-12 gap-3 items-center">
                 <div class="col-span-10"><input type="text" class="w-full short-title" value="${escapeHtml(d.title)}" placeholder="Short Title"></div>
@@ -322,7 +345,7 @@
             setupLiveCheckbox(uploadedCheck, liveCheck);
         };
         
-        window.addSoundtrackRow = (d={title:'', spotifyLink:'', link:'', analytics:{views:'0',retention:'0%'}, uploaded:false, live:false}) => {
+        window.addSoundtrackRow = (d={title:'', spotifyLink:'', link:'', analytics:{views:'0',retention:'0%',impressions:'0',ctr:'0%'}, uploaded:false, live:false}) => {
             const div = document.createElement('div'); div.className="dynamic-row bg-zinc-800/10 p-4 rounded-lg border border-zinc-800 space-y-3";
             div.innerHTML = `<div class="grid grid-cols-12 gap-3 items-center">
                 <div class="col-span-10"><input type="text" class="w-full st-title font-bold" value="${escapeHtml(d.title)}" placeholder="Soundtrack Name"></div>
@@ -355,7 +378,9 @@
                 live: r.querySelector('.short-live').checked,
                 analytics: { 
                     views: r.querySelector('.short-views').value||'0', 
-                    retention: r.querySelector('.short-retention').value||'0%', 
+                    retention: r.querySelector('.short-retention').value||'0%',
+                    impressions: existingP?.shorts?.find(s=>cleanForMatch(s.title)===cleanForMatch(r.querySelector('.short-title').value))?.analytics?.impressions || '0',
+                    ctr: existingP?.shorts?.find(s=>cleanForMatch(s.title)===cleanForMatch(r.querySelector('.short-title').value))?.analytics?.ctr || '0%',
                     previousViews: existingP?.shorts?.find(s=>cleanForMatch(s.title)===cleanForMatch(r.querySelector('.short-title').value))?.analytics?.views||null 
                 } 
             })).filter(x=>x.title);
@@ -367,7 +392,9 @@
                 live: r.querySelector('.st-live').checked,
                 analytics: { 
                     views: r.querySelector('.st-views').value||'0', 
-                    retention: r.querySelector('.st-retention').value||'0%', 
+                    retention: r.querySelector('.st-retention').value||'0%',
+                    impressions: existingP?.soundtracks?.find(st=>cleanForMatch(st.title)===cleanForMatch(r.querySelector('.st-title').value))?.analytics?.impressions || '0',
+                    ctr: existingP?.soundtracks?.find(st=>cleanForMatch(st.title)===cleanForMatch(r.querySelector('.st-title').value))?.analytics?.ctr || '0%',
                     previousViews: existingP?.soundtracks?.find(st=>cleanForMatch(st.title)===cleanForMatch(r.querySelector('.st-title').value))?.analytics?.views||null 
                 } 
             })).filter(x=>x.title);
@@ -379,7 +406,9 @@
                     live: document.getElementById('main-live').checked,
                     analytics: { 
                         views: existingP?.mainVideo?.analytics?.views||'0', 
-                        retention: existingP?.mainVideo?.analytics?.retention||'0%', 
+                        retention: existingP?.mainVideo?.analytics?.retention||'0%',
+                        impressions: existingP?.mainVideo?.analytics?.impressions || '0',
+                        ctr: existingP?.mainVideo?.analytics?.ctr || '0%',
                         previousViews: existingP?.mainVideo?.analytics?.views||null 
                     } 
                 }, 
@@ -400,7 +429,7 @@
         window.openPipelineModal = () => { document.getElementById('pipeline-title-input').value=""; document.getElementById('pipeline-modal').classList.remove('hidden'); };
         window.addPipelineProject = async () => { const title = document.getElementById('pipeline-title-input').value; if(title) { await window.savePipelineToDB(Date.now().toString(), { title, scenario:false, narration:false, artworks:false, video:false, subtitles:false, multilanguage:false, descriptions:false, shorts:[], soundtracks:[], upload:false, dateCreated:new Date().toISOString() }); document.getElementById('pipeline-modal').classList.add('hidden'); showToast('PRODUCTION INITIATED'); } };
         
-        // MIGRATION (νέα projects με uploaded/live false)
+        // MIGRATION
         window.showConfirmModal = (id) => { currentMigrationId = id; document.getElementById('confirm-modal').classList.remove('hidden'); document.getElementById('final-confirm-btn').onclick = () => window.executeMigration(id); };
         window.hideConfirmModal = () => { document.getElementById('confirm-modal').classList.add('hidden'); currentMigrationId = null; };
         window.executeMigration = async (id) => {
@@ -409,9 +438,9 @@
             const newProjectId = Date.now().toString();
             const currentMinOrder = projects.length>0 ? Math.min(...projects.map(pr=>pr.orderIndex||0)) : 1000;
             const archiveData = { 
-                mainVideo: { title: p.title||"Untitled", link:"", uploaded: false, live: false, analytics:{views:"0",retention:"0%"} }, 
-                shorts: (p.shorts||[]).map(s=>({ title:s.title||"Short", uploaded: false, live: false, analytics:{views:"0",retention:"0%"}, link:"" })), 
-                soundtracks: (p.soundtracks||[]).map(st=>({ title:st.title||"Score", uploaded: false, live: false, spotifyLink:st.spotifyLink||"", link:"", analytics:{views:"0",retention:"0%" } })), 
+                mainVideo: { title: p.title||"Untitled", link:"", uploaded: false, live: false, analytics:{views:"0",retention:"0%",impressions:"0",ctr:"0%"} }, 
+                shorts: (p.shorts||[]).map(s=>({ title:s.title||"Short", uploaded: false, live: false, analytics:{views:"0",retention:"0%",impressions:"0",ctr:"0%"}, link:"" })), 
+                soundtracks: (p.soundtracks||[]).map(st=>({ title:st.title||"Score", uploaded: false, live: false, spotifyLink:st.spotifyLink||"", link:"", analytics:{views:"0",retention:"0%",impressions:"0",ctr:"0%" } })), 
                 orderIndex: currentMinOrder-1, 
                 date:new Date().toISOString() 
             };
@@ -425,7 +454,7 @@
         window.deleteProject = (id) => { pendingDeleteId = id; document.getElementById('delete-modal').classList.remove('hidden'); };
         document.getElementById('final-delete-btn').onclick = () => { if(pendingDeleteId) { projects = projects.filter(p => p.id !== pendingDeleteId); saveToLocal(); renderProjects(); updateStats(); hideDeleteModal(); showToast('DELETED'); } };
         
-        // CSV IMPORT (unchanged, only views/retention)
+        // CSV IMPORT (με υποστήριξη Impressions & CTR)
         window.triggerAnalyticsImport = () => document.getElementById('analytics-input').click();
         window.handleAnalyticsImport = (inputEl) => {
             const file = inputEl.files[0];
@@ -446,23 +475,36 @@
                 const ctrIdx = headers.findIndex(h => h.includes('προωθήσεις') || h.includes('click-through') || h === 'ctr');
                 const watchTimeIdx = headers.findIndex(h => h.includes('διάρκεια') || h.includes('watch time') || h === 'watch time');
                 let totalStats = null;
-                const videoStats = new Map();
+                const videoStats = new Map(); // title -> {views, retention, impressions, ctr}
                 for(let i = 1; i < lines.length; i++) {
                     const row = splitCSV(lines[i]);
                     if(row.length < 2) continue;
                     const firstCell = row[0].toLowerCase();
                     if(firstCell === 'σύνολο' || firstCell === 'total' || firstCell === 'channel') {
-                        totalStats = { views: viewsIdx!==-1 ? row[viewsIdx] : undefined, retention: retentionIdx!==-1 ? row[retentionIdx] : undefined, subscribers: subsIdx!==-1 ? row[subsIdx] : undefined, impressions: impressionsIdx!==-1 ? row[impressionsIdx] : undefined, ctr: ctrIdx!==-1 ? row[ctrIdx] : undefined, watchTime: watchTimeIdx!==-1 ? row[watchTimeIdx] : undefined };
+                        totalStats = { 
+                            views: viewsIdx!==-1 ? row[viewsIdx] : undefined, 
+                            retention: retentionIdx!==-1 ? row[retentionIdx] : undefined, 
+                            subscribers: subsIdx!==-1 ? row[subsIdx] : undefined, 
+                            impressions: impressionsIdx!==-1 ? row[impressionsIdx] : undefined, 
+                            ctr: ctrIdx!==-1 ? row[ctrIdx] : undefined, 
+                            watchTime: watchTimeIdx!==-1 ? row[watchTimeIdx] : undefined 
+                        };
                         continue;
                     }
                     if(titleIdx !== -1 && viewsIdx !== -1) {
                         const rawTitle = row[titleIdx];
                         if(rawTitle && rawTitle.trim() !== '') {
                             const cleanTitle = cleanForMatch(rawTitle);
-                            videoStats.set(cleanTitle, { views: row[viewsIdx] || '0', retention: retentionIdx!==-1 ? row[retentionIdx] : '0%' });
+                            videoStats.set(cleanTitle, { 
+                                views: row[viewsIdx] || '0', 
+                                retention: retentionIdx!==-1 ? row[retentionIdx] : '0%',
+                                impressions: impressionsIdx!==-1 ? row[impressionsIdx] : '0',
+                                ctr: ctrIdx!==-1 ? row[ctrIdx] : '0%'
+                            });
                         }
                     }
                 }
+                // Update channel stats (μόνο μη μηδενικά)
                 if(totalStats) {
                     let changed = false;
                     const newStats = { ...channelStats };
@@ -475,6 +517,7 @@
                     if(isNonZero(totalStats.watchTime) && totalStats.watchTime !== channelStats.watchTime) { newStats.watchTime = totalStats.watchTime; changed = true; }
                     if(changed) await window.saveChannelStats(newStats);
                 }
+                // Update video stats (views, retention, impressions, ctr)
                 let updatedCount = 0;
                 for(let project of projects) {
                     let projectModified = false;
@@ -488,6 +531,8 @@
                             const newAnalytics = { ...old };
                             if(stats.views !== old.views) { newAnalytics.previousViews = old.views || null; newAnalytics.views = stats.views; changed = true; }
                             if(stats.retention !== old.retention) { newAnalytics.retention = stats.retention; changed = true; }
+                            if(stats.impressions !== old.impressions) { newAnalytics.impressions = stats.impressions; changed = true; }
+                            if(stats.ctr !== old.ctr) { newAnalytics.ctr = stats.ctr; changed = true; }
                             if(changed) { projectCopy.mainVideo.analytics = newAnalytics; projectModified = true; }
                         }
                     }
@@ -500,6 +545,8 @@
                             const newAnalytics = { ...old };
                             if(stats.views !== old.views) { newAnalytics.previousViews = old.views || null; newAnalytics.views = stats.views; changed = true; }
                             if(stats.retention !== old.retention) { newAnalytics.retention = stats.retention; changed = true; }
+                            if(stats.impressions !== old.impressions) { newAnalytics.impressions = stats.impressions; changed = true; }
+                            if(stats.ctr !== old.ctr) { newAnalytics.ctr = stats.ctr; changed = true; }
                             if(changed) { short.analytics = newAnalytics; projectModified = true; }
                         }
                     }
@@ -512,6 +559,8 @@
                             const newAnalytics = { ...old };
                             if(stats.views !== old.views) { newAnalytics.previousViews = old.views || null; newAnalytics.views = stats.views; changed = true; }
                             if(stats.retention !== old.retention) { newAnalytics.retention = stats.retention; changed = true; }
+                            if(stats.impressions !== old.impressions) { newAnalytics.impressions = stats.impressions; changed = true; }
+                            if(stats.ctr !== old.ctr) { newAnalytics.ctr = stats.ctr; changed = true; }
                             if(changed) { st.analytics = newAnalytics; projectModified = true; }
                         }
                     }
@@ -545,7 +594,7 @@
             const d = JSON.stringify({p:projects, c:channelStats, pipe:pipelineProjects});
             const a = document.createElement('a');
             a.href = "data:text/json;charset=utf-8,"+encodeURIComponent(d);
-            a.download = `hst_backup_V1.2_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`;
+            a.download = `hst_backup_V1.3_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`;
             a.click();
         };
         
