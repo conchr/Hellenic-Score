@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hellenic Score & Tales | CSV & YouTube Sync v18.9</title>
+    <title>Hellenic Score & Tales | Smart CSV Import v18.10</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -52,7 +52,7 @@
         </div>
     </div>
 
-    <!-- Modals -->
+    <!-- Modals (Migration, Delete) -->
     <div id="confirm-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-4 z-[200]">
         <div class="glass-card max-w-sm w-full p-8 border-emerald-500/30 text-center">
             <h3 class="cinzel gold-text text-xl mb-4">ΕΠΙΒΕΒΑΙΩΣΗ UPLOAD</h3>
@@ -99,7 +99,7 @@
             </div>
             <div class="text-right hidden md:block">
                 <p class="text-[9px] text-zinc-600 uppercase font-bold">Strategic Control</p>
-                <p class="text-[10px] gold-text cinzel">v18.9 CSV & YouTube Sync</p>
+                <p class="text-[10px] gold-text cinzel">v18.10 Smart CSV Import</p>
             </div>
         </div>
 
@@ -136,7 +136,7 @@
             <div class="glass-card overflow-hidden shadow-2xl border-zinc-800/50">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
-                        <thead><tr class="bg-zinc-900/70 text-zinc-500 text-[10px] uppercase font-black tracking-widest border-b border-zinc-800"><th class="p-5 w-12 text-center">#</th><th class="p-5 w-12 text-center">Order</th><th class="p-5">Project / Visual Art</th><th class="p-5">Shorts Content</th><th class="p-5">Soundtracks & Scores</th><th class="p-5 text-right">Actions</th></tr></thead>
+                        <thead><tr class="bg-zinc-900/70 text-zinc-500 text-[10px] uppercase font-black tracking-widest border-b border-zinc-800"><th class="p-5 w-12 text-center">#</th><th class="p-5 w-12 text-center">Order</th><th class="p-5">Project / Visual Art</th><th class="p-5">Shorts Content</th><th class="p-5">Soundtracks & Scores</th><th class="p-5 text-right">Actions</th><tr></thead>
                         <tbody id="project-list" class="divide-y divide-zinc-800/30"></tbody>
                     </table>
                 </div>
@@ -351,7 +351,7 @@
         window.deleteProject = (id) => { pendingDeleteId = id; document.getElementById('delete-modal').classList.remove('hidden'); };
         document.getElementById('final-delete-btn').onclick = () => { if(pendingDeleteId) { projects = projects.filter(p => p.id !== pendingDeleteId); saveToLocal(); renderProjects(); updateStats(); hideDeleteModal(); showToast('DELETED'); } };
         
-        // ======================== YOUTUBE OAUTH & SYNC (v18.9) ========================
+        // ======================== YOUTUBE OAUTH & SYNC ========================
         window.connectYouTube = async () => {
             const clientId = document.getElementById('youtube-client-id').value.trim();
             const channelId = document.getElementById('youtube-channel-id').value.trim();
@@ -417,7 +417,7 @@
                 if(totalStats.watchTime !== channelStats.watchTime) { newChannel.watchTime = totalStats.watchTime; channelChanged = true; }
                 if(channelChanged) await window.saveChannelStats(newChannel);
                 
-                // Video analytics (optional, ignore if fails)
+                // Video analytics (optional)
                 try {
                     const videoMetrics = 'views,averageViewPercentage';
                     const videoUrl = `https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3D${channelId}&startDate=${startDate}&endDate=${endDate}&metrics=${videoMetrics}&dimensions=video&sort=-views`;
@@ -451,7 +451,7 @@
             } catch(err) { console.error(err); showToast('Error: '+err.message); }
         };
         
-        // ======================== CSV IMPORT (FULLY FUNCTIONAL) ========================
+        // ======================== CSV IMPORT (SMART - UPDATES ONLY, NEVER ZEROES OUT) ========================
         window.triggerAnalyticsImport = () => document.getElementById('analytics-input').click();
         window.handleAnalyticsImport = (inputEl) => {
             const file = inputEl.files[0];
@@ -504,6 +504,7 @@
                 for(let project of projects) {
                     let projectModified = false;
                     const projectCopy = JSON.parse(JSON.stringify(project));
+                    // Main video
                     if(project.mainVideo.title) {
                         const cleanTitle = cleanForMatch(project.mainVideo.title);
                         if(videoStats.has(cleanTitle)) {
@@ -517,6 +518,7 @@
                             if(changed) { projectCopy.mainVideo.analytics = newAnalytics; projectModified = true; }
                         }
                     }
+                    // Shorts
                     for(let short of projectCopy.shorts) {
                         const cleanTitle = cleanForMatch(short.title);
                         if(videoStats.has(cleanTitle)) {
@@ -530,6 +532,7 @@
                             if(changed) { short.analytics = newAnalytics; projectModified = true; }
                         }
                     }
+                    // Soundtracks
                     for(let st of projectCopy.soundtracks) {
                         const cleanTitle = cleanForMatch(st.title);
                         if(videoStats.has(cleanTitle)) {
@@ -551,7 +554,7 @@
             reader.readAsText(file);
         };
         
-        // ======================== IMPORT/EXPORT (RESTORE FIXED) ========================
+        // ======================== IMPORT/EXPORT (RESTORE) ========================
         window.importDatabase = () => document.getElementById('import-input').click();
         window.handleImport = (inputEl) => {
             const file = inputEl.files[0];
@@ -573,7 +576,7 @@
             const d = JSON.stringify({p:projects, c:channelStats, pipe:pipelineProjects});
             const a = document.createElement('a');
             a.href = "data:text/json;charset=utf-8,"+encodeURIComponent(d);
-            a.download = `hst_backup_v18.9_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`;
+            a.download = `hst_backup_v18.10_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`;
             a.click();
         };
         
