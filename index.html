@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hellenic Score & Tales | v19.7</title>
+    <title>Hellenic Score & Tales | v19.8</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -41,7 +41,6 @@
         .trend-steady { color: #71717a; margin-left: 2px; }
         .youtube-config { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 8px 16px; display: inline-flex; gap: 12px; align-items: center; flex-wrap: wrap; }
         .youtube-config input { width: 200px; font-size: 10px !important; }
-        /* Πίνακες χωρίς οριζόντιο scroll */
         .data-table { width: 100%; table-layout: fixed; border-collapse: collapse; }
         .data-table th, .data-table td { padding: 0.75rem; vertical-align: top; word-break: break-word; white-space: normal; }
         .data-table th:first-child { width: 5%; }
@@ -51,14 +50,14 @@
         .data-table th:nth-child(5) { width: 25%; }
         .data-table th:last-child { width: 5%; }
         .soundtrack-title { word-break: break-word; white-space: normal; max-width: 250px; display: inline-block; }
-        /* Actions σε μία γραμμή - σταθερή λύση */
+        /* Actions: σίγουρα σε μία γραμμή */
         .actions-cell { white-space: nowrap; width: 1%; }
-        .actions-cell .action-buttons { display: flex; gap: 0.75rem; justify-content: flex-end; flex-wrap: nowrap; }
+        .action-buttons { display: inline-flex; gap: 0.75rem; justify-content: flex-end; flex-wrap: nowrap; }
         @media (max-width: 768px) {
             .data-table th, .data-table td { padding: 0.5rem; font-size: 0.7rem; }
             .thumbnail-frame { width: 60px; height: 34px; }
             .soundtrack-title { max-width: 180px; }
-            .actions-cell .action-buttons { gap: 0.5rem; }
+            .action-buttons { gap: 0.5rem; }
         }
     </style>
 </head>
@@ -118,7 +117,7 @@
             </div>
             <div class="text-right hidden md:block">
                 <p class="text-[9px] text-zinc-600 uppercase font-bold">Strategic Control</p>
-                <p class="text-[10px] gold-text cinzel">v19.7 Final Fix</p>
+                <p class="text-[10px] gold-text cinzel">v19.8 Final Fix</p>
             </div>
         </div>
 
@@ -187,7 +186,7 @@
         </div>
     </div>
 
-    <!-- Master Edit Modal (πλήρως επαναφερμένο) -->
+    <!-- Master Edit Modal -->
     <div id="modal" class="fixed inset-0 bg-black/98 backdrop-blur-xl hidden flex items-center justify-center p-4 z-50 overflow-y-auto">
         <div class="glass-card w-full max-w-5xl my-4 bg-zinc-900 p-8 border-gold/40 shadow-2xl">
             <div class="flex justify-between items-center mb-8 border-b border-zinc-800 pb-4"><h2 class="text-2xl gold-text cinzel uppercase">ΣΤΟΙΧΕΙΑ PROJECT</h2><button onclick="closeModal()" class="text-zinc-500 text-3xl hover:text-white">✕</button></div>
@@ -244,6 +243,20 @@
             if(savedStats) channelStats = JSON.parse(savedStats);
             else channelStats = { views: '0', retention: '0%', subscribers: '0', impressions: '0', ctr: '0%', watchTime: '0' };
             projects.sort((a,b) => (a.orderIndex||0) - (b.orderIndex||0));
+            // Εξασφαλίζουμε ότι κάθε soundtrack έχει published πεδίο (για παλιά δεδομένα)
+            for(let p of projects) {
+                if(p.soundtracks) {
+                    for(let st of p.soundtracks) {
+                        if(st.published === undefined) st.published = false;
+                    }
+                }
+                if(p.shorts) {
+                    for(let s of p.shorts) {
+                        if(s.published === undefined) s.published = false;
+                    }
+                }
+                if(p.mainVideo && p.mainVideo.published === undefined) p.mainVideo.published = false;
+            }
         };
         
         window.saveProjectToDB = (id, data) => { 
@@ -265,7 +278,6 @@
         window.saveChannelStats = (data) => { channelStats = data; saveToLocal(); updateStats(); };
         window.moveProject = (id, dir) => { const idx = projects.findIndex(p => p.id === id), tIdx = dir === 'up' ? idx-1 : idx+1; if(tIdx<0 || tIdx>=projects.length) return; const p1=projects[idx], p2=projects[tIdx]; [p1.orderIndex, p2.orderIndex] = [p2.orderIndex, p1.orderIndex]; projects.sort((a,b)=> (a.orderIndex||0)-(b.orderIndex||0)); saveToLocal(); renderProjects(); };
         
-        // ======================== RENDER FUNCTIONS ========================
         function escapeHtml(str) {
             if (!str) return '';
             return str.replace(/[&<>]/g, function(m) {
@@ -276,6 +288,7 @@
             });
         }
         
+        // ======================== RENDER FUNCTIONS ========================
         window.renderProjects = () => {
             const list = document.getElementById('project-list');
             list.innerHTML = projects.map((p, i) => {
@@ -327,7 +340,7 @@
             document.getElementById('channel-watchtime').innerText = channelStats.watchTime || '0';
         };
         
-        // Modal & forms (επαναφορά)
+        // Modal & forms
         window.openModal = (id=null) => {
             document.getElementById('project-form').reset();
             document.getElementById('shorts-container').innerHTML = '';
@@ -389,7 +402,7 @@
         window.deleteProject = (id) => { pendingDeleteId = id; document.getElementById('delete-modal').classList.remove('hidden'); };
         document.getElementById('final-delete-btn').onclick = () => { if(pendingDeleteId) { projects = projects.filter(p => p.id !== pendingDeleteId); saveToLocal(); renderProjects(); updateStats(); hideDeleteModal(); showToast('DELETED'); } };
         
-        // YouTube OAuth & Sync
+        // YouTube OAuth & Sync (βασικό)
         window.connectYouTube = async () => {
             const clientId = document.getElementById('youtube-client-id').value.trim();
             const channelId = document.getElementById('youtube-channel-id').value.trim();
@@ -457,7 +470,7 @@
             } catch(err) { console.error(err); showToast('Error: '+err.message); }
         };
         
-        // CSV Import
+        // CSV Import (χωρίς CTR)
         window.triggerAnalyticsImport = () => document.getElementById('analytics-input').click();
         window.handleAnalyticsImport = (inputEl) => {
             const file = inputEl.files[0];
@@ -592,7 +605,7 @@
             const d = JSON.stringify({p:projects, c:channelStats, pipe:pipelineProjects});
             const a = document.createElement('a');
             a.href = "data:text/json;charset=utf-8,"+encodeURIComponent(d);
-            a.download = `hst_backup_v19.7_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`;
+            a.download = `hst_backup_v19.8_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`;
             a.click();
         };
         
