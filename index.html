@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hellenic Score & Tales | v19.6</title>
+    <title>Hellenic Score & Tales | v19.7</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -51,12 +51,14 @@
         .data-table th:nth-child(5) { width: 25%; }
         .data-table th:last-child { width: 5%; }
         .soundtrack-title { word-break: break-word; white-space: normal; max-width: 250px; display: inline-block; }
-        .actions-cell { white-space: nowrap; }
+        /* Actions σε μία γραμμή - σταθερή λύση */
+        .actions-cell { white-space: nowrap; width: 1%; }
+        .actions-cell .action-buttons { display: flex; gap: 0.75rem; justify-content: flex-end; flex-wrap: nowrap; }
         @media (max-width: 768px) {
             .data-table th, .data-table td { padding: 0.5rem; font-size: 0.7rem; }
             .thumbnail-frame { width: 60px; height: 34px; }
             .soundtrack-title { max-width: 180px; }
-            .actions-cell { white-space: normal; }
+            .actions-cell .action-buttons { gap: 0.5rem; }
         }
     </style>
 </head>
@@ -116,7 +118,7 @@
             </div>
             <div class="text-right hidden md:block">
                 <p class="text-[9px] text-zinc-600 uppercase font-bold">Strategic Control</p>
-                <p class="text-[10px] gold-text cinzel">v19.6 Final Fix</p>
+                <p class="text-[10px] gold-text cinzel">v19.7 Final Fix</p>
             </div>
         </div>
 
@@ -185,7 +187,7 @@
         </div>
     </div>
 
-    <!-- Master Edit Modal (πλήρως επαναφερμένο, όπως στις παλιές εκδόσεις) -->
+    <!-- Master Edit Modal (πλήρως επαναφερμένο) -->
     <div id="modal" class="fixed inset-0 bg-black/98 backdrop-blur-xl hidden flex items-center justify-center p-4 z-50 overflow-y-auto">
         <div class="glass-card w-full max-w-5xl my-4 bg-zinc-900 p-8 border-gold/40 shadow-2xl">
             <div class="flex justify-between items-center mb-8 border-b border-zinc-800 pb-4"><h2 class="text-2xl gold-text cinzel uppercase">ΣΤΟΙΧΕΙΑ PROJECT</h2><button onclick="closeModal()" class="text-zinc-500 text-3xl hover:text-white">✕</button></div>
@@ -263,7 +265,17 @@
         window.saveChannelStats = (data) => { channelStats = data; saveToLocal(); updateStats(); };
         window.moveProject = (id, dir) => { const idx = projects.findIndex(p => p.id === id), tIdx = dir === 'up' ? idx-1 : idx+1; if(tIdx<0 || tIdx>=projects.length) return; const p1=projects[idx], p2=projects[tIdx]; [p1.orderIndex, p2.orderIndex] = [p2.orderIndex, p1.orderIndex]; projects.sort((a,b)=> (a.orderIndex||0)-(b.orderIndex||0)); saveToLocal(); renderProjects(); };
         
-        // ======================== RENDER FUNCTIONS (με σωστό έλεγχο χρώματος) ========================
+        // ======================== RENDER FUNCTIONS ========================
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+        
         window.renderProjects = () => {
             const list = document.getElementById('project-list');
             list.innerHTML = projects.map((p, i) => {
@@ -276,20 +288,10 @@
                     <td class="p-3"><div class="flex items-center gap-3"><div class="thumbnail-frame shadow-xl">${ytId ? `<img src="https://img.youtube.com/vi/${ytId}/mqdefault.jpg">` : '<span class="text-[8px] text-zinc-700">NO ART</span>'}</div><div><div class="flex items-center gap-2 mb-1"><span style="color: ${mainColor};">🔱</span><div class="gold-text font-black text-sm uppercase leading-tight tracking-tight break-words">${escapeHtml(p.mainVideo.title)}</div></div><div class="flex gap-2 flex-wrap"><span class="stat-badge">👁 ${p.mainVideo.analytics?.views || 0} ${getTrendIcon(p.mainVideo.analytics?.views, p.mainVideo.analytics?.previousViews)}</span><span class="stat-badge">⏱ ${p.mainVideo.analytics?.retention || '0%'}</span></div></div></div></div></td>
                     <td class="p-3"><div class="space-y-2">${(p.shorts || []).map(s => { const color = (s.published === true) ? 'var(--gold)' : '#ef4444'; return `<div class="flex flex-col gap-0.5"><div class="text-[10px] font-bold flex items-center gap-1.5 flex-wrap"><span style="color: ${color};">🔱</span>${s.link ? `<a href="${s.link}" target="_blank" class="text-zinc-400 truncate hover:gold-text break-words">${escapeHtml(s.title)}</a>` : `<span class="text-zinc-400 break-words">${escapeHtml(s.title)}</span>`}</div><div class="flex gap-2 pl-4 flex-wrap"><span class="stat-badge">👁 ${s.analytics?.views || 0} ${getTrendIcon(s.analytics?.views, s.analytics?.previousViews)}</span><span class="stat-badge">⏱ ${s.analytics?.retention || '0%'}</span></div></div>`}).join('')}</div></td>
                     <td class="p-3"><div class="space-y-2">${(p.soundtracks || []).map(st => { const color = (st.published === true) ? 'var(--gold)' : '#ef4444'; return `<div class="flex flex-col gap-0.5"><div class="text-[10px] font-bold flex items-center gap-1.5 flex-wrap"><span style="color: ${color};">🔱</span>${st.link ? `<a href="${st.link}" target="_blank" class="text-zinc-400 hover:gold-text soundtrack-title">${escapeHtml(st.title)}</a>` : `<span class="text-zinc-400 soundtrack-title">${escapeHtml(st.title)}</span>`}${st.spotifyLink ? '<span class="spotify-tag ml-1">● Spotify</span>' : ''}</div><div class="flex gap-2 pl-4 flex-wrap"><span class="stat-badge">👁 ${st.analytics?.views || 0} ${getTrendIcon(st.analytics?.views, st.analytics?.previousViews)}</span><span class="stat-badge">⏱ ${st.analytics?.retention || '0%'}</span></div></div>`}).join('')}</div></td>
-                    <td class="p-3 text-right actions-cell"><div class="inline-flex gap-3"><button onclick="openModal('${p.id}')" class="text-[10px] gold-text hover:underline font-black uppercase tracking-widest">Edit</button><button onclick="deleteProject('${p.id}')" class="text-[10px] delete-btn font-black uppercase tracking-widest">Delete</button></div></td>
+                    <td class="p-3 text-right actions-cell"><div class="action-buttons"><button onclick="openModal('${p.id}')" class="text-[10px] gold-text hover:underline font-black uppercase tracking-widest">Edit</button><button onclick="deleteProject('${p.id}')" class="text-[10px] delete-btn font-black uppercase tracking-widest">Delete</button></div></div></td>
                 </tr>`;
             }).join('');
         };
-        
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            });
-        }
         
         window.renderAnalytics = () => {
             const list = document.getElementById('analytics-list');
@@ -325,7 +327,7 @@
             document.getElementById('channel-watchtime').innerText = channelStats.watchTime || '0';
         };
         
-        // Modal & forms (επαναφορά αρχικών συναρτήσεων)
+        // Modal & forms (επαναφορά)
         window.openModal = (id=null) => {
             document.getElementById('project-form').reset();
             document.getElementById('shorts-container').innerHTML = '';
@@ -359,7 +361,7 @@
             await window.saveProjectToDB(id, data); showToast('DATABASE UPDATED'); closeModal();
         });
         
-        // Pipeline actions (ίδιες)
+        // Pipeline actions
         window.updatePipelineField = (id, field, value) => { const p = pipelineProjects.find(item=>item.id===id); if(p) { p[field]=value; clearTimeout(saveTimeout); saveTimeout=setTimeout(()=>window.savePipelineToDB(id,p),800); } };
         window.togglePipelineStep = async (id, step) => { const p = pipelineProjects.find(item=>item.id===id); if(p) { p[step]=!p[step]; await window.savePipelineToDB(id,p); } };
         window.addPipelineAsset = async (id, type) => { const p = pipelineProjects.find(item=>item.id===id); if(p) { if(!p[type]) p[type]=[]; p[type].push(type==='shorts' ? {title:`Short ${p.shorts.length+1}`, done:false} : {title:'', done:false, spotifyLink:''}); await window.savePipelineToDB(id,p); } };
@@ -387,7 +389,7 @@
         window.deleteProject = (id) => { pendingDeleteId = id; document.getElementById('delete-modal').classList.remove('hidden'); };
         document.getElementById('final-delete-btn').onclick = () => { if(pendingDeleteId) { projects = projects.filter(p => p.id !== pendingDeleteId); saveToLocal(); renderProjects(); updateStats(); hideDeleteModal(); showToast('DELETED'); } };
         
-        // YouTube OAuth & Sync (βασικό)
+        // YouTube OAuth & Sync
         window.connectYouTube = async () => {
             const clientId = document.getElementById('youtube-client-id').value.trim();
             const channelId = document.getElementById('youtube-channel-id').value.trim();
@@ -455,7 +457,7 @@
             } catch(err) { console.error(err); showToast('Error: '+err.message); }
         };
         
-        // CSV Import (χωρίς CTR)
+        // CSV Import
         window.triggerAnalyticsImport = () => document.getElementById('analytics-input').click();
         window.handleAnalyticsImport = (inputEl) => {
             const file = inputEl.files[0];
@@ -590,7 +592,7 @@
             const d = JSON.stringify({p:projects, c:channelStats, pipe:pipelineProjects});
             const a = document.createElement('a');
             a.href = "data:text/json;charset=utf-8,"+encodeURIComponent(d);
-            a.download = `hst_backup_v19.6_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`;
+            a.download = `hst_backup_v19.7_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`;
             a.click();
         };
         
