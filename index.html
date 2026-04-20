@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hellenic Score & Tales | V1.4 – Clean Archive, Full Analytics</title>
+    <title>Hellenic Score & Tales | V1.5 – CSV Fix, Main Links, Spotify Links</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -22,7 +22,8 @@
         .thumbnail-frame img { width: 100%; height: 100%; object-fit: cover; }
         .upload-btn { background: #10b981; color: black; padding: 6px 16px; border-radius: 6px; font-size: 9px; font-weight: 900; text-transform: uppercase; box-shadow: 0 4px 0 #065f46; cursor: pointer; transition: 0.2s; }
         .upload-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 0 #065f46; }
-        .spotify-tag { color: var(--spotify); font-weight: bold; font-size: 9px; }
+        .spotify-tag { color: var(--spotify); font-weight: bold; font-size: 9px; text-decoration: none; }
+        .spotify-tag:hover { text-decoration: underline; }
         .delete-btn { color: #777; transition: color 0.2s; cursor: pointer; }
         .delete-btn:hover { color: var(--red); }
         .data-table { width: 100%; table-layout: fixed; border-collapse: collapse; }
@@ -36,7 +37,6 @@
         .soundtrack-title { word-break: break-word; max-width: 220px; display: inline-block; }
         .actions-cell { white-space: nowrap; text-align: right; }
         .action-buttons { display: inline-flex; gap: 0.75rem; justify-content: flex-end; flex-wrap: nowrap; }
-        /* Analytics table */
         .analytics-table { width: 100%; border-collapse: collapse; }
         .analytics-table th, .analytics-table td { padding: 0.75rem 0.5rem; vertical-align: middle; }
         .analytics-table th { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: #888; }
@@ -52,6 +52,8 @@
         .title-green { color: #10b981; }
         .title-white { color: #e5e7eb; }
         .short-title-text, .soundtrack-title-text { font-size: 0.8rem; line-height: 1.3; font-weight: 500; }
+        .main-title-link { color: inherit; text-decoration: none; }
+        .main-title-link:hover { text-decoration: underline; color: var(--gold); }
         @media (max-width: 1200px) {
             .data-table th, .data-table td { padding: 0.4rem 0.3rem; }
             .short-title-text, .soundtrack-title-text { font-size: 0.7rem; }
@@ -72,10 +74,10 @@
         <div class="flex flex-col md:flex-row justify-between items-start mb-6 gap-3 border-b border-zinc-800/50 pb-4">
             <div class="flex flex-col gap-1"><div class="flex gap-2 text-[9px] text-zinc-500"><span>Database Status:</span><span id="db-status" class="text-zinc-400">Local Storage Mode</span></div><div class="flex gap-2 flex-wrap"><button onclick="exportDatabase()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text">💾 Backup</button><button onclick="importDatabase()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text">📂 Restore</button><button onclick="triggerAnalyticsImport()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text">📁 Import CSV</button><input type="file" id="import-input" class="hidden" accept=".json"><input type="file" id="analytics-input" class="hidden" accept=".csv"></div></div>
             <div class="flex gap-4"><button onclick="switchTab('archive')" id="tab-archive" class="nav-btn active cinzel">Αρχείο</button><button onclick="switchTab('pipeline')" id="tab-pipeline" class="nav-btn cinzel">Παραγωγή</button><button onclick="switchTab('analytics')" id="tab-analytics" class="nav-btn cinzel">Analytics</button></div>
-            <div class="text-right hidden md:block"><p class="text-[9px] text-zinc-600">Strategic Control</p><p class="text-[10px] gold-text cinzel">V1.4 – Clean Archive</p></div>
+            <div class="text-right hidden md:block"><p class="text-[9px] text-zinc-600">Strategic Control</p><p class="text-[10px] gold-text cinzel">V1.5 – Links & CSV Fix</p></div>
         </div>
 
-        <!-- Archive View (χωρίς στατιστικά badges) -->
+        <!-- Archive View (καθαρό, με clickable main title και Spotify links) -->
         <div id="view-archive">
             <header class="mb-10 text-center"><h1 class="text-4xl font-bold gold-text mb-1 uppercase tracking-[0.2em]">HELLENIC SCORE & TALES</h1>
                 <div class="flex flex-wrap justify-center gap-4 mt-6">
@@ -97,7 +99,7 @@
         <!-- Analytics View (με Views, Retention, Impressions, CTR) -->
         <div id="view-analytics" class="hidden">
             <div class="flex justify-between items-center mb-6 border-l-4 border-gold pl-6"><div><h2 class="text-2xl gold-text cinzel uppercase">CONTENT PERFORMANCE</h2><p class="text-[10px] text-zinc-500">Sorted by Global Reach</p></div></div>
-            <div class="glass-card overflow-hidden shadow-2xl"><div class="overflow-x-auto"><table class="analytics-table w-full"><thead><tr class="bg-zinc-900/70 border-b border-zinc-800"><th class="text-center w-12">Rank</th><th class="text-left">Content Title</th><th class="text-center w-20">Type</th><th class="text-center w-20">Views</th><th class="text-center w-20">Retention</th><th class="text-center w-24">Impressions</th><th class="text-center w-20">CTR (%)</th><tr></thead><tbody id="analytics-list"></tbody></table></div></div>
+            <div class="glass-card overflow-hidden shadow-2xl"><div class="overflow-x-auto"><table class="analytics-table w-full"><thead><tr class="bg-zinc-900/70 border-b border-zinc-800"><th class="text-center w-12">Rank</th><th class="text-left">Content Title</th><th class="text-center w-20">Type</th><th class="text-center w-20">Views</th><th class="text-center w-20">Retention</th><th class="text-center w-24">Impressions</th><th class="text-center w-20">CTR (%)</th></tr></thead><tbody id="analytics-list"></tbody></table></div></div>
         </div>
     </div>
 
@@ -137,7 +139,19 @@
         const CORE_STEPS = ['scenario', 'narration', 'artworks', 'video', 'subtitles', 'multilanguage', 'descriptions'];
         let saveTimeout = null;
 
-        const cleanForMatch = (s) => s ? s.toString().toLowerCase().trim().replace(/[^\w\s\u0370-\u03ff]/gi, '').normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
+        // Βελτιωμένο cleanForMatch: αφαιρεί emoji, ειδικούς χαρακτήρες, και κάνει normalize για καλύτερο matching
+        const cleanForMatch = (s) => {
+            if (!s) return '';
+            let str = s.toString().toLowerCase().trim();
+            // Αφαίρεση emoji και ειδικών συμβόλων (διατηρεί γράμματα, αριθμούς, κενά)
+            str = str.replace(/[\u{1F600}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2300}-\u{23FF}\u{2B50}\u{1F004}\u{1F0CF}\u{1F18E}\u{1F191}-\u{1F19A}\u{1F201}-\u{1F202}\u{1F21A}\u{1F22F}\u{1F232}-\u{1F23A}\u{1F250}-\u{1F251}\u{1F300}-\u{1F320}\u{1F330}-\u{1F335}\u{1F337}-\u{1F37C}\u{1F380}-\u{1F393}\u{1F3A0}-\u{1F3C4}\u{1F3C6}-\u{1F3CA}\u{1F3E0}-\u{1F3F0}\u{1F400}-\u{1F43E}\u{1F440}-\u{1F4F7}\u{1F4F9}-\u{1F4FC}\u{1F500}-\u{1F53D}\u{1F540}-\u{1F543}\u{1F550}-\u{1F567}\u{1F5FB}-\u{1F5FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6C5}\u{1F6CC}-\u{1F6D2}\u{1F6D5}-\u{1F6D7}\u{1F6EB}-\u{1F6EC}\u{1F6F4}-\u{1F6FC}\u{1F7E0}-\u{1F7EB}\u{1F90D}-\u{1F971}\u{1F973}-\u{1F976}\u{1F97A}-\u{1F9A2}\u{1F9B0}-\u{1F9B3}\u{1F9B5}-\u{1F9C2}\u{1F9D0}-\u{1F9FF}]/gu, '');
+            // Αφαίρεση punctuation
+            str = str.replace(/[^\w\s\u0370-\u03ff]/g, '');
+            // Normalization
+            str = str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            return str;
+        };
+        
         const parseViews = (v) => { if(!v) return 0; let str = v.toString().toUpperCase().replace(/,/g, '').trim(); let factor = 1; if(str.endsWith('K')) { factor = 1000; str = str.slice(0, -1); } else if(str.endsWith('M')) { factor = 1000000; str = str.slice(0, -1); } return (parseFloat(str) || 0) * factor; };
         const getTrendIcon = (cur, prev) => { const c = parseViews(cur), p = parseViews(prev); if (!prev || c === p) return '<span class="trend-steady">—</span>'; return c > p ? '<span class="trend-up">▲</span>' : '<span class="trend-down">▼</span>'; };
         const showToast = (m) => { const t = document.getElementById('toast'); t.innerText = m; t.classList.remove('hidden'); setTimeout(() => t.classList.add('hidden'), 4000); };
@@ -192,19 +206,20 @@
             return 'title-red';
         }
         
-        // RENDER PROJECTS (χωρίς κανένα stat-badge, μόνο άρπα και τίτλος)
+        // RENDER PROJECTS (με clickable main title, clickable Spotify links)
         window.renderProjects = () => {
             const list = document.getElementById('project-list');
             list.innerHTML = projects.map((p, i) => {
                 const m = (p.mainVideo.link || "").match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?\s*v=|&v=)([^#&?]*).*/);
                 const ytId = m && m[2].length === 11 ? m[2] : null;
                 const mainClass = getTitleClass(p.mainVideo.uploaded, p.mainVideo.live);
+                const mainTitleHtml = p.mainVideo.link ? `<a href="${p.mainVideo.link}" target="_blank" class="main-title-link ${mainClass}">${escapeHtml(p.mainVideo.title)}</a>` : `<span class="${mainClass}">${escapeHtml(p.mainVideo.title)}</span>`;
                 return `<tr class="group hover:bg-zinc-800/40 transition-all archive-row">
                     <td class="p-2 text-center text-zinc-600 font-mono text-[10px]">${i+1}</td>
                     <td class="p-2 text-center"><div class="flex flex-col gap-0.5"><button onclick="moveProject('${p.id}', 'up')" class="hover:text-gold text-[10px]">▲</button><button onclick="moveProject('${p.id}', 'down')" class="hover:text-gold text-[10px]">▼</button></div></td>
-                    <td class="p-2"><div class="flex items-center gap-2"><div class="thumbnail-frame shadow-xl">${ytId ? `<img src="https://img.youtube.com/vi/${ytId}/mqdefault.jpg">` : '<span class="text-[7px] text-zinc-700">NO ART</span>'}</div><div><div class="flex items-center gap-1 mb-0.5"><span style="color: var(--gold);">🔱</span><div class="font-black text-xs uppercase break-words ${mainClass}">${escapeHtml(p.mainVideo.title)}</div></div></div></div></div></td>
+                    <td class="p-2"><div class="flex items-center gap-2"><div class="thumbnail-frame shadow-xl">${ytId ? `<img src="https://img.youtube.com/vi/${ytId}/mqdefault.jpg">` : '<span class="text-[7px] text-zinc-700">NO ART</span>'}</div><div><div class="flex items-center gap-1 mb-0.5"><span style="color: var(--gold);">🔱</span><div class="font-black text-xs uppercase break-words">${mainTitleHtml}</div></div></div></div></div></td>
                     <td class="p-2"><div class="space-y-1">${(p.shorts || []).map(s => { const titleClass = getTitleClass(s.uploaded, s.live); return `<div><div class="flex items-center gap-1"><span style="color: var(--gold);">🔱</span>${s.link ? `<a href="${s.link}" target="_blank" class="short-title-text hover:gold-text break-words ${titleClass}">${escapeHtml(s.title)}</a>` : `<span class="short-title-text break-words ${titleClass}">${escapeHtml(s.title)}</span>`}</div></div>`}).join('')}</div></td>
-                    <td class="p-2"><div class="space-y-1">${(p.soundtracks || []).map(st => { const titleClass = getTitleClass(st.uploaded, st.live); return `<div><div class="flex items-center gap-1 flex-wrap"><span style="color: var(--gold);">🔱</span>${st.link ? `<a href="${st.link}" target="_blank" class="soundtrack-title-text hover:gold-text soundtrack-title ${titleClass}">${escapeHtml(st.title)}</a>` : `<span class="soundtrack-title-text soundtrack-title ${titleClass}">${escapeHtml(st.title)}</span>`}${st.spotifyLink ? '<span class="spotify-tag ml-1">● Spotify</span>' : ''}</div></div>`}).join('')}</div></td>
+                    <td class="p-2"><div class="space-y-1">${(p.soundtracks || []).map(st => { const titleClass = getTitleClass(st.uploaded, st.live); const spotifyLinkHtml = st.spotifyLink ? `<a href="${st.spotifyLink}" target="_blank" class="spotify-tag ml-1">● Spotify</a>` : ''; return `<div><div class="flex items-center gap-1 flex-wrap"><span style="color: var(--gold);">🔱</span>${st.link ? `<a href="${st.link}" target="_blank" class="soundtrack-title-text hover:gold-text soundtrack-title ${titleClass}">${escapeHtml(st.title)}</a>` : `<span class="soundtrack-title-text soundtrack-title ${titleClass}">${escapeHtml(st.title)}</span>`}${spotifyLinkHtml}</div></div>`}).join('')}</div></td>
                     <td class="p-2 text-right actions-cell"><div class="action-buttons"><button onclick="openModal('${p.id}')" class="text-[9px] gold-text hover:underline font-black uppercase tracking-widest">Edit</button><button onclick="deleteProject('${p.id}')" class="text-[9px] delete-btn font-black uppercase tracking-widest">Delete</button></div></div></td>
                 </tr>`;
             }).join('');
@@ -446,7 +461,7 @@
         window.deleteProject = (id) => { pendingDeleteId = id; document.getElementById('delete-modal').classList.remove('hidden'); };
         document.getElementById('final-delete-btn').onclick = () => { if(pendingDeleteId) { projects = projects.filter(p => p.id !== pendingDeleteId); saveToLocal(); renderProjects(); updateStats(); hideDeleteModal(); showToast('DELETED'); } };
         
-        // CSV IMPORT (με σωστή ανίχνευση Impressions και CTR)
+        // CSV IMPORT (με βελτιωμένο matching)
         window.triggerAnalyticsImport = () => document.getElementById('analytics-input').click();
         window.handleAnalyticsImport = (inputEl) => {
             const file = inputEl.files[0];
@@ -469,7 +484,7 @@
                 const watchTimeIdx = headers.findIndex(h => h === 'watch time' || h === 'watch time (hours)');
                 
                 let totalStats = null;
-                const videoStats = new Map(); // title -> {views, retention, impressions, ctr}
+                const videoStats = new Map(); // cleaned title -> {views, retention, impressions, ctr}
                 for(let i = 1; i < lines.length; i++) {
                     const row = splitCSV(lines[i]);
                     if(row.length < 2) continue;
@@ -516,6 +531,7 @@
                 for(let project of projects) {
                     let projectModified = false;
                     const projectCopy = JSON.parse(JSON.stringify(project));
+                    // Main video
                     if(project.mainVideo.title) {
                         const cleanTitle = cleanForMatch(project.mainVideo.title);
                         if(videoStats.has(cleanTitle)) {
@@ -530,6 +546,7 @@
                             if(changed) { projectCopy.mainVideo.analytics = newAnalytics; projectModified = true; }
                         }
                     }
+                    // Shorts
                     for(let short of projectCopy.shorts) {
                         const cleanTitle = cleanForMatch(short.title);
                         if(videoStats.has(cleanTitle)) {
@@ -544,6 +561,7 @@
                             if(changed) { short.analytics = newAnalytics; projectModified = true; }
                         }
                     }
+                    // Soundtracks
                     for(let st of projectCopy.soundtracks) {
                         const cleanTitle = cleanForMatch(st.title);
                         if(videoStats.has(cleanTitle)) {
@@ -588,7 +606,7 @@
             const d = JSON.stringify({p:projects, c:channelStats, pipe:pipelineProjects});
             const a = document.createElement('a');
             a.href = "data:text/json;charset=utf-8,"+encodeURIComponent(d);
-            a.download = `hst_backup_V1.4_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`;
+            a.download = `hst_backup_V1.5_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`;
             a.click();
         };
         
