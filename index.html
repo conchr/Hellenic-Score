@@ -44,7 +44,6 @@
         .short-title-text, .soundtrack-title-text { font-size: 0.8rem; line-height: 1.3; font-weight: 500; }
         a.title-red, a.title-green, a.title-white { text-decoration: none; }
         a.title-red:hover, a.title-green:hover, a.title-white:hover { text-decoration: underline; }
-        /* Production cards */
         .prod-card { background: rgba(22,22,24,0.8); border-radius: 16px; padding: 1.2rem; margin-bottom: 1.2rem; border: 1px solid rgba(197,160,89,0.2); transition: all 0.2s; }
         .prod-card:hover { border-color: rgba(197,160,89,0.5); }
         .step-group { background: rgba(0,0,0,0.3); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; }
@@ -58,7 +57,6 @@
         .lang-check { display: flex; align-items: center; gap: 0.25rem; font-size: 0.7rem; }
         .music-item { background: #1e1e22; border-radius: 8px; padding: 0.75rem; margin-bottom: 0.75rem; }
         @media (max-width: 768px) { .step-item { flex-direction: column; } .step-check { align-self: flex-start; } }
-        /* Modal for editing production */
         .production-modal { max-width: 90vw; width: 900px; max-height: 85vh; overflow-y: auto; }
     </style>
 </head>
@@ -72,7 +70,7 @@
     <div id="confirm-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-4 z-50"><div class="glass-card max-w-sm w-full p-8 text-center"><h3 class="cinzel gold-text text-xl mb-4">ΕΠΙΒΕΒΑΙΩΣΗ UPLOAD</h3><p class="text-zinc-400 text-xs mb-8">Θέλετε να μεταφέρετε το project στο Αρχείο;</p><div class="flex justify-center gap-4"><button onclick="hideConfirmModal()" class="text-zinc-500 text-[10px] uppercase font-bold">ΑΚΥΡΟ</button><button id="final-confirm-btn" class="bg-emerald-500 text-black font-black text-[10px] px-8 py-3 rounded">ΜΕΤΑΦΟΡΑ</button></div></div></div>
     <div id="delete-modal" class="fixed inset-0 bg-black/95 backdrop-blur-xl hidden flex items-center justify-center p-4 z-50"><div class="glass-card max-w-sm w-full p-10 text-center"><div class="text-red-500 text-4xl mb-6">⚠️</div><h3 class="cinzel text-red-500 text-xl mb-4">ΔΙΑΓΡΑΦΗ PROJECT</h3><p class="text-zinc-500 text-xs mb-10">Μόνιμη ενέργεια. Είστε σίγουροι;</p><button id="final-delete-btn" class="bg-red-600 text-white font-black text-[11px] py-4 rounded w-full">ΝΑΙ, ΔΙΑΓΡΑΦΗ</button><button onclick="hideDeleteModal()" class="text-zinc-500 text-[10px] py-3 mt-2 w-full">ΑΚΥΡΩΣΗ</button></div></div>
 
-    <!-- Production Edit Modal (με όλες τις λεπτομέρειες) -->
+    <!-- Production Edit Modal -->
     <div id="production-edit-modal" class="fixed inset-0 bg-black/98 backdrop-blur-xl hidden flex items-center justify-center p-4 z-50 overflow-y-auto">
         <div class="glass-card production-modal bg-zinc-900 p-6 border-gold/40 shadow-2xl">
             <div class="flex justify-between items-center mb-4 border-b border-zinc-800 pb-3"><h3 id="prod-modal-title" class="text-2xl gold-text cinzel">Edit Production</h3><button onclick="closeProductionModal()" class="text-zinc-500 text-3xl hover:text-white">✕</button></div>
@@ -88,7 +86,7 @@
             <div class="text-right hidden md:block"><p class="text-[9px] text-zinc-600">Strategic Control</p><p class="text-[10px] gold-text cinzel">V4 – Production Cards</p></div>
         </div>
 
-        <!-- Archive View (ίδιο) -->
+        <!-- Archive View -->
         <div id="view-archive">
             <header class="mb-10 text-center"><h1 class="text-4xl font-bold gold-text mb-1 uppercase tracking-[0.2em]">HELLENIC SCORE & TALES</h1>
                 <div class="flex flex-wrap justify-center gap-4 mt-6">
@@ -104,7 +102,7 @@
             <div class="glass-card overflow-hidden"><div class="overflow-x-auto"><table class="data-table"><thead><tr class="bg-zinc-900/70 text-zinc-500 text-[9px] uppercase font-black tracking-widest border-b border-zinc-800"><th class="p-2 text-center">#</th><th class="p-2 text-center">Order</th><th class="p-2">Project</th><th class="p-2">Shorts</th><th class="p-2">Soundtracks</th><th class="p-2 text-right">Actions</th></tr></thead><tbody id="project-list"></tbody></table></div></div>
         </div>
 
-        <!-- Production View (κάρτες projects) -->
+        <!-- Production View (κάρτες) -->
         <div id="view-pipeline" class="hidden">
             <div class="flex justify-between items-center mb-8 border-l-4 border-gold pl-6">
                 <div><h2 class="text-2xl gold-text cinzel uppercase">PRODUCTION WORKFLOW</h2><p class="text-[10px] text-zinc-500">Projects overview – click Edit to manage details</p></div>
@@ -114,8 +112,31 @@
         </div>
     </div>
 
-    <!-- Master Edit Modal (ίδιο, για αρχείο) -->
-    <div id="modal" class="fixed inset-0 bg-black/98 backdrop-blur-xl hidden flex items-center justify-center p-4 z-50 overflow-y-auto">...</div>
+    <!-- Master Edit Modal (για αρχείο) -->
+    <div id="modal" class="fixed inset-0 bg-black/98 backdrop-blur-xl hidden flex items-center justify-center p-4 z-50 overflow-y-auto">
+        <div class="glass-card w-full max-w-5xl my-4 bg-zinc-900 p-8 border-gold/40 shadow-2xl">
+            <div class="flex justify-between items-center mb-8 border-b border-zinc-800 pb-4"><h2 class="text-2xl gold-text cinzel uppercase">ΣΤΟΙΧΕΙΑ PROJECT</h2><button onclick="closeModal()" class="text-zinc-500 text-3xl hover:text-white">✕</button></div>
+            <form id="project-form" class="space-y-8 max-h-[75vh] overflow-y-auto pr-3">
+                <input type="hidden" id="edit-id">
+                <section class="bg-black/20 p-6 rounded-xl border border-zinc-800">
+                    <div class="flex justify-between items-center mb-2"><label class="text-[11px] gold-text uppercase font-black tracking-widest">Κύριο Βίντεο</label></div>
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                        <div class="md:col-span-6"><label class="text-[9px] text-zinc-500">Τίτλος</label><input type="text" id="main-title" required class="w-full"></div>
+                        <div class="md:col-span-6"><label class="text-[9px] text-zinc-500">YouTube Link</label><input type="url" id="main-link" class="w-full"></div>
+                    </div>
+                    <div class="status-group mt-3">
+                        <label><input type="checkbox" id="main-uploaded" class="pipeline-checkbox"> Uploaded</label>
+                        <label><input type="checkbox" id="main-live" class="pipeline-checkbox"> Live</label>
+                    </div>
+                </section>
+                <div><div class="flex justify-between items-center mb-3"><p class="text-[11px] gold-text font-black uppercase tracking-widest">Shorts Production</p><button type="button" onclick="addShortRow()" class="text-[9px] bg-zinc-800 px-4 py-1.5 rounded border border-zinc-700 hover:border-gold font-bold uppercase">+ Add Short</button></div><div id="shorts-container" class="space-y-3"></div></div>
+                <div><div class="flex justify-between items-center mb-3"><p class="text-[11px] gold-text font-black uppercase tracking-widest">Soundtracks & Scoring</p><button type="button" onclick="addSoundtrackRow()" class="text-[9px] bg-zinc-800 px-4 py-1.5 rounded border border-zinc-700 hover:border-gold font-bold uppercase">+ Add Score</button></div><div id="soundtracks-container" class="space-y-3"></div></div>
+                <div class="pt-10 flex justify-end gap-6 border-t border-zinc-800"><button type="button" onclick="closeModal()" class="text-zinc-500 font-black uppercase text-xs tracking-widest hover:text-white">Cancel</button><button type="submit" class="px-14 py-4 gold-bg text-black font-black rounded-xl uppercase text-xs tracking-[0.2em] shadow-2xl hover:brightness-110 transition-all">Save Project</button></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Pipeline Start Modal -->
     <div id="pipeline-modal" class="fixed inset-0 bg-black/98 backdrop-blur-xl hidden flex items-center justify-center p-4 z-50"><div class="glass-card max-w-md bg-zinc-900 p-10 text-center"><h2 class="text-2xl gold-text cinzel mb-6">START PRODUCTION</h2><input type="text" id="pipeline-title-input" placeholder="Project Name" class="w-full mb-6 text-center"><div class="flex justify-center gap-4"><button onclick="document.getElementById('pipeline-modal').classList.add('hidden')" class="text-zinc-500 text-xs">Cancel</button><button onclick="addPipelineProject()" class="px-8 py-2 gold-bg text-black font-black rounded-xl text-xs">Initiate</button></div></div></div>
 
     <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 gold-bg text-black px-8 py-3 rounded-full hidden z-50 text-xs font-black text-center whitespace-nowrap"></div>
@@ -139,7 +160,7 @@
             const savedStats = localStorage.getItem('hst_stats');
             if(savedStats) channelStats = JSON.parse(savedStats);
             projects.sort((a,b) => (a.orderIndex||0) - (b.orderIndex||0));
-            // Εξασφάλιση δομής για pipeline projects
+            // Default structure for pipeline projects
             const defaultMain = () => ({
                 script: { done: false, text: '', link: '' },
                 narration: { done: false, link: '' },
@@ -187,7 +208,7 @@
             return 'title-red';
         }
         
-        // RENDER PROJECTS (ίδιο με πριν)
+        // RENDER PROJECTS (ίδιο)
         window.renderProjects = () => {
             const list = document.getElementById('project-list');
             list.innerHTML = projects.map((p, i) => {
@@ -208,7 +229,7 @@
             }).join('');
         };
         
-        // Υπολογισμός προόδου για ένα pipeline project
+        // Υπολογισμός προόδου
         function computeProgress(p) {
             let total = 0, completed = 0;
             const mainSteps = ['script', 'narration', 'visuals', 'montage', 'subtitlesEn', 'musicSFX', 'exportUpload', 'metadata'];
@@ -220,7 +241,7 @@
             return { total, completed, percent: total > 0 ? Math.round((completed/total)*100) : 0 };
         }
         
-        // RENDER CARDS (συμπαγής λίστα)
+        // RENDER CARDS
         window.renderPipelineCards = () => {
             const container = document.getElementById('pipeline-container');
             container.innerHTML = pipelineProjects.map(p => {
@@ -242,7 +263,7 @@
             }).join('');
         };
         
-        // Άνοιγμα modal επεξεργασίας με πλήρη φόρμα
+        // Άνοιγμα modal επεξεργασίας
         window.openProductionEditor = (id) => {
             currentEditProjectId = id;
             const p = pipelineProjects.find(x => x.id === id);
@@ -565,7 +586,7 @@
             } 
         };
         
-        // MIGRATION (παραμένει ίδια)
+        // MIGRATION
         window.showConfirmModal = (id) => { currentMigrationId = id; document.getElementById('confirm-modal').classList.remove('hidden'); document.getElementById('final-confirm-btn').onclick = () => window.executeMigration(id); };
         window.hideConfirmModal = () => { document.getElementById('confirm-modal').classList.add('hidden'); currentMigrationId = null; };
         window.executeMigration = async (id) => {
@@ -590,7 +611,7 @@
         window.deleteProject = (id) => { pendingDeleteId = id; document.getElementById('delete-modal').classList.remove('hidden'); };
         document.getElementById('final-delete-btn').onclick = () => { if(pendingDeleteId) { projects = projects.filter(p => p.id !== pendingDeleteId); saveToLocal(); renderProjects(); updateStats(); hideDeleteModal(); showToast('DELETED'); } };
         
-        // CSV IMPORT (μόνο για το αρχείο)
+        // CSV IMPORT
         window.triggerAnalyticsImport = () => document.getElementById('analytics-input').click();
         window.handleAnalyticsImport = (inputEl) => {
             const file = inputEl.files[0];
