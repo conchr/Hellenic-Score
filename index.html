@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hellenic Score & Tales | v19.5</title>
+    <title>Hellenic Score & Tales | v19.6</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -21,7 +21,7 @@
         .stat-badge{font-size:8px;background:rgba(255,255,255,0.03);padding:1px 4px;border-radius:3px;color:#888;display:inline-flex;align-items:center;gap:3px;border:1px solid rgba(197,160,89,0.08);white-space:nowrap;}
         .upload-btn{background:#10b981;color:#000;padding:6px 16px;border-radius:6px;font-size:9px;font-weight:900;text-transform:uppercase;box-shadow:0 4px 0 #065f46;cursor:pointer;transition:all 0.2s;}
         .upload-btn:hover{transform:translateY(-2px);box-shadow:0 6px 0 #065f46;}
-        .spotify-tag{color:var(--spotify);font-weight:700;}
+        .spotify-tag{color:var(--spotify);font-weight:bold;font-size:8px;}
         .delete-btn{color:#555;transition:color 0.2s;}.delete-btn:hover{color:var(--red);}
         .data-table{width:100%;table-layout:fixed;border-collapse:collapse;}
         .data-table th,.data-table td{padding:0.75rem;vertical-align:top;word-break:break-word;}
@@ -36,7 +36,7 @@
 </head>
 <body class="p-2 md:p-6">
     <div id="loader" class="loading-overlay"><div class="text-center"><div class="inline-block animate-spin text-3xl mb-3">🔱</div><p class="cinzel gold-text text-[10px] uppercase font-bold">ΠΡΟΕΤΟΙΜΑΣΙΑ ΠΥΛΗΣ...</p></div></div>
-    <!-- Modals -->
+    <!-- Modals (ίδια) -->
     <div id="confirm-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden items-center justify-center p-4 z-50"><div class="glass-card max-w-sm w-full p-8 text-center"><h3 class="cinzel gold-text text-xl mb-4">ΕΠΙΒΕΒΑΙΩΣΗ UPLOAD</h3><p class="text-zinc-400 text-xs mb-8">Θέλετε να μεταφέρετε το project στο Αρχείο;</p><div class="flex justify-center gap-4"><button onclick="hideConfirmModal()" class="text-zinc-500 text-[10px] uppercase font-bold">ΑΚΥΡΟ</button><button id="final-confirm-btn" class="bg-emerald-500 text-black font-black text-[10px] px-8 py-3 rounded">ΜΕΤΑΦΟΡΑ</button></div></div></div>
     <div id="delete-modal" class="fixed inset-0 bg-black/95 backdrop-blur-xl hidden items-center justify-center p-4 z-50"><div class="glass-card max-w-sm w-full p-10 text-center"><div class="text-red-500 text-4xl mb-6">⚠️</div><h3 class="cinzel text-red-500 text-xl mb-4">ΔΙΑΓΡΑΦΗ PROJECT</h3><p class="text-zinc-500 text-xs mb-10">Μόνιμη ενέργεια. Είστε σίγουροι;</p><button id="final-delete-btn" class="bg-red-600 text-white font-black text-[11px] py-4 rounded w-full">ΝΑΙ, ΔΙΑΓΡΑΦΗ</button><button onclick="hideDeleteModal()" class="text-zinc-500 text-[10px] py-3 mt-2 w-full">ΑΚΥΡΩΣΗ</button></div></div>
 
@@ -44,7 +44,7 @@
         <div class="flex flex-col md:flex-row justify-between items-start mb-6 gap-3 border-b border-zinc-800/50 pb-4">
             <div class="flex flex-col gap-1"><div class="flex gap-2 text-[9px] text-zinc-500"><span>Database Status:</span><span id="db-status" class="text-zinc-400">Initializing...</span></div><div class="flex gap-2 flex-wrap"><button onclick="exportDatabase()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text">💾 Backup</button><button onclick="importDatabase()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text">📂 Restore</button><button onclick="syncFromYouTube()" class="text-[9px] py-1 px-3 border border-emerald-900/50 rounded text-emerald-600">📊 Sync</button><button onclick="triggerAnalyticsImport()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text">📁 Import CSV</button><input type="file" id="import-input" class="hidden" accept=".json"><input type="file" id="analytics-input" class="hidden" accept=".csv"></div></div>
             <div class="flex gap-4"><button onclick="switchTab('archive')" id="tab-archive" class="nav-btn active cinzel">Αρχείο</button><button onclick="switchTab('pipeline')" id="tab-pipeline" class="nav-btn cinzel">Παραγωγή</button><button onclick="switchTab('analytics')" id="tab-analytics" class="nav-btn cinzel">Analytics</button></div>
-            <div class="text-right hidden md:block"><p class="text-[9px] text-zinc-600">Strategic Control</p><p class="text-[10px] gold-text cinzel">v19.5</p></div>
+            <div class="text-right hidden md:block"><p class="text-[9px] text-zinc-600">Strategic Control</p><p class="text-[10px] gold-text cinzel">v19.6</p></div>
         </div>
         <div class="flex flex-wrap justify-between items-center gap-3 mb-6 p-3 bg-zinc-900/40 rounded-xl border border-zinc-800"><div class="youtube-config"><input type="text" id="youtube-client-id" placeholder="Client ID" class="!text-[10px] !py-1 w-64"><input type="text" id="youtube-channel-id" placeholder="Channel ID" class="!text-[10px] !py-1 w-48"><button onclick="connectYouTube()" class="bg-red-600/80 text-white font-black text-[9px] px-4 py-1.5 rounded">🔑 Connect</button></div><div><span id="token-status" class="text-red-400 text-[9px]">● Not connected</span></div></div>
         <div id="view-archive">
@@ -94,7 +94,7 @@
             (p.shorts||[]).forEach(s=>items.push({title:s.title,type:'Short',views:s.analytics?.views||'0',prevViews:s.analytics?.previousViews,retention:s.analytics?.retention||'0%',link:s.link||''}));
             (p.soundtracks||[]).forEach(st=>items.push({title:st.title,type:'Music',views:st.analytics?.views||'0',prevViews:st.analytics?.previousViews,retention:st.analytics?.retention||'0%',link:st.spotifyLink||st.link||''}));});
             items.sort((a,b)=>parseViews(b.views)-parseViews(a.views));
-            list.innerHTML=items.map((item,idx)=>{let typeClass=item.type==='Main'?'pill-main':(item.type==='Short'?'pill-short':'pill-music');let rank=idx===0?'👑':(idx===1?'🥈':(idx===2?'🥉':idx+1));return `<tr><td class="p-3 text-center">${rank}</td><td class="p-3"><a href="${item.link||'#'}" target="_blank" class="gold-text text-xs uppercase hover:underline">${escapeHtml(item.title)}</a></td><td class="p-3 text-center"><span class="analytics-pill ${typeClass}">${item.type}</span></td><td class="p-3"><div class="stat-badge">👁 ${item.views} ${getTrendIcon(item.views,item.prevViews)}</div></td><td class="p-3"><div class="stat-badge">⏱ ${item.retention}</div></td></tr>`;}).join('');
+            list.innerHTML=items.map((item,idx)=>{let typeClass=item.type==='Main'?'pill-main':(item.type==='Short'?'pill-short':'pill-music');let rank=idx===0?'👑':(idx===1?'🥈':(idx===2?'🥉':idx+1));return `<tr><td class="p-3 text-center">${rank}</td><td class="p-3"><a href="${item.link||'#'}" target="_blank" class="gold-text text-xs uppercase hover:underline">${escapeHtml(item.title)}</a></td><td class="p-3 text-center"><span class="analytics-pill ${typeClass}">${item.type}</span></td><td class="p-3"><div class="stat-badge">👁 ${item.views} ${getTrendIcon(item.views,item.prevViews)}</div></td><td class="p-3"><div class="stat-badge">⏱ ${item.retention}</div></td>`;}).join('');
         }
         
         function renderPipeline(){
@@ -122,7 +122,7 @@
         
         window.showConfirmModal=id=>{window.currentMigrateId=id;document.getElementById('confirm-modal').classList.remove('hidden');document.getElementById('final-confirm-btn').onclick=()=>window.executeMigration(id);};
         window.hideConfirmModal=()=>document.getElementById('confirm-modal').classList.add('hidden');
-        window.executeMigration=async(id)=>{let p=pipelineProjects.find(x=>x.id===id);if(!p)return;window.hideConfirmModal();showToast('MIGRATING...');let newId=Date.now().toString();let minOrder=projects.length>0?Math.min(...projects.map(pr=>pr.orderIndex||0)):1000;let archive={mainVideo:{title:p.title||"Untitled",link:"",published:false,analytics:{views:"0",retention:"0%"}},shorts:(p.shorts||[]).map(s=>({title:s.title||"Short",published:s.done===false?false:true,analytics:{views:"0",retention:"0%"},link:""})),soundtracks:(p.soundtracks||[]).map(st=>({title:st.title||"Score",published:st.done===false?false:true,spotifyLink:st.spotifyLink||"",link:"",analytics:{views:"0",retention:"0%"}})),orderIndex:minOrder-1,date:new Date().toISOString()};projects.unshift({...archive,id:newId});pipelineProjects=pipelineProjects.filter(x=>x.id!==id);saveLocal();renderProjects();renderPipeline();updateStats();showToast('MIGRATION COMPLETE');switchTab('archive');};
+        window.executeMigration=async(id)=>{let p=pipelineProjects.find(x=>x.id===id);if(!p)return;window.hideConfirmModal();showToast('MIGRATING...');let newId=Date.now().toString();let minOrder=projects.length>0?Math.min(...projects.map(pr=>pr.orderIndex||0)):1000;let archive={mainVideo:{title:p.title||"Untitled",link:"",published:false,analytics:{views:"0",retention:"0%"}},shorts:(p.shorts||[]).map(s=>({title:s.title||"Short",published:s.done===true,analytics:{views:"0",retention:"0%"},link:""})),soundtracks:(p.soundtracks||[]).map(st=>({title:st.title||"Score",published:st.done===true,spotifyLink:st.spotifyLink||"",link:"",analytics:{views:"0",retention:"0%"}})),orderIndex:minOrder-1,date:new Date().toISOString()};projects.unshift({...archive,id:newId});pipelineProjects=pipelineProjects.filter(x=>x.id!==id);saveLocal();renderProjects();renderPipeline();updateStats();showToast('MIGRATION COMPLETE');switchTab('archive');};
         
         window.hideDeleteModal=()=>document.getElementById('delete-modal').classList.add('hidden');
         window.deleteProject=id=>{pendingDeleteId=id;document.getElementById('delete-modal').classList.remove('hidden');};
