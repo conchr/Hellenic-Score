@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hellenic Score & Tales | YouTube Direct Sync v18.7</title>
+    <title>Hellenic Score & Tales | CSV & YouTube Sync v18.9</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -41,7 +41,6 @@
         .trend-steady { color: #71717a; margin-left: 2px; }
         .youtube-config { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 8px 16px; display: inline-flex; gap: 12px; align-items: center; flex-wrap: wrap; }
         .youtube-config input { width: 200px; font-size: 10px !important; }
-        .error-message { color: #ef4444; font-size: 9px; margin-top: 4px; display: block; }
     </style>
 </head>
 <body class="p-2 md:p-6">
@@ -53,7 +52,7 @@
         </div>
     </div>
 
-    <!-- Modals (Migration, Delete) -->
+    <!-- Modals -->
     <div id="confirm-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-4 z-[200]">
         <div class="glass-card max-w-sm w-full p-8 border-emerald-500/30 text-center">
             <h3 class="cinzel gold-text text-xl mb-4">ΕΠΙΒΕΒΑΙΩΣΗ UPLOAD</h3>
@@ -100,7 +99,7 @@
             </div>
             <div class="text-right hidden md:block">
                 <p class="text-[9px] text-zinc-600 uppercase font-bold">Strategic Control</p>
-                <p class="text-[10px] gold-text cinzel">v18.7 YouTube Direct Sync</p>
+                <p class="text-[10px] gold-text cinzel">v18.9 CSV & YouTube Sync</p>
             </div>
         </div>
 
@@ -242,7 +241,7 @@
         window.saveChannelStats = (data) => { channelStats = data; saveToLocal(); updateStats(); };
         window.moveProject = (id, dir) => { const idx = projects.findIndex(p => p.id === id), tIdx = dir === 'up' ? idx-1 : idx+1; if(tIdx<0 || tIdx>=projects.length) return; const p1=projects[idx], p2=projects[tIdx]; [p1.orderIndex, p2.orderIndex] = [p2.orderIndex, p1.orderIndex]; projects.sort((a,b)=> (a.orderIndex||0)-(b.orderIndex||0)); saveToLocal(); renderProjects(); };
         
-        // Render functions (συνοπτικά, ίδιες με πριν, αλλά περιλαμβάνονται πλήρως)
+        // ======================== RENDER FUNCTIONS ========================
         window.renderProjects = () => {
             const list = document.getElementById('project-list');
             list.innerHTML = projects.map((p, i) => {
@@ -279,7 +278,7 @@
                 const aD = (p.shorts || []).reduce((acc, s) => acc + (s.done ? 1 : 0), 0) + (p.soundtracks || []).reduce((acc, s) => acc + (s.done ? 1 : 0), 0);
                 const target = CORE_STEPS.length + sL + stL;
                 const pct = target > 0 ? Math.round(((bD + aD) / target) * 100) : 0;
-                return `<div class="glass-card overflow-hidden shadow-2xl border-gold/5 bg-zinc-900/40" data-pid="${p.id}"><table class="w-full text-left text-xs"><thead><tr class="bg-zinc-950/80 text-zinc-500 text-[8px] uppercase font-black text-center tracking-[0.2em] border-b border-zinc-800"><th class="p-5 text-left w-72">Project Title</th>${CORE_STEPS.map(s => `<th class="p-2">${s}</th>`).join('')}<th class="p-5 bg-emerald-950/30 text-emerald-400 font-black">FINALIZE</th><th class="p-5 text-right">Actions</th><tr></thead><tbody><tr class="text-center border-b border-zinc-800/50"><td class="p-5 text-left"><input type="text" class="pipeline-input gold-text font-black !text-xs mb-1 uppercase tracking-tighter" value="${p.title}" oninput="updatePipelineField('${p.id}', 'title', this.value)"><div class="progress-bar w-full"><div class="progress-fill" style="width: ${pct}%"></div></div><div class="text-[7px] text-zinc-500 mt-1 uppercase font-bold tracking-widest">${pct}% COMPLETE</div></td>${CORE_STEPS.map(s => `<td class="p-2"><input type="checkbox" class="pipeline-checkbox" ${p[s] ? 'checked' : ''} onchange="togglePipelineStep('${p.id}', '${s}')"></td>`).join('')}<td class="p-4 bg-emerald-900/5"><button onclick="showConfirmModal('${p.id}')" class="upload-btn">UPLOAD</button></td><td class="p-5 text-right"><button onclick="deletePipelineProject('${p.id}')" class="text-[9px] text-zinc-600 hover:text-red-500 font-black uppercase tracking-widest">Discard</button></td></tr><tr class="bg-black/40"><td colspan="10" class="p-6"><div class="flex flex-col lg:flex-row gap-16"><div class="flex-1"><div class="flex justify-between items-center mb-4 pb-2 border-b border-zinc-800"><span class="text-[10px] gold-text uppercase font-black tracking-widest">Shorts Pipeline</span><button onclick="addPipelineAsset('${p.id}', 'shorts')" class="text-[8px] bg-zinc-800/50 px-3 py-1 rounded border border-zinc-700 hover:border-gold">+ NEW SHORT</button></div><div class="grid grid-cols-1 sm:grid-cols-2 gap-3">${(p.shorts || []).map((s, idx) => `<div class="flex items-center gap-3 bg-zinc-950/50 p-2 rounded-lg border border-zinc-800"><input type="checkbox" class="pipeline-checkbox scale-90" ${s.done ? 'checked' : ''} onchange="updatePipelineAsset('${p.id}', 'shorts', ${idx}, 'done', this.checked)"><input type="text" class="pipeline-input !text-[10px] flex-1" value="${s.title}" oninput="updatePipelineAsset('${p.id}', 'shorts', ${idx}, 'title', this.value)"><button onclick="removePipelineAsset('${p.id}', 'shorts', ${idx})" class="text-zinc-700 hover:text-red-500 text-[10px]">✕</button></div>`).join('')}</div></div><div class="flex-1"><div class="flex justify-between items-center mb-4 pb-2 border-b border-zinc-800"><span class="text-[10px] gold-text uppercase font-black tracking-widest">Music Assets</span><button onclick="addPipelineAsset('${p.id}', 'soundtracks')" class="text-[8px] bg-zinc-800/50 px-3 py-1 rounded border border-zinc-700 hover:border-gold">+ NEW SCORE</button></div><div class="space-y-3">${(p.soundtracks || []).map((st, idx) => `<div class="flex flex-col gap-2 bg-zinc-950/50 p-3 rounded-lg border border-zinc-800"><div class="flex items-center gap-4"><input type="checkbox" class="pipeline-checkbox scale-90" ${st.done ? 'checked' : ''} onchange="updatePipelineAsset('${p.id}', 'soundtracks', ${idx}, 'done', this.checked)"><input type="text" class="pipeline-input !text-[10px] flex-1 font-bold" value="${st.title}" oninput="updatePipelineAsset('${p.id}', 'soundtracks', ${idx}, 'title', this.value)"><button onclick="removePipelineAsset('${p.id}', 'soundtracks', ${idx})" class="text-zinc-700 hover:text-red-500 text-[10px]">✕</button></div><div class="flex items-center gap-3 pl-8"><span class="text-[8px] text-emerald-500 font-bold uppercase">Spotify Link:</span><input type="text" class="pipeline-input !text-[9px] flex-1 italic" value="${st.spotifyLink || ''}" oninput="updatePipelineAsset('${p.id}', 'soundtracks', ${idx}, 'spotifyLink', this.value)"></div></div>`).join('')}</div></div></div></td></tr></tbody></table></div>`;
+                return `<div class="glass-card overflow-hidden shadow-2xl border-gold/5 bg-zinc-900/40" data-pid="${p.id}"><table class="w-full text-left text-xs"><thead><tr class="bg-zinc-950/80 text-zinc-500 text-[8px] uppercase font-black text-center tracking-[0.2em] border-b border-zinc-800"><th class="p-5 text-left w-72">Project Title</th>${CORE_STEPS.map(s => `<th class="p-2">${s}</th>`).join('')}<th class="p-5 bg-emerald-950/30 text-emerald-400 font-black">FINALIZE</th><th class="p-5 text-right">Actions</th></tr></thead><tbody><tr class="text-center border-b border-zinc-800/50"><td class="p-5 text-left"><input type="text" class="pipeline-input gold-text font-black !text-xs mb-1 uppercase tracking-tighter" value="${p.title}" oninput="updatePipelineField('${p.id}', 'title', this.value)"><div class="progress-bar w-full"><div class="progress-fill" style="width: ${pct}%"></div></div><div class="text-[7px] text-zinc-500 mt-1 uppercase font-bold tracking-widest">${pct}% COMPLETE</div></td>${CORE_STEPS.map(s => `<td class="p-2"><input type="checkbox" class="pipeline-checkbox" ${p[s] ? 'checked' : ''} onchange="togglePipelineStep('${p.id}', '${s}')"></td>`).join('')}<td class="p-4 bg-emerald-900/5"><button onclick="showConfirmModal('${p.id}')" class="upload-btn">UPLOAD</button></td><td class="p-5 text-right"><button onclick="deletePipelineProject('${p.id}')" class="text-[9px] text-zinc-600 hover:text-red-500 font-black uppercase tracking-widest">Discard</button></td></tr><tr class="bg-black/40"><td colspan="10" class="p-6"><div class="flex flex-col lg:flex-row gap-16"><div class="flex-1"><div class="flex justify-between items-center mb-4 pb-2 border-b border-zinc-800"><span class="text-[10px] gold-text uppercase font-black tracking-widest">Shorts Pipeline</span><button onclick="addPipelineAsset('${p.id}', 'shorts')" class="text-[8px] bg-zinc-800/50 px-3 py-1 rounded border border-zinc-700 hover:border-gold">+ NEW SHORT</button></div><div class="grid grid-cols-1 sm:grid-cols-2 gap-3">${(p.shorts || []).map((s, idx) => `<div class="flex items-center gap-3 bg-zinc-950/50 p-2 rounded-lg border border-zinc-800"><input type="checkbox" class="pipeline-checkbox scale-90" ${s.done ? 'checked' : ''} onchange="updatePipelineAsset('${p.id}', 'shorts', ${idx}, 'done', this.checked)"><input type="text" class="pipeline-input !text-[10px] flex-1" value="${s.title}" oninput="updatePipelineAsset('${p.id}', 'shorts', ${idx}, 'title', this.value)"><button onclick="removePipelineAsset('${p.id}', 'shorts', ${idx})" class="text-zinc-700 hover:text-red-500 text-[10px]">✕</button></div>`).join('')}</div></div><div class="flex-1"><div class="flex justify-between items-center mb-4 pb-2 border-b border-zinc-800"><span class="text-[10px] gold-text uppercase font-black tracking-widest">Music Assets</span><button onclick="addPipelineAsset('${p.id}', 'soundtracks')" class="text-[8px] bg-zinc-800/50 px-3 py-1 rounded border border-zinc-700 hover:border-gold">+ NEW SCORE</button></div><div class="space-y-3">${(p.soundtracks || []).map((st, idx) => `<div class="flex flex-col gap-2 bg-zinc-950/50 p-3 rounded-lg border border-zinc-800"><div class="flex items-center gap-4"><input type="checkbox" class="pipeline-checkbox scale-90" ${st.done ? 'checked' : ''} onchange="updatePipelineAsset('${p.id}', 'soundtracks', ${idx}, 'done', this.checked)"><input type="text" class="pipeline-input !text-[10px] flex-1 font-bold" value="${st.title}" oninput="updatePipelineAsset('${p.id}', 'soundtracks', ${idx}, 'title', this.value)"><button onclick="removePipelineAsset('${p.id}', 'soundtracks', ${idx})" class="text-zinc-700 hover:text-red-500 text-[10px]">✕</button></div><div class="flex items-center gap-3 pl-8"><span class="text-[8px] text-emerald-500 font-bold uppercase">Spotify Link:</span><input type="text" class="pipeline-input !text-[9px] flex-1 italic" value="${st.spotifyLink || ''}" oninput="updatePipelineAsset('${p.id}', 'soundtracks', ${idx}, 'spotifyLink', this.value)"></div></div>`).join('')}</div></div></div></td></tr></tbody></table></div>`;
             }).join('');
         };
         
@@ -293,6 +292,7 @@
             document.getElementById('channel-watchtime').innerText = channelStats.watchTime || '0';
         };
         
+        // ======================== MODAL & FORM FUNCTIONS ========================
         window.openModal = (id=null) => {
             document.getElementById('project-form').reset();
             document.getElementById('shorts-container').innerHTML = '';
@@ -323,6 +323,7 @@
             await window.saveProjectToDB(id, data); showToast('DATABASE UPDATED'); closeModal();
         });
         
+        // ======================== PIPELINE ACTIONS ========================
         window.updatePipelineField = (id, field, value) => { const p = pipelineProjects.find(item=>item.id===id); if(p) { p[field]=value; clearTimeout(saveTimeout); saveTimeout=setTimeout(()=>window.savePipelineToDB(id,p),800); } };
         window.togglePipelineStep = async (id, step) => { const p = pipelineProjects.find(item=>item.id===id); if(p) { p[step]=!p[step]; await window.savePipelineToDB(id,p); } };
         window.addPipelineAsset = async (id, type) => { const p = pipelineProjects.find(item=>item.id===id); if(p) { if(!p[type]) p[type]=[]; p[type].push(type==='shorts' ? {title:`Short ${p.shorts.length+1}`, done:false} : {title:'', done:false, spotifyLink:''}); await window.savePipelineToDB(id,p); } };
@@ -331,6 +332,7 @@
         window.openPipelineModal = () => { document.getElementById('pipeline-title-input').value=""; document.getElementById('pipeline-modal').classList.remove('hidden'); };
         window.addPipelineProject = async () => { const title = document.getElementById('pipeline-title-input').value; if(title) { await window.savePipelineToDB(Date.now().toString(), { title, scenario:false, narration:false, artworks:false, video:false, subtitles:false, multilanguage:false, descriptions:false, shorts:[], soundtracks:[], upload:false, dateCreated:new Date().toISOString() }); document.getElementById('pipeline-modal').classList.add('hidden'); showToast('PRODUCTION INITIATED'); } };
         
+        // ======================== MIGRATION ========================
         window.showConfirmModal = (id) => { currentMigrationId = id; document.getElementById('confirm-modal').classList.remove('hidden'); document.getElementById('final-confirm-btn').onclick = () => window.executeMigration(id); };
         window.hideConfirmModal = () => { document.getElementById('confirm-modal').classList.add('hidden'); currentMigrationId = null; };
         window.executeMigration = async (id) => {
@@ -344,11 +346,12 @@
             showToast('MIGRATION COMPLETE'); switchTab('archive');
         };
         
+        // ======================== DELETE ========================
         window.hideDeleteModal = () => { document.getElementById('delete-modal').classList.add('hidden'); pendingDeleteId = null; };
         window.deleteProject = (id) => { pendingDeleteId = id; document.getElementById('delete-modal').classList.remove('hidden'); };
         document.getElementById('final-delete-btn').onclick = () => { if(pendingDeleteId) { projects = projects.filter(p => p.id !== pendingDeleteId); saveToLocal(); renderProjects(); updateStats(); hideDeleteModal(); showToast('DELETED'); } };
         
-        // ======================== YOUTUBE OAUTH & SYNC (v18.7) ========================
+        // ======================== YOUTUBE OAUTH & SYNC (v18.9) ========================
         window.connectYouTube = async () => {
             const clientId = document.getElementById('youtube-client-id').value.trim();
             const channelId = document.getElementById('youtube-channel-id').value.trim();
@@ -395,29 +398,19 @@
             const endDate = new Date().toISOString().split('T')[0];
             const startDate = new Date(Date.now() - 28*24*60*60*1000).toISOString().split('T')[0];
             try {
-                // Verify channel ownership
                 const checkUrl = `https://www.googleapis.com/youtube/v3/channels?part=id&id=${channelId}`;
                 const checkRes = await fetch(checkUrl, { headers: { Authorization: `Bearer ${youtubeAccessToken}` } });
                 const checkData = await checkRes.json();
-                if(!checkData.items || checkData.items.length === 0) {
-                    throw new Error('Channel ID not found or not owned by authenticated user.');
-                }
+                if(!checkData.items || checkData.items.length === 0) throw new Error('Channel ID not found or not owned by authenticated user.');
                 
-                // Channel analytics
                 const channelMetrics = 'views,averageViewPercentage,subscribersGained,estimatedMinutesWatched';
                 const channelUrl = `https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3D${channelId}&startDate=${startDate}&endDate=${endDate}&metrics=${channelMetrics}`;
                 const channelRes = await fetch(channelUrl, { headers: { Authorization: `Bearer ${youtubeAccessToken}` } });
                 if(!channelRes.ok) throw new Error(`Analytics API error: ${channelRes.status}`);
                 const channelData = await channelRes.json();
                 const row = channelData.rows?.[0] || [];
-                const totalStats = { 
-                    views: row[0]?.toString() || '0', 
-                    retention: (row[1] !== undefined ? (row[1]/100).toFixed(1)+'%' : '0%'), 
-                    subscribers: row[2]?.toString() || '0', 
-                    watchTime: row[3] ? Math.round(row[3]/60).toString() : '0' 
-                };
-                let channelChanged = false; 
-                const newChannel = { ...channelStats };
+                const totalStats = { views: row[0]?.toString() || '0', retention: (row[1] !== undefined ? (row[1]/100).toFixed(1)+'%' : '0%'), subscribers: row[2]?.toString() || '0', watchTime: row[3] ? Math.round(row[3]/60).toString() : '0' };
+                let channelChanged = false; const newChannel = { ...channelStats };
                 if(totalStats.views !== channelStats.views) { newChannel.previousViews = channelStats.views; newChannel.views = totalStats.views; channelChanged = true; }
                 if(totalStats.retention !== channelStats.retention) { newChannel.previousRetention = channelStats.retention; newChannel.retention = totalStats.retention; channelChanged = true; }
                 if(totalStats.subscribers !== channelStats.subscribers) { newChannel.subscribers = totalStats.subscribers; channelChanged = true; }
@@ -452,64 +445,136 @@
                             }
                             showToast(`Sync complete! ${updatedCount} projects updated.`);
                             renderProjects(); renderAnalytics(); updateStats();
-                        } else { showToast('No video data found (channel may be too new).'); }
+                        } else { showToast('No video data found.'); }
                     } else { showToast('Video-level data not available yet.'); }
                 } catch(videoErr) { console.warn('Video analytics skipped:', videoErr); showToast('Video analytics skipped (no data).'); }
             } catch(err) { console.error(err); showToast('Error: '+err.message); }
         };
         
-        // ======================== IMPORT / EXPORT (Διορθωμένο RESTORE) ========================
+        // ======================== CSV IMPORT (FULLY FUNCTIONAL) ========================
         window.triggerAnalyticsImport = () => document.getElementById('analytics-input').click();
-        window.handleAnalyticsImport = (input) => { 
-            const file = input.files[0]; 
-            if(!file) return; 
-            const reader = new FileReader(); 
-            reader.onload = async (e) => { 
-                showToast('CSV import fallback - implement if needed'); 
-            }; 
-            reader.readAsText(file); 
+        window.handleAnalyticsImport = (inputEl) => {
+            const file = inputEl.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const text = e.target.result;
+                const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+                if(lines.length < 2) { showToast('CSV has no data rows'); return; }
+                const delimiter = (lines[0].match(/;/g) || []).length > (lines[0].match(/,/g) || []).length ? ';' : ',';
+                const splitCSV = (s) => s.split(new RegExp(`${delimiter}(?=(?:(?:[^"]*"){2})*[^"]*$)`)).map(c => c.trim().replace(/^"|"$/g, ''));
+                const headers = splitCSV(lines[0]).map(h => h.toLowerCase());
+                const titleIdx = headers.findIndex(h => h.includes('περιεχόμενο') || h.includes('content') || h.includes('video title') || h.includes('title'));
+                const viewsIdx = headers.findIndex(h => h.includes('προβολές') || h === 'views');
+                const retentionIdx = headers.findIndex(h => h.includes('μέσο ποσοστό προβολής') || h.includes('average percentage viewed') || (h.includes('%') && h.includes('retention')));
+                const subsIdx = headers.findIndex(h => h.includes('συνδρομητές') || h === 'subscribers');
+                const impressionsIdx = headers.findIndex(h => h.includes('εμφανίσεις') || h === 'impressions');
+                const ctrIdx = headers.findIndex(h => h.includes('προωθήσεις') || h.includes('click-through') || h === 'ctr');
+                const watchTimeIdx = headers.findIndex(h => h.includes('διάρκεια') || h.includes('watch time') || h === 'watch time');
+                let totalStats = null;
+                const videoStats = new Map();
+                for(let i = 1; i < lines.length; i++) {
+                    const row = splitCSV(lines[i]);
+                    if(row.length < 2) continue;
+                    const firstCell = row[0].toLowerCase();
+                    if(firstCell === 'σύνολο' || firstCell === 'total' || firstCell === 'channel') {
+                        totalStats = { views: viewsIdx!==-1?row[viewsIdx]:'0', retention: retentionIdx!==-1?row[retentionIdx]:'0%', subscribers: subsIdx!==-1?row[subsIdx]:'0', impressions: impressionsIdx!==-1?row[impressionsIdx]:'0', ctr: ctrIdx!==-1?row[ctrIdx]:'0%', watchTime: watchTimeIdx!==-1?row[watchTimeIdx]:'0' };
+                        continue;
+                    }
+                    if(titleIdx !== -1 && viewsIdx !== -1) {
+                        const rawTitle = row[titleIdx];
+                        if(rawTitle && rawTitle.trim() !== '') {
+                            const cleanTitle = cleanForMatch(rawTitle);
+                            videoStats.set(cleanTitle, { views: row[viewsIdx]||'0', retention: retentionIdx!==-1?row[retentionIdx]:'0%', ctr: ctrIdx!==-1?row[ctrIdx]:'0%' });
+                        }
+                    }
+                }
+                if(totalStats) {
+                    let changed = false;
+                    const newStats = { ...channelStats };
+                    if(totalStats.views !== channelStats.views) { newStats.previousViews = channelStats.views; newStats.views = totalStats.views; changed = true; }
+                    if(totalStats.retention !== channelStats.retention) { newStats.previousRetention = channelStats.retention; newStats.retention = totalStats.retention; changed = true; }
+                    if(totalStats.subscribers !== channelStats.subscribers) { newStats.subscribers = totalStats.subscribers; changed = true; }
+                    if(totalStats.impressions !== channelStats.impressions) { newStats.impressions = totalStats.impressions; changed = true; }
+                    if(totalStats.ctr !== channelStats.ctr) { newStats.ctr = totalStats.ctr; changed = true; }
+                    if(totalStats.watchTime !== channelStats.watchTime) { newStats.watchTime = totalStats.watchTime; changed = true; }
+                    if(changed) await window.saveChannelStats(newStats);
+                }
+                let updatedCount = 0;
+                for(let project of projects) {
+                    let projectModified = false;
+                    const projectCopy = JSON.parse(JSON.stringify(project));
+                    if(project.mainVideo.title) {
+                        const cleanTitle = cleanForMatch(project.mainVideo.title);
+                        if(videoStats.has(cleanTitle)) {
+                            const stats = videoStats.get(cleanTitle);
+                            const old = project.mainVideo.analytics || {};
+                            let changed = false;
+                            const newAnalytics = { ...old };
+                            if(stats.views !== old.views) { newAnalytics.previousViews = old.views || null; newAnalytics.views = stats.views; changed = true; }
+                            if(stats.retention !== old.retention) { newAnalytics.retention = stats.retention; changed = true; }
+                            if(stats.ctr !== old.ctr) { newAnalytics.ctr = stats.ctr; changed = true; }
+                            if(changed) { projectCopy.mainVideo.analytics = newAnalytics; projectModified = true; }
+                        }
+                    }
+                    for(let short of projectCopy.shorts) {
+                        const cleanTitle = cleanForMatch(short.title);
+                        if(videoStats.has(cleanTitle)) {
+                            const stats = videoStats.get(cleanTitle);
+                            const old = short.analytics || {};
+                            let changed = false;
+                            const newAnalytics = { ...old };
+                            if(stats.views !== old.views) { newAnalytics.previousViews = old.views || null; newAnalytics.views = stats.views; changed = true; }
+                            if(stats.retention !== old.retention) { newAnalytics.retention = stats.retention; changed = true; }
+                            if(stats.ctr !== old.ctr) { newAnalytics.ctr = stats.ctr; changed = true; }
+                            if(changed) { short.analytics = newAnalytics; projectModified = true; }
+                        }
+                    }
+                    for(let st of projectCopy.soundtracks) {
+                        const cleanTitle = cleanForMatch(st.title);
+                        if(videoStats.has(cleanTitle)) {
+                            const stats = videoStats.get(cleanTitle);
+                            const old = st.analytics || {};
+                            let changed = false;
+                            const newAnalytics = { ...old };
+                            if(stats.views !== old.views) { newAnalytics.previousViews = old.views || null; newAnalytics.views = stats.views; changed = true; }
+                            if(stats.retention !== old.retention) { newAnalytics.retention = stats.retention; changed = true; }
+                            if(stats.ctr !== old.ctr) { newAnalytics.ctr = stats.ctr; changed = true; }
+                            if(changed) { st.analytics = newAnalytics; projectModified = true; }
+                        }
+                    }
+                    if(projectModified) { await window.saveProjectToDB(project.id, projectCopy); updatedCount++; showToast(`CSV import: ${updatedCount} projects updated...`); await new Promise(r => setTimeout(r, 100)); }
+                }
+                showToast(`CSV import complete! ${updatedCount} projects updated.`);
+                renderProjects(); renderAnalytics(); updateStats();
+            };
+            reader.readAsText(file);
         };
         
+        // ======================== IMPORT/EXPORT (RESTORE FIXED) ========================
         window.importDatabase = () => document.getElementById('import-input').click();
-        window.handleImport = (inputEl) => { 
-            const file = inputEl.files[0]; 
-            if(!file) return; 
-            const reader = new FileReader(); 
-            reader.onload = async (e) => { 
-                try { 
-                    const data = JSON.parse(e.target.result); 
-                    let restoredProjects = 0, restoredPipeline = 0;
-                    if(data.p && Array.isArray(data.p)) {
-                        for(const p of data.p) {
-                            const id = p.id || Date.now() + Math.random();
-                            await window.saveProjectToDB(id, p);
-                            restoredProjects++;
-                        }
-                    }
+        window.handleImport = (inputEl) => {
+            const file = inputEl.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if(data.p && Array.isArray(data.p)) for(const p of data.p) await window.saveProjectToDB(p.id || Date.now()+Math.random(), p);
                     if(data.c) await window.saveChannelStats(data.c);
-                    if(data.pipe && Array.isArray(data.pipe)) {
-                        for(const pipe of data.pipe) {
-                            const id = pipe.id || Date.now() + Math.random();
-                            await window.savePipelineToDB(id, pipe);
-                            restoredPipeline++;
-                        }
-                    }
-                    showToast(`Restored ${restoredProjects} projects, ${restoredPipeline} pipelines, and stats.`);
+                    if(data.pipe && Array.isArray(data.pipe)) for(const pipe of data.pipe) await window.savePipelineToDB(pipe.id || Date.now()+Math.random(), pipe);
+                    showToast('Restore successful');
                     renderProjects(); renderPipeline(); updateStats();
-                } catch(err) { 
-                    console.error(err);
-                    alert('Restore failed: Invalid JSON format. Error: '+err.message); 
-                } 
-            }; 
-            reader.readAsText(file); 
+                } catch(err) { alert('Restore failed: '+err.message); }
+            };
+            reader.readAsText(file);
         };
-        
-        window.exportDatabase = () => { 
-            const d = JSON.stringify({p:projects, c:channelStats, pipe:pipelineProjects}); 
-            const a = document.createElement('a'); 
-            a.href = "data:text/json;charset=utf-8,"+encodeURIComponent(d); 
-            a.download = `hst_backup_v18.7_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`; 
-            a.click(); 
+        window.exportDatabase = () => {
+            const d = JSON.stringify({p:projects, c:channelStats, pipe:pipelineProjects});
+            const a = document.createElement('a');
+            a.href = "data:text/json;charset=utf-8,"+encodeURIComponent(d);
+            a.download = `hst_backup_v18.9_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`;
+            a.click();
         };
         
         window.switchTab = (tab) => {
@@ -522,7 +587,7 @@
             if(tab==='analytics') renderAnalytics();
         };
         
-        // Initialization
+        // ======================== INITIALIZATION ========================
         const init = () => {
             loadFromLocal();
             renderProjects(); renderPipeline(); updateStats();
@@ -534,7 +599,7 @@
             if(savedToken) { youtubeAccessToken = savedToken; document.getElementById('token-status').innerHTML = '✅ Connected'; }
             document.getElementById('loader').style.opacity = '0';
             setTimeout(() => document.getElementById('loader').classList.add('hidden'), 500);
-            document.getElementById('analytics-input').addEventListener('change', window.handleAnalyticsImport);
+            document.getElementById('analytics-input').addEventListener('change', (e) => window.handleAnalyticsImport(e.target));
             document.getElementById('import-input').addEventListener('change', (e) => window.handleImport(e.target));
             document.getElementById('db-status').innerText = 'Local Storage Mode';
             document.getElementById('db-status').className = 'text-amber-500 font-black tracking-tighter uppercase';
