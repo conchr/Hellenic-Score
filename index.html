@@ -3,638 +3,184 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hellenic Score & Tales | v19.8</title>
+    <title>Hellenic Score & Tales | v19.9</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root { --gold: #c5a059; --dark-bg: #0a0a0b; --card-bg: #161618; --spotify: #1DB954; --red: #ef4444; }
-        body { background-color: var(--dark-bg); color: #e5e7eb; font-family: 'Inter', sans-serif; margin: 0; overflow-x: auto; }
-        h1, h2, h3, .cinzel { font-family: 'Cinzel', serif; letter-spacing: 0.05em; }
+        body { background: var(--dark-bg); color: #e5e7eb; font-family: 'Inter', sans-serif; }
         .gold-text { color: var(--gold); }
-        .gold-bg { background-color: var(--gold); }
-        .glass-card { background: var(--card-bg); border: 1px solid rgba(197, 160, 89, 0.2); border-radius: 12px; }
-        input, select { background: #242427 !important; border: 1px solid #3f3f46 !important; color: white !important; padding: 0.4rem 0.6rem !important; border-radius: 4px !important; font-size: 0.8rem !important; }
-        .nav-btn { padding: 0.75rem 1.5rem; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; border-bottom: 2px solid transparent; transition: all 0.3s; opacity: 0.5; }
+        .gold-bg { background: var(--gold); }
+        .glass-card { background: var(--card-bg); border: 1px solid rgba(197,160,89,0.2); border-radius: 12px; }
+        .nav-btn { padding: 0.75rem 1.5rem; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; border-bottom: 2px solid transparent; opacity: 0.5; cursor: pointer; }
         .nav-btn.active { opacity: 1; color: var(--gold); border-bottom-color: var(--gold); }
-        .pipeline-checkbox { width: 1.1rem; height: 1.1rem; accent-color: var(--gold); cursor: pointer; }
-        .progress-bar { height: 4px; background: #222; border-radius: 2px; overflow: hidden; }
-        .progress-fill { height: 100%; background: var(--gold); transition: width 0.5s ease; }
+        .pipeline-checkbox { width: 1.1rem; height: 1.1rem; accent-color: var(--gold); }
+        .progress-bar { height: 4px; background: #222; border-radius: 2px; }
+        .progress-fill { height: 100%; background: var(--gold); transition: width 0.5s; }
         .thumbnail-frame { width: 80px; height: 45px; border: 1px solid var(--gold); border-radius: 4px; overflow: hidden; background: #000; flex-shrink: 0; }
         .thumbnail-frame img { width: 100%; height: 100%; object-fit: cover; }
-        .stat-badge { font-size: 8px; background: rgba(255,255,255,0.03); padding: 1px 4px; border-radius: 3px; color: #888; display: inline-flex; align-items: center; gap: 3px; border: 1px solid rgba(197, 160, 89, 0.08); white-space: nowrap; }
-        .loading-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: flex; align-items: center; justify-content: center; z-index: 1000; transition: opacity 0.5s; }
-        .pipeline-input { background: transparent !important; border: none !important; border-bottom: 1px solid #333 !important; font-size: 10px !important; padding: 2px 0 !important; border-radius: 0 !important; width: 100%; }
-        .pipeline-input:focus { border-bottom-color: var(--gold) !important; outline: none; }
-        .upload-btn { background: #10b981; color: black; padding: 6px 16px; border-radius: 6px; font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; transition: all 0.3s; box-shadow: 0 4px 0px 0px #065f46; cursor: pointer; }
-        .upload-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 0px 0px #065f46; filter: brightness(1.1); }
-        .upload-btn:active { transform: translateY(1px); box-shadow: 0 1px 0px 0px #065f46; }
+        .stat-badge { font-size: 8px; background: rgba(255,255,255,0.03); padding: 1px 4px; border-radius: 3px; color: #888; display: inline-flex; align-items: center; gap: 3px; border: 1px solid rgba(197,160,89,0.08); white-space: nowrap; }
+        .upload-btn { background: #10b981; color: black; padding: 6px 16px; border-radius: 6px; font-size: 9px; font-weight: 900; text-transform: uppercase; box-shadow: 0 4px 0 #065f46; cursor: pointer; transition: 0.2s; }
+        .upload-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 0 #065f46; }
         .spotify-tag { color: var(--spotify); font-weight: bold; font-size: 8px; }
-        .archive-row:hover { background: rgba(255,255,255,0.02); }
-        .delete-btn { color: #555; transition: color 0.3s; }
+        .delete-btn { color: #555; transition: color 0.2s; }
         .delete-btn:hover { color: var(--red); }
-        .analytics-pill { font-size: 9px; padding: 2px 8px; border-radius: 20px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; }
-        .pill-main { background: rgba(197, 160, 89, 0.15); color: var(--gold); border: 1px solid rgba(197, 160, 89, 0.3); }
-        .pill-short { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
-        .pill-music { background: rgba(29, 185, 84, 0.1); color: var(--spotify); border: 1px solid rgba(29, 185, 84, 0.2); }
-        .trend-up { color: #10b981; font-weight: bold; margin-left: 2px; }
-        .trend-down { color: #ef4444; font-weight: bold; margin-left: 2px; }
-        .trend-steady { color: #71717a; margin-left: 2px; }
-        .youtube-config { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 8px 16px; display: inline-flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-        .youtube-config input { width: 200px; font-size: 10px !important; }
         .data-table { width: 100%; table-layout: fixed; border-collapse: collapse; }
-        .data-table th, .data-table td { padding: 0.75rem; vertical-align: top; word-break: break-word; white-space: normal; }
+        .data-table th, .data-table td { padding: 0.75rem; vertical-align: top; word-break: break-word; }
         .data-table th:first-child { width: 5%; }
         .data-table th:nth-child(2) { width: 5%; }
         .data-table th:nth-child(3) { width: 30%; }
         .data-table th:nth-child(4) { width: 30%; }
         .data-table th:nth-child(5) { width: 25%; }
         .data-table th:last-child { width: 5%; }
-        .soundtrack-title { word-break: break-word; white-space: normal; max-width: 250px; display: inline-block; }
-        /* Actions: σίγουρα σε μία γραμμή */
-        .actions-cell { white-space: nowrap; width: 1%; }
-        .action-buttons { display: inline-flex; gap: 0.75rem; justify-content: flex-end; flex-wrap: nowrap; }
-        @media (max-width: 768px) {
-            .data-table th, .data-table td { padding: 0.5rem; font-size: 0.7rem; }
-            .thumbnail-frame { width: 60px; height: 34px; }
-            .soundtrack-title { max-width: 180px; }
-            .action-buttons { gap: 0.5rem; }
-        }
+        .soundtrack-title { word-break: break-word; max-width: 250px; display: inline-block; }
+        .youtube-config { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 8px 16px; display: inline-flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+        .youtube-config input { width: 200px; font-size: 10px !important; }
+        .loading-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: flex; align-items: center; justify-content: center; z-index: 1000; transition: opacity 0.5s; }
+        /* Actions - σίγουρα σε μία γραμμή */
+        .action-cell { white-space: nowrap; width: 1%; }
+        .action-buttons { display: flex; gap: 12px; justify-content: flex-end; flex-wrap: nowrap; }
+        @media (max-width: 768px) { .data-table th, .data-table td { padding: 0.5rem; font-size: 0.7rem; } .thumbnail-frame { width: 60px; height: 34px; } .action-buttons { gap: 6px; } }
     </style>
 </head>
 <body class="p-2 md:p-6">
 
-    <div id="loader" class="loading-overlay">
-        <div class="text-center">
-            <div class="inline-block animate-spin text-3xl mb-3">🔱</div>
-            <p id="loader-text" class="cinzel gold-text tracking-widest text-[10px] uppercase font-bold">ΠΡΟΕΤΟΙΜΑΣΙΑ ΠΥΛΗΣ...</p>
-        </div>
-    </div>
+    <div id="loader" class="loading-overlay"><div class="text-center"><div class="animate-spin text-3xl mb-3">🔱</div><p class="cinzel gold-text text-[10px] uppercase font-bold">ΠΡΟΕΤΟΙΜΑΣΙΑ ΠΥΛΗΣ...</p></div></div>
 
-    <!-- Modals (Migration, Delete) -->
-    <div id="confirm-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-4 z-[200]">
-        <div class="glass-card max-w-sm w-full p-8 border-emerald-500/30 text-center">
-            <h3 class="cinzel gold-text text-xl mb-4">ΕΠΙΒΕΒΑΙΩΣΗ UPLOAD</h3>
-            <p class="text-zinc-400 text-xs mb-8 leading-relaxed">Θέλετε να οριστικοποιήσετε την παραγωγή και να μεταφέρετε το project στο Αρχείο;</p>
-            <div class="flex justify-center gap-4">
-                <button onclick="hideConfirmModal()" class="text-zinc-500 font-bold uppercase text-[10px] px-4 py-2 hover:text-white transition-colors tracking-widest">ΑΚΥΡΟ</button>
-                <button id="final-confirm-btn" class="bg-emerald-500 text-black font-black uppercase text-[10px] px-8 py-3 rounded tracking-widest hover:brightness-110">ΜΕΤΑΦΟΡΑ ΤΩΡΑ</button>
-            </div>
-        </div>
-    </div>
-    <div id="delete-modal" class="fixed inset-0 bg-black/95 backdrop-blur-xl hidden flex items-center justify-center p-4 z-[250]">
-        <div class="glass-card max-w-sm w-full p-10 border-red-500/20 text-center">
-            <div class="text-red-500 text-4xl mb-6">⚠️</div>
-            <h3 class="cinzel text-red-500 text-xl mb-4 font-bold">ΔΙΑΓΡΑΦΗ PROJECT</h3>
-            <p class="text-zinc-500 text-xs mb-10 leading-relaxed uppercase tracking-widest font-bold">Προσοχή! Αυτή η ενέργεια είναι μόνιμη. Είστε σίγουροι;</p>
-            <div class="flex flex-col gap-3">
-                <button id="final-delete-btn" class="bg-red-600 text-white font-black uppercase text-[11px] py-4 rounded tracking-widest hover:bg-red-500 transition-colors shadow-xl">ΝΑΙ, ΟΡΙΣΤΙΚΗ ΔΙΑΓΡΑΦΗ</button>
-                <button onclick="hideDeleteModal()" class="text-zinc-500 font-bold uppercase text-[10px] py-3 hover:text-white transition-colors tracking-widest">ΑΚΥΡΩΣΗ</button>
-            </div>
-        </div>
-    </div>
+    <!-- Modals -->
+    <div id="confirm-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden items-center justify-center p-4 z-50"><div class="glass-card max-w-sm w-full p-8 text-center"><h3 class="cinzel gold-text text-xl mb-4">ΕΠΙΒΕΒΑΙΩΣΗ UPLOAD</h3><p class="text-zinc-400 text-xs mb-8">Θέλετε να μεταφέρετε το project στο Αρχείο;</p><div class="flex justify-center gap-4"><button onclick="hideConfirmModal()" class="text-zinc-500 text-[10px] font-bold">ΑΚΥΡΟ</button><button id="final-confirm-btn" class="bg-emerald-500 text-black font-black text-[10px] px-8 py-3 rounded">ΜΕΤΑΦΟΡΑ</button></div></div></div>
+    <div id="delete-modal" class="fixed inset-0 bg-black/95 backdrop-blur-xl hidden items-center justify-center p-4 z-50"><div class="glass-card max-w-sm w-full p-10 text-center"><div class="text-red-500 text-4xl mb-6">⚠️</div><h3 class="cinzel text-red-500 text-xl mb-4">ΔΙΑΓΡΑΦΗ PROJECT</h3><p class="text-zinc-500 text-xs mb-10">Μόνιμη ενέργεια. Είστε σίγουροι;</p><button id="final-delete-btn" class="bg-red-600 text-white font-black text-[11px] py-4 rounded w-full">ΝΑΙ, ΔΙΑΓΡΑΦΗ</button><button onclick="hideDeleteModal()" class="text-zinc-500 text-[10px] py-3 mt-2 w-full">ΑΚΥΡΩΣΗ</button></div></div>
 
     <div class="max-w-full mx-auto px-2">
         <!-- Navigation -->
         <div class="flex flex-col md:flex-row justify-between items-start mb-6 gap-3 border-b border-zinc-800/50 pb-4">
-            <div class="flex flex-col gap-1">
-                <div class="flex items-center gap-2 text-[9px] text-zinc-500 uppercase tracking-widest font-bold">
-                    <span>Database Status:</span>
-                    <span id="db-status" class="text-zinc-400 font-black tracking-tighter uppercase">Initializing...</span>
-                </div>
-                <div class="flex gap-2 mt-1 flex-wrap">
-                    <button onclick="exportDatabase()" class="text-[9px] py-1.5 px-4 border border-zinc-800 rounded hover:gold-text text-zinc-400 font-bold uppercase">💾 Backup</button>
-                    <button onclick="importDatabase()" class="text-[9px] py-1.5 px-4 border border-zinc-800 rounded hover:gold-text text-zinc-400 font-bold uppercase">📂 Restore</button>
-                    <button onclick="syncFromYouTube()" class="text-[9px] py-1.5 px-4 border border-emerald-900/50 rounded hover:text-emerald-400 text-emerald-600 font-bold uppercase">📊 Sync from YouTube</button>
-                    <button onclick="triggerAnalyticsImport()" class="text-[9px] py-1.5 px-4 border border-zinc-800 rounded hover:gold-text text-zinc-400 font-bold uppercase">📁 Import CSV</button>
-                    <input type="file" id="import-input" class="hidden" accept=".json">
-                    <input type="file" id="analytics-input" class="hidden" accept=".csv">
-                </div>
-            </div>
-            <div class="flex gap-4 md:gap-8">
-                <button onclick="switchTab('archive')" id="tab-archive" class="nav-btn active cinzel">Αρχείο</button>
-                <button onclick="switchTab('pipeline')" id="tab-pipeline" class="nav-btn cinzel">Παραγωγή</button>
-                <button onclick="switchTab('analytics')" id="tab-analytics" class="nav-btn cinzel">Analytics</button>
-            </div>
-            <div class="text-right hidden md:block">
-                <p class="text-[9px] text-zinc-600 uppercase font-bold">Strategic Control</p>
-                <p class="text-[10px] gold-text cinzel">v19.8 Final Fix</p>
-            </div>
+            <div class="flex flex-col gap-1"><div class="flex gap-2 text-[9px] text-zinc-500"><span>Database Status:</span><span id="db-status" class="text-zinc-400">Local Storage Mode</span></div><div class="flex gap-2 flex-wrap"><button onclick="exportDatabase()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text">💾 Backup</button><button onclick="importDatabase()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text">📂 Restore</button><button onclick="syncFromYouTube()" class="text-[9px] py-1 px-3 border border-emerald-900/50 rounded text-emerald-600">📊 Sync</button><button onclick="triggerAnalyticsImport()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text">📁 Import CSV</button><input type="file" id="import-input" class="hidden" accept=".json"><input type="file" id="analytics-input" class="hidden" accept=".csv"></div></div>
+            <div class="flex gap-4"><button onclick="switchTab('archive')" id="tab-archive" class="nav-btn active cinzel">Αρχείο</button><button onclick="switchTab('pipeline')" id="tab-pipeline" class="nav-btn cinzel">Παραγωγή</button><button onclick="switchTab('analytics')" id="tab-analytics" class="nav-btn cinzel">Analytics</button></div>
+            <div class="text-right hidden md:block"><p class="text-[9px] text-zinc-600">Strategic Control</p><p class="text-[10px] gold-text cinzel">v19.9</p></div>
         </div>
-
-        <!-- YouTube Configuration Bar -->
-        <div class="flex flex-wrap justify-between items-center gap-3 mb-6 p-3 bg-zinc-900/40 rounded-xl border border-zinc-800">
-            <div class="youtube-config">
-                <input type="text" id="youtube-client-id" placeholder="YouTube Client ID" class="!text-[10px] !py-1 w-64">
-                <input type="text" id="youtube-channel-id" placeholder="Channel ID (UC...)" class="!text-[10px] !py-1 w-48">
-                <button onclick="connectYouTube()" class="bg-red-600/80 hover:bg-red-600 text-white font-black uppercase text-[9px] px-4 py-1.5 rounded tracking-widest transition-colors">🔑 Connect YouTube</button>
-                <span id="youtube-status" class="text-[8px] text-zinc-500 italic"></span>
-            </div>
-            <div class="text-[9px] text-zinc-500">
-                <span id="token-status" class="text-red-400">● Not connected</span>
-            </div>
-        </div>
+        <!-- YouTube Config -->
+        <div class="flex flex-wrap justify-between items-center gap-3 mb-6 p-3 bg-zinc-900/40 rounded-xl border border-zinc-800"><div class="youtube-config"><input type="text" id="youtube-client-id" placeholder="Client ID" class="!text-[10px] !py-1 w-64"><input type="text" id="youtube-channel-id" placeholder="Channel ID" class="!text-[10px] !py-1 w-48"><button onclick="connectYouTube()" class="bg-red-600/80 text-white font-black text-[9px] px-4 py-1.5 rounded">🔑 Connect</button></div><div><span id="token-status" class="text-red-400 text-[9px]">● Not connected</span></div></div>
 
         <!-- Archive View -->
         <div id="view-archive">
-            <header class="mb-10 text-center">
-                <h1 class="text-4xl font-bold gold-text mb-1 uppercase tracking-[0.2em]">HELLENIC SCORE & TALES</h1>
-                <div class="flex flex-wrap justify-center gap-4 mt-6">
-                    <div class="bg-zinc-900/40 p-5 rounded-2xl border border-zinc-800 shadow-2xl backdrop-blur-sm min-w-[120px]"><p class="text-[9px] text-zinc-500 uppercase font-black mb-1 tracking-widest">Global Views</p><h2 id="channel-views" class="text-3xl font-bold gold-text cinzel leading-none">0</h2></div>
-                    <div class="bg-zinc-900/40 p-5 rounded-2xl border border-zinc-800 shadow-2xl backdrop-blur-sm min-w-[120px]"><p class="text-[9px] text-zinc-500 uppercase font-black mb-1 tracking-widest">Avg Retention</p><h2 id="channel-retention" class="text-3xl font-bold gold-text cinzel leading-none">0%</h2></div>
-                    <div class="bg-zinc-900/40 p-5 rounded-2xl border border-zinc-800 shadow-2xl backdrop-blur-sm min-w-[120px]"><p class="text-[9px] text-zinc-500 uppercase font-black mb-1 tracking-widest">Subscribers</p><h2 id="channel-subs" class="text-3xl font-bold gold-text cinzel leading-none">0</h2></div>
-                    <div class="bg-zinc-900/40 p-5 rounded-2xl border border-zinc-800 shadow-2xl backdrop-blur-sm min-w-[120px]"><p class="text-[9px] text-zinc-500 uppercase font-black mb-1 tracking-widest">Impressions</p><h2 id="channel-impressions" class="text-3xl font-bold gold-text cinzel leading-none">0</h2></div>
-                    <div class="bg-zinc-900/40 p-5 rounded-2xl border border-zinc-800 shadow-2xl backdrop-blur-sm min-w-[120px]"><p class="text-[9px] text-zinc-500 uppercase font-black mb-1 tracking-widest">Click through Rate</p><h2 id="channel-ctr" class="text-3xl font-bold gold-text cinzel leading-none">0%</h2></div>
-                    <div class="bg-zinc-900/40 p-5 rounded-2xl border border-zinc-800 shadow-2xl backdrop-blur-sm min-w-[120px]"><p class="text-[9px] text-zinc-500 uppercase font-black mb-1 tracking-widest">Watch Time</p><h2 id="channel-watchtime" class="text-3xl font-bold gold-text cinzel leading-none">0</h2></div>
-                </div>
-            </header>
-            <div class="flex justify-between items-center mb-6">
-                <div class="glass-card px-8 py-3 shadow-lg"><p class="text-[9px] text-zinc-500 uppercase font-black tracking-widest">Live Projects</p><p id="stat-total" class="text-2xl font-bold gold-text leading-none">0</p></div>
-                <button onclick="openModal()" class="px-10 py-4 gold-bg text-black font-black uppercase rounded-xl hover:scale-105 transition-all text-[11px] tracking-widest shadow-2xl">🔱 NEW EPIC PROJECT</button>
-            </div>
-            <div class="glass-card overflow-hidden shadow-2xl border-zinc-800/50">
-                <div class="overflow-x-auto">
-                    <table class="data-table w-full">
-                        <thead><tr class="bg-zinc-900/70 text-zinc-500 text-[10px] uppercase font-black tracking-widest border-b border-zinc-800"><th class="p-3 text-center">#</th><th class="p-3 text-center">Order</th><th class="p-3">Project / Visual Art</th><th class="p-3">Shorts Content</th><th class="p-3">Soundtracks & Scores</th><th class="p-3 text-right actions-cell">Actions</th></tr></thead>
-                        <tbody id="project-list" class="divide-y divide-zinc-800/30"></tbody>
-                    </table>
-                </div>
-            </div>
+            <header class="mb-10 text-center"><h1 class="text-4xl font-bold gold-text mb-1 uppercase tracking-[0.2em]">HELLENIC SCORE & TALES</h1><div class="flex flex-wrap justify-center gap-4 mt-6"><div class="bg-zinc-900/40 p-5 rounded-2xl min-w-[120px]"><p class="text-[9px] text-zinc-500">Global Views</p><h2 id="channel-views" class="text-3xl font-bold gold-text">0</h2></div><div class="bg-zinc-900/40 p-5 rounded-2xl min-w-[120px]"><p class="text-[9px] text-zinc-500">Avg Retention</p><h2 id="channel-retention" class="text-3xl font-bold gold-text">0%</h2></div><div class="bg-zinc-900/40 p-5 rounded-2xl min-w-[120px]"><p class="text-[9px] text-zinc-500">Subscribers</p><h2 id="channel-subs" class="text-3xl font-bold gold-text">0</h2></div><div class="bg-zinc-900/40 p-5 rounded-2xl min-w-[120px]"><p class="text-[9px] text-zinc-500">Impressions</p><h2 id="channel-impressions" class="text-3xl font-bold gold-text">0</h2></div><div class="bg-zinc-900/40 p-5 rounded-2xl min-w-[120px]"><p class="text-[9px] text-zinc-500">CTR</p><h2 id="channel-ctr" class="text-3xl font-bold gold-text">0%</h2></div><div class="bg-zinc-900/40 p-5 rounded-2xl min-w-[120px]"><p class="text-[9px] text-zinc-500">Watch Time</p><h2 id="channel-watchtime" class="text-3xl font-bold gold-text">0</h2></div></div></header>
+            <div class="flex justify-between mb-6"><div class="glass-card px-8 py-3"><p class="text-[9px] text-zinc-500">Live Projects</p><p id="stat-total" class="text-2xl font-bold gold-text">0</p></div><button onclick="openModal()" class="px-10 py-4 gold-bg text-black font-black rounded-xl text-[11px] shadow-2xl">🔱 NEW PROJECT</button></div>
+            <div class="glass-card overflow-hidden"><div class="overflow-x-auto"><table class="data-table"><thead><tr class="bg-zinc-900/70 text-zinc-500 text-[10px] border-b border-zinc-800"><th class="p-3 text-center">#</th><th class="p-3 text-center">Order</th><th class="p-3">Project</th><th class="p-3">Shorts</th><th class="p-3">Soundtracks</th><th class="p-3 text-right">Actions</th></tr></thead><tbody id="project-list"></tbody></table></div></div>
         </div>
 
-        <!-- Pipeline View -->
-        <div id="view-pipeline" class="hidden">
-            <div class="flex justify-between items-center mb-8 border-l-4 border-gold pl-6">
-                <div><h2 class="text-2xl gold-text cinzel uppercase tracking-[0.1em]">PRODUCTION PIPELINE</h2><p class="text-[10px] text-zinc-500 uppercase tracking-widest italic">Asset & Progress Tracker</p></div>
-                <button onclick="openPipelineModal()" class="px-8 py-4 bg-zinc-800 text-gold font-black uppercase rounded-xl hover:bg-zinc-700 transition-all text-[10px] tracking-widest border border-gold/20 shadow-xl">🔨 NEW PRODUCTION</button>
-            </div>
-            <div id="pipeline-container" class="space-y-10 pb-40"></div>
-        </div>
+        <!-- Pipeline View (συνοπτικό) -->
+        <div id="view-pipeline" class="hidden"><div class="flex justify-between items-center mb-8 border-l-4 border-gold pl-6"><div><h2 class="text-2xl gold-text cinzel uppercase">PRODUCTION PIPELINE</h2></div><button onclick="openPipelineModal()" class="px-8 py-4 bg-zinc-800 text-gold font-black rounded-xl text-[10px] border border-gold/20">🔨 NEW PRODUCTION</button></div><div id="pipeline-container" class="space-y-10 pb-40"></div></div>
 
         <!-- Analytics View -->
-        <div id="view-analytics" class="hidden">
-            <div class="flex justify-between items-center mb-8 border-l-4 border-gold pl-6">
-                <div><h2 class="text-2xl gold-text cinzel uppercase tracking-[0.1em]">CONTENT PERFORMANCE</h2><p class="text-[10px] text-zinc-500 uppercase tracking-widest italic">Sorted by Global Reach</p></div>
-            </div>
-            <div class="glass-card overflow-hidden shadow-2xl border-zinc-800/50">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left">
-                        <thead><tr class="bg-zinc-900/70 text-zinc-500 text-[10px] uppercase font-black tracking-widest border-b border-zinc-800"><th class="p-5 w-16 text-center">Rank</th><th class="p-5">Content Title</th><th class="p-5 w-32 text-center">Type</th><th class="p-5 w-32 text-center">Views</th><th class="p-5 w-32 text-center">Retention</th></tr></thead>
-                        <tbody id="analytics-list" class="divide-y divide-zinc-800/30"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+        <div id="view-analytics" class="hidden"><div class="glass-card overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-left"><thead><tr class="bg-zinc-900/70 text-zinc-500 text-[10px]"><th class="p-5 w-16 text-center">Rank</th><th class="p-5">Title</th><th class="p-5 w-32 text-center">Type</th><th class="p-5 w-32 text-center">Views</th><th class="p-5 w-32 text-center">Retention</th></tr></thead><tbody id="analytics-list"></tbody></table></div></div></div>
     </div>
 
-    <!-- Master Edit Modal -->
-    <div id="modal" class="fixed inset-0 bg-black/98 backdrop-blur-xl hidden flex items-center justify-center p-4 z-50 overflow-y-auto">
-        <div class="glass-card w-full max-w-5xl my-4 bg-zinc-900 p-8 border-gold/40 shadow-2xl">
-            <div class="flex justify-between items-center mb-8 border-b border-zinc-800 pb-4"><h2 class="text-2xl gold-text cinzel uppercase">ΣΤΟΙΧΕΙΑ PROJECT</h2><button onclick="closeModal()" class="text-zinc-500 text-3xl hover:text-white">✕</button></div>
-            <form id="project-form" class="space-y-8 max-h-[75vh] overflow-y-auto pr-3">
-                <input type="hidden" id="edit-id">
-                <section class="bg-black/20 p-6 rounded-xl border border-zinc-800">
-                    <div class="flex items-center justify-between mb-4"><label class="text-[11px] gold-text uppercase font-black tracking-widest">Κύριο Βίντεο</label><div class="flex items-center gap-3"><input type="checkbox" id="main-status" class="pipeline-checkbox"><label class="text-[10px] text-zinc-400 font-bold uppercase">YouTube Live</label></div></div>
-                    <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
-                        <div class="md:col-span-6 space-y-1"><label class="text-[9px] text-zinc-500 uppercase font-bold">Τίτλος</label><input type="text" id="main-title" required class="w-full" placeholder="Enter title..."></div>
-                        <div class="md:col-span-6 space-y-1"><label class="text-[9px] text-zinc-500 uppercase font-bold">YouTube Link</label><input type="url" id="main-link" class="w-full" placeholder="https://youtube.com/..."></div>
-                    </div>
-                </section>
-                <div>
-                    <div class="flex justify-between items-center mb-3"><p class="text-[11px] gold-text font-black uppercase tracking-widest">Shorts Production</p><button type="button" onclick="addShortRow()" class="text-[9px] bg-zinc-800 px-4 py-1.5 rounded border border-zinc-700 hover:border-gold font-bold uppercase">+ Add Short</button></div>
-                    <div id="shorts-container" class="space-y-3"></div>
-                </div>
-                <div>
-                    <div class="flex justify-between items-center mb-3"><p class="text-[11px] gold-text font-black uppercase tracking-widest">Soundtracks & Scoring</p><button type="button" onclick="addSoundtrackRow()" class="text-[9px] bg-zinc-800 px-4 py-1.5 rounded border border-zinc-700 hover:border-gold font-bold uppercase">+ Add Score</button></div>
-                    <div id="soundtracks-container" class="space-y-3"></div>
-                </div>
-                <div class="pt-10 flex justify-end gap-6 border-t border-zinc-800"><button type="button" onclick="closeModal()" class="text-zinc-500 font-black uppercase text-xs tracking-widest hover:text-white">Cancel</button><button type="submit" class="px-14 py-4 gold-bg text-black font-black rounded-xl uppercase text-xs tracking-[0.2em] shadow-2xl hover:brightness-110 transition-all">Save Project</button></div>
-            </form>
-        </div>
-    </div>
+    <!-- Edit Modal -->
+    <div id="modal" class="fixed inset-0 bg-black/98 backdrop-blur-xl hidden items-center justify-center p-4 z-50 overflow-y-auto"><div class="glass-card w-full max-w-5xl bg-zinc-900 p-8 border-gold/40"><div class="flex justify-between border-b border-zinc-800 pb-4 mb-4"><h2 class="text-2xl gold-text cinzel uppercase">ΣΤΟΙΧΕΙΑ PROJECT</h2><button onclick="closeModal()" class="text-zinc-500 text-3xl hover:text-white">✕</button></div><form id="project-form"><input type="hidden" id="edit-id"><section class="bg-black/20 p-4 rounded-xl"><div class="flex justify-between items-center mb-2"><label class="text-[11px] gold-text uppercase font-black">Κύριο Βίντεο</label><div><input type="checkbox" id="main-status" class="pipeline-checkbox"><label class="text-[10px] text-zinc-400">YouTube Live</label></div></div><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><input type="text" id="main-title" placeholder="Τίτλος" class="w-full"><input type="url" id="main-link" placeholder="YouTube Link" class="w-full"></div></section><div><div class="flex justify-between mb-2"><p class="text-[11px] gold-text font-black uppercase">Shorts</p><button type="button" onclick="addShortRow()" class="text-[9px] bg-zinc-800 px-3 py-1 rounded">+ Add</button></div><div id="shorts-container" class="space-y-2"></div></div><div><div class="flex justify-between mb-2"><p class="text-[11px] gold-text font-black uppercase">Soundtracks</p><button type="button" onclick="addSoundtrackRow()" class="text-[9px] bg-zinc-800 px-3 py-1 rounded">+ Add</button></div><div id="soundtracks-container" class="space-y-2"></div></div><div class="pt-6 flex justify-end gap-4"><button type="button" onclick="closeModal()" class="text-zinc-500 text-xs">Cancel</button><button type="submit" class="px-8 py-2 gold-bg text-black font-black rounded-xl text-xs">Save</button></div></form></div></div>
 
     <!-- Pipeline Start Modal -->
-    <div id="pipeline-modal" class="fixed inset-0 bg-black/98 backdrop-blur-xl hidden flex items-center justify-center p-4 z-50">
-        <div class="glass-card w-full max-w-md bg-zinc-900 p-10 border-gold/50 shadow-2xl text-center">
-            <h2 class="text-2xl gold-text cinzel mb-8 uppercase tracking-widest">START PRODUCTION</h2>
-            <input type="text" id="pipeline-title-input" placeholder="Enter Project Name..." class="w-full mb-8 !text-center !text-base">
-            <div class="flex justify-center gap-6"><button onclick="document.getElementById('pipeline-modal').classList.add('hidden')" class="text-zinc-500 font-black uppercase text-xs tracking-widest">Cancel</button><button onclick="addPipelineProject()" class="px-12 py-3 gold-bg text-black font-black rounded-xl uppercase text-xs tracking-widest shadow-xl">Initiate</button></div>
-        </div>
-    </div>
+    <div id="pipeline-modal" class="fixed inset-0 bg-black/98 backdrop-blur-xl hidden items-center justify-center p-4 z-50"><div class="glass-card max-w-md bg-zinc-900 p-10 text-center"><h2 class="text-2xl gold-text cinzel mb-6">START PRODUCTION</h2><input type="text" id="pipeline-title-input" placeholder="Project Name" class="w-full mb-6 text-center"><div class="flex justify-center gap-4"><button onclick="document.getElementById('pipeline-modal').classList.add('hidden')" class="text-zinc-500 text-xs">Cancel</button><button onclick="addPipelineProject()" class="px-8 py-2 gold-bg text-black font-black rounded-xl text-xs">Initiate</button></div></div></div>
 
-    <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 gold-bg text-black px-12 py-5 rounded-full hidden shadow-2xl z-[100] font-black text-xs uppercase tracking-widest text-center min-w-[350px]"></div>
+    <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 gold-bg text-black px-8 py-3 rounded-full hidden z-50 text-xs font-black text-center whitespace-nowrap"></div>
 
     <script>
-        // ======================== GLOBAL STATE ========================
+        // ---------- GLOBAL STATE ----------
         let projects = [], pipelineProjects = [], channelStats = { views: '0', retention: '0%', subscribers: '0', impressions: '0', ctr: '0%', watchTime: '0' };
-        let pendingDeleteId = null, youtubeAccessToken = null, currentMigrationId = null;
-        const CORE_STEPS = ['scenario', 'narration', 'artworks', 'video', 'subtitles', 'multilanguage', 'descriptions'];
+        let youtubeAccessToken = null, pendingDeleteId = null;
+        const CORE_STEPS = ['scenario','narration','artworks','video','subtitles','multilanguage','descriptions'];
         let saveTimeout = null;
 
-        const cleanForMatch = (s) => s ? s.toString().toLowerCase().trim().replace(/[^\w\s\u0370-\u03ff]/gi, '').normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
-        const parseViews = (v) => { if(!v) return 0; let str = v.toString().toUpperCase().replace(/,/g, '').trim(); let factor = 1; if(str.endsWith('K')) { factor = 1000; str = str.slice(0, -1); } else if(str.endsWith('M')) { factor = 1000000; str = str.slice(0, -1); } return (parseFloat(str) || 0) * factor; };
-        const getTrendIcon = (cur, prev) => { const c = parseViews(cur), p = parseViews(prev); if (!prev || c === p) return '<span class="trend-steady">—</span>'; return c > p ? '<span class="trend-up">▲</span>' : '<span class="trend-down">▼</span>'; };
-        const showToast = (m) => { const t = document.getElementById('toast'); t.innerText = m; t.classList.remove('hidden'); setTimeout(() => t.classList.add('hidden'), 5000); };
-        
-        const saveToLocal = () => { localStorage.setItem('hst_projects', JSON.stringify(projects)); localStorage.setItem('hst_pipeline', JSON.stringify(pipelineProjects)); localStorage.setItem('hst_stats', JSON.stringify(channelStats)); };
-        const loadFromLocal = () => { 
-            projects = JSON.parse(localStorage.getItem('hst_projects') || '[]'); 
-            pipelineProjects = JSON.parse(localStorage.getItem('hst_pipeline') || '[]'); 
-            const savedStats = localStorage.getItem('hst_stats');
-            if(savedStats) channelStats = JSON.parse(savedStats);
-            else channelStats = { views: '0', retention: '0%', subscribers: '0', impressions: '0', ctr: '0%', watchTime: '0' };
-            projects.sort((a,b) => (a.orderIndex||0) - (b.orderIndex||0));
-            // Εξασφαλίζουμε ότι κάθε soundtrack έχει published πεδίο (για παλιά δεδομένα)
+        const cleanForMatch = s => s ? s.toLowerCase().trim().replace(/[^\w\s\u0370-\u03ff]/g,'').normalize("NFD").replace(/[\u0300-\u036f]/g,"") : "";
+        const parseViews = v => { if(!v) return 0; let s=v.toString().toUpperCase().replace(/,/g,''); let f=1; if(s.endsWith('K')){f=1000;s=s.slice(0,-1);}else if(s.endsWith('M')){f=1e6;s=s.slice(0,-1);} return parseFloat(s)*f||0; };
+        const getTrendIcon = (cur,prev) => { let c=parseViews(cur),p=parseViews(prev); if(!prev||c===p) return '<span class="trend-steady">—</span>'; return c>p?'<span class="trend-up">▲</span>':'<span class="trend-down">▼</span>'; };
+        const showToast = m => { let t=document.getElementById('toast'); t.innerText=m; t.classList.remove('hidden'); setTimeout(()=>t.classList.add('hidden'),4000); };
+        const escapeHtml = s => { if(!s) return ''; return s.replace(/[&<>]/g,m=>m==='&'?'&amp;':m==='<'?'&lt;':'&gt;'); };
+        const saveLocal = () => { localStorage.setItem('hst_projects',JSON.stringify(projects)); localStorage.setItem('hst_pipeline',JSON.stringify(pipelineProjects)); localStorage.setItem('hst_stats',JSON.stringify(channelStats)); };
+        const loadLocal = () => { 
+            projects = JSON.parse(localStorage.getItem('hst_projects')||'[]'); 
+            pipelineProjects = JSON.parse(localStorage.getItem('hst_pipeline')||'[]'); 
+            let s=localStorage.getItem('hst_stats'); if(s) channelStats=JSON.parse(s);
+            projects.sort((a,b)=>(a.orderIndex||0)-(b.orderIndex||0));
+            // ***** Κρίσιμο: θέτουμε published = false σε όσα soundtracks/shorts/main δεν έχουν true *****
             for(let p of projects) {
-                if(p.soundtracks) {
-                    for(let st of p.soundtracks) {
-                        if(st.published === undefined) st.published = false;
-                    }
-                }
-                if(p.shorts) {
-                    for(let s of p.shorts) {
-                        if(s.published === undefined) s.published = false;
-                    }
-                }
-                if(p.mainVideo && p.mainVideo.published === undefined) p.mainVideo.published = false;
+                if(p.mainVideo && p.mainVideo.published !== true) p.mainVideo.published = false;
+                if(p.shorts) for(let s of p.shorts) if(s.published !== true) s.published = false;
+                if(p.soundtracks) for(let st of p.soundtracks) if(st.published !== true) st.published = false;
             }
         };
         
-        window.saveProjectToDB = (id, data) => { 
-            const idx = projects.findIndex(p => p.id === id); 
-            if(idx > -1) projects[idx] = { ...data, id }; 
-            else projects.push({ ...data, id }); 
-            projects.sort((a,b) => (a.orderIndex||0) - (b.orderIndex||0)); 
-            saveToLocal(); 
-            renderProjects(); 
-        };
-        window.savePipelineToDB = (id, data) => { 
-            const idx = pipelineProjects.findIndex(p => p.id === id); 
-            if(idx > -1) pipelineProjects[idx] = { ...data, id }; 
-            else pipelineProjects.push({ ...data, id }); 
-            saveToLocal(); 
-            renderPipeline(); 
-        };
-        window.deletePipelineProject = (id) => { if(confirm('Discard production?')) { pipelineProjects = pipelineProjects.filter(p => p.id !== id); saveToLocal(); renderPipeline(); } };
-        window.saveChannelStats = (data) => { channelStats = data; saveToLocal(); updateStats(); };
-        window.moveProject = (id, dir) => { const idx = projects.findIndex(p => p.id === id), tIdx = dir === 'up' ? idx-1 : idx+1; if(tIdx<0 || tIdx>=projects.length) return; const p1=projects[idx], p2=projects[tIdx]; [p1.orderIndex, p2.orderIndex] = [p2.orderIndex, p1.orderIndex]; projects.sort((a,b)=> (a.orderIndex||0)-(b.orderIndex||0)); saveToLocal(); renderProjects(); };
+        window.saveProjectToDB = (id,data) => { let i=projects.findIndex(p=>p.id===id); if(i>-1) projects[i]={...data,id}; else projects.push({...data,id}); projects.sort((a,b)=>(a.orderIndex||0)-(b.orderIndex||0)); saveLocal(); renderProjects(); };
+        window.savePipelineToDB = (id,data) => { let i=pipelineProjects.findIndex(p=>p.id===id); if(i>-1) pipelineProjects[i]={...data,id}; else pipelineProjects.push({...data,id}); saveLocal(); renderPipeline(); };
+        window.deletePipelineProject = id => { if(confirm('Discard?')) { pipelineProjects=pipelineProjects.filter(p=>p.id!==id); saveLocal(); renderPipeline(); } };
+        window.saveChannelStats = data => { channelStats=data; saveLocal(); updateStats(); };
+        window.moveProject = (id,dir) => { let idx=projects.findIndex(p=>p.id===id), tIdx=dir==='up'?idx-1:idx+1; if(tIdx<0||tIdx>=projects.length) return; let a=projects[idx],b=projects[tIdx]; [a.orderIndex,b.orderIndex]=[b.orderIndex,a.orderIndex]; projects.sort((a,b)=>(a.orderIndex||0)-(b.orderIndex||0)); saveLocal(); renderProjects(); };
         
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            });
-        }
-        
-        // ======================== RENDER FUNCTIONS ========================
+        // ---------- RENDER (με σωστό χρώμα) ----------
         window.renderProjects = () => {
-            const list = document.getElementById('project-list');
-            list.innerHTML = projects.map((p, i) => {
-                const m = (p.mainVideo.link || "").match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?\s*v=|&v=)([^#&?]*).*/);
-                const ytId = m && m[2].length === 11 ? m[2] : null;
-                const mainColor = (p.mainVideo.published === true) ? 'var(--gold)' : '#ef4444';
-                return `<tr class="group hover:bg-zinc-800/40 transition-all archive-row">
-                    <td class="p-3 text-center text-zinc-700 font-mono text-[10px] font-black border-r border-zinc-800/30">${i+1}</td>
-                    <td class="p-3 text-center"><div class="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity"><button onclick="moveProject('${p.id}', 'up')" class="hover:text-gold">▲</button><button onclick="moveProject('${p.id}', 'down')" class="hover:text-gold">▼</button></div></td>
-                    <td class="p-3"><div class="flex items-center gap-3"><div class="thumbnail-frame shadow-xl">${ytId ? `<img src="https://img.youtube.com/vi/${ytId}/mqdefault.jpg">` : '<span class="text-[8px] text-zinc-700">NO ART</span>'}</div><div><div class="flex items-center gap-2 mb-1"><span style="color: ${mainColor};">🔱</span><div class="gold-text font-black text-sm uppercase leading-tight tracking-tight break-words">${escapeHtml(p.mainVideo.title)}</div></div><div class="flex gap-2 flex-wrap"><span class="stat-badge">👁 ${p.mainVideo.analytics?.views || 0} ${getTrendIcon(p.mainVideo.analytics?.views, p.mainVideo.analytics?.previousViews)}</span><span class="stat-badge">⏱ ${p.mainVideo.analytics?.retention || '0%'}</span></div></div></div></div></td>
-                    <td class="p-3"><div class="space-y-2">${(p.shorts || []).map(s => { const color = (s.published === true) ? 'var(--gold)' : '#ef4444'; return `<div class="flex flex-col gap-0.5"><div class="text-[10px] font-bold flex items-center gap-1.5 flex-wrap"><span style="color: ${color};">🔱</span>${s.link ? `<a href="${s.link}" target="_blank" class="text-zinc-400 truncate hover:gold-text break-words">${escapeHtml(s.title)}</a>` : `<span class="text-zinc-400 break-words">${escapeHtml(s.title)}</span>`}</div><div class="flex gap-2 pl-4 flex-wrap"><span class="stat-badge">👁 ${s.analytics?.views || 0} ${getTrendIcon(s.analytics?.views, s.analytics?.previousViews)}</span><span class="stat-badge">⏱ ${s.analytics?.retention || '0%'}</span></div></div>`}).join('')}</div></td>
-                    <td class="p-3"><div class="space-y-2">${(p.soundtracks || []).map(st => { const color = (st.published === true) ? 'var(--gold)' : '#ef4444'; return `<div class="flex flex-col gap-0.5"><div class="text-[10px] font-bold flex items-center gap-1.5 flex-wrap"><span style="color: ${color};">🔱</span>${st.link ? `<a href="${st.link}" target="_blank" class="text-zinc-400 hover:gold-text soundtrack-title">${escapeHtml(st.title)}</a>` : `<span class="text-zinc-400 soundtrack-title">${escapeHtml(st.title)}</span>`}${st.spotifyLink ? '<span class="spotify-tag ml-1">● Spotify</span>' : ''}</div><div class="flex gap-2 pl-4 flex-wrap"><span class="stat-badge">👁 ${st.analytics?.views || 0} ${getTrendIcon(st.analytics?.views, st.analytics?.previousViews)}</span><span class="stat-badge">⏱ ${st.analytics?.retention || '0%'}</span></div></div>`}).join('')}</div></td>
-                    <td class="p-3 text-right actions-cell"><div class="action-buttons"><button onclick="openModal('${p.id}')" class="text-[10px] gold-text hover:underline font-black uppercase tracking-widest">Edit</button><button onclick="deleteProject('${p.id}')" class="text-[10px] delete-btn font-black uppercase tracking-widest">Delete</button></div></div></td>
-                </tr>`;
+            let list = document.getElementById('project-list');
+            list.innerHTML = projects.map((p,i) => {
+                let m = (p.mainVideo.link||"").match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?\s*v=|&v=)([^#&?]*).*/);
+                let ytId = m && m[2].length===11 ? m[2] : null;
+                let mainColor = p.mainVideo.published === true ? 'var(--gold)' : '#ef4444';
+                return `<tr class="hover:bg-zinc-800/40">
+                    <td class="p-3 text-center">${i+1}</td>
+                    <td class="p-3 text-center"><div class="flex flex-col gap-1"><button onclick="moveProject('${p.id}','up')" class="hover:text-gold">▲</button><button onclick="moveProject('${p.id}','down')" class="hover:text-gold">▼</button></div></td>
+                    <td class="p-3"><div class="flex gap-3"><div class="thumbnail-frame">${ytId?`<img src="https://img.youtube.com/vi/${ytId}/mqdefault.jpg">`:'<span class="text-[8px] text-zinc-700">NO ART</span>'}</div><div><div class="flex gap-2 mb-1"><span style="color:${mainColor};">🔱</span><div class="gold-text font-black text-sm uppercase break-words">${escapeHtml(p.mainVideo.title)}</div></div><div class="flex gap-2 flex-wrap"><span class="stat-badge">👁 ${p.mainVideo.analytics?.views||0} ${getTrendIcon(p.mainVideo.analytics?.views,p.mainVideo.analytics?.previousViews)}</span><span class="stat-badge">⏱ ${p.mainVideo.analytics?.retention||'0%'}</span></div></div></div></div></td>
+                    <td class="p-3"><div class="space-y-2">${(p.shorts||[]).map(s => { let col = s.published===true?'var(--gold)':'#ef4444'; return `<div><div class="flex gap-1"><span style="color:${col};">🔱</span>${s.link?`<a href="${s.link}" target="_blank" class="text-zinc-400 text-[10px] hover:gold-text">${escapeHtml(s.title)}</a>`:`<span class="text-zinc-400 text-[10px]">${escapeHtml(s.title)}</span>`}</div><div class="flex gap-2 pl-4"><span class="stat-badge">👁 ${s.analytics?.views||0} ${getTrendIcon(s.analytics?.views,s.analytics?.previousViews)}</span><span class="stat-badge">⏱ ${s.analytics?.retention||'0%'}</span></div></div>`}).join('')}</div></td>
+                    <td class="p-3"><div class="space-y-2">${(p.soundtracks||[]).map(st => { let col = st.published===true?'var(--gold)':'#ef4444'; return `<div><div class="flex gap-1"><span style="color:${col};">🔱</span>${st.link?`<a href="${st.link}" target="_blank" class="text-zinc-400 text-[10px] hover:gold-text soundtrack-title">${escapeHtml(st.title)}</a>`:`<span class="text-zinc-400 text-[10px] soundtrack-title">${escapeHtml(st.title)}</span>`}${st.spotifyLink?'<span class="spotify-tag ml-1">● Spotify</span>':''}</div><div class="flex gap-2 pl-4"><span class="stat-badge">👁 ${st.analytics?.views||0} ${getTrendIcon(st.analytics?.views,st.analytics?.previousViews)}</span><span class="stat-badge">⏱ ${st.analytics?.retention||'0%'}</span></div></div>`}).join('')}</div></td>
+                    <td class="p-3 text-right action-cell"><div class="action-buttons"><button onclick="openModal('${p.id}')" class="text-[10px] gold-text hover:underline font-black">Edit</button><button onclick="deleteProject('${p.id}')" class="text-[10px] delete-btn font-black">Delete</button></div></div></td>
+                `;
             }).join('');
         };
         
-        window.renderAnalytics = () => {
-            const list = document.getElementById('analytics-list');
-            let allItems = [];
-            projects.forEach(p => {
-                if(p.mainVideo.title) allItems.push({ title: p.mainVideo.title, type: 'Main', views: p.mainVideo.analytics?.views || '0', prevViews: p.mainVideo.analytics?.previousViews, retention: p.mainVideo.analytics?.retention || '0%', link: p.mainVideo.link });
-                (p.shorts || []).forEach(s => allItems.push({ title: s.title, type: 'Short', views: s.analytics?.views || '0', prevViews: s.analytics?.previousViews, retention: s.analytics?.retention || '0%', link: s.link || "" }));
-                (p.soundtracks || []).forEach(st => allItems.push({ title: st.title, type: 'Music', views: st.analytics?.views || '0', prevViews: st.analytics?.previousViews, retention: st.analytics?.retention || '0%', link: st.spotifyLink || st.link || "" }));
-            });
-            allItems.sort((a,b) => parseViews(b.views) - parseViews(a.views));
-            list.innerHTML = allItems.map((item, idx) => { const typeClass = item.type === 'Main' ? 'pill-main' : (item.type === 'Short' ? 'pill-short' : 'pill-music'); const rankIcon = idx === 0 ? '👑' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : idx+1)); return `<tr class="hover:bg-zinc-800/40 transition-all archive-row"><td class="p-5 text-center text-zinc-500 font-black text-sm border-r border-zinc-800/30">${rankIcon}</td><td class="p-5"><a href="${item.link || '#'}" target="${item.link ? '_blank' : ''}" class="gold-text font-black text-xs uppercase hover:underline break-words">${escapeHtml(item.title)}</a></td><td class="p-5 text-center"><span class="analytics-pill ${typeClass}">${item.type}</span></td><td class="p-5 text-center"><div class="stat-badge">👁 ${item.views} ${getTrendIcon(item.views, item.prevViews)}</div></td><td class="p-5 text-center"><div class="stat-badge">⏱ ${item.retention}</div></td></tr>`; }).join('');
-        };
+        window.renderAnalytics = () => { /* απλοποιημένο */ let list=document.getElementById('analytics-list'); let items=[]; projects.forEach(p=>{if(p.mainVideo.title)items.push({title:p.mainVideo.title,type:'Main',views:p.mainVideo.analytics?.views||'0',prevViews:p.mainVideo.analytics?.previousViews,retention:p.mainVideo.analytics?.retention||'0%',link:p.mainVideo.link}); (p.shorts||[]).forEach(s=>items.push({title:s.title,type:'Short',views:s.analytics?.views||'0',prevViews:s.analytics?.previousViews,retention:s.analytics?.retention||'0%',link:s.link||''})); (p.soundtracks||[]).forEach(st=>items.push({title:st.title,type:'Music',views:st.analytics?.views||'0',prevViews:st.analytics?.previousViews,retention:st.analytics?.retention||'0%',link:st.spotifyLink||st.link||''}));}); items.sort((a,b)=>parseViews(b.views)-parseViews(a.views)); list.innerHTML=items.map((item,idx)=>{ let typeClass=item.type==='Main'?'pill-main':(item.type==='Short'?'pill-short':'pill-music'); let rank=idx===0?'👑':(idx===1?'🥈':(idx===2?'🥉':idx+1)); return `<tr><td class="p-3 text-center">${rank}</td><td class="p-3"><a href="${item.link||'#'}" target="_blank" class="gold-text text-xs uppercase hover:underline">${escapeHtml(item.title)}</a></td><td class="p-3 text-center"><span class="analytics-pill ${typeClass}">${item.type}</span></td><td class="p-3"><div class="stat-badge">👁 ${item.views} ${getTrendIcon(item.views,item.prevViews)}</div></td><td class="p-3"><div class="stat-badge">⏱ ${item.retention}</div></td>`; }).join(''); };
         
-        window.renderPipeline = () => {
-            const container = document.getElementById('pipeline-container');
-            container.innerHTML = pipelineProjects.map(p => {
-                const sL = p.shorts?.length || 0, stL = p.soundtracks?.length || 0;
-                const bD = CORE_STEPS.reduce((acc, s) => acc + (p[s] ? 1 : 0), 0);
-                const aD = (p.shorts || []).reduce((acc, s) => acc + (s.done ? 1 : 0), 0) + (p.soundtracks || []).reduce((acc, s) => acc + (s.done ? 1 : 0), 0);
-                const target = CORE_STEPS.length + sL + stL;
-                const pct = target > 0 ? Math.round(((bD + aD) / target) * 100) : 0;
-                return `<div class="glass-card overflow-hidden shadow-2xl border-gold/5 bg-zinc-900/40" data-pid="${p.id}"><table class="w-full text-left text-xs"><thead><tr class="bg-zinc-950/80 text-zinc-500 text-[8px] uppercase font-black text-center tracking-[0.2em] border-b border-zinc-800"><th class="p-5 text-left w-72">Project Title</th>${CORE_STEPS.map(s => `<th class="p-2">${s}</th>`).join('')}<th class="p-5 bg-emerald-950/30 text-emerald-400 font-black">FINALIZE</th><th class="p-5 text-right">Actions</th></tr></thead><tbody><tr class="text-center border-b border-zinc-800/50"><td class="p-5 text-left"><input type="text" class="pipeline-input gold-text font-black !text-xs mb-1 uppercase tracking-tighter" value="${escapeHtml(p.title)}" oninput="updatePipelineField('${p.id}', 'title', this.value)"><div class="progress-bar w-full"><div class="progress-fill" style="width: ${pct}%"></div></div><div class="text-[7px] text-zinc-500 mt-1 uppercase font-bold tracking-widest">${pct}% COMPLETE</div></td>${CORE_STEPS.map(s => `<td class="p-2"><input type="checkbox" class="pipeline-checkbox" ${p[s] ? 'checked' : ''} onchange="togglePipelineStep('${p.id}', '${s}')"></td>`).join('')}<td class="p-4 bg-emerald-900/5"><button onclick="showConfirmModal('${p.id}')" class="upload-btn">UPLOAD</button></td><td class="p-5 text-right"><button onclick="deletePipelineProject('${p.id}')" class="text-[9px] text-zinc-600 hover:text-red-500 font-black uppercase tracking-widest">Discard</button></td></tr><tr class="bg-black/40"><td colspan="10" class="p-6"><div class="flex flex-col lg:flex-row gap-16"><div class="flex-1"><div class="flex justify-between items-center mb-4 pb-2 border-b border-zinc-800"><span class="text-[10px] gold-text uppercase font-black tracking-widest">Shorts Pipeline</span><button onclick="addPipelineAsset('${p.id}', 'shorts')" class="text-[8px] bg-zinc-800/50 px-3 py-1 rounded border border-zinc-700 hover:border-gold">+ NEW SHORT</button></div><div class="grid grid-cols-1 sm:grid-cols-2 gap-3">${(p.shorts || []).map((s, idx) => `<div class="flex items-center gap-3 bg-zinc-950/50 p-2 rounded-lg border border-zinc-800"><input type="checkbox" class="pipeline-checkbox scale-90" ${s.done ? 'checked' : ''} onchange="updatePipelineAsset('${p.id}', 'shorts', ${idx}, 'done', this.checked)"><input type="text" class="pipeline-input !text-[10px] flex-1" value="${escapeHtml(s.title)}" oninput="updatePipelineAsset('${p.id}', 'shorts', ${idx}, 'title', this.value)"><button onclick="removePipelineAsset('${p.id}', 'shorts', ${idx})" class="text-zinc-700 hover:text-red-500 text-[10px]">✕</button></div>`).join('')}</div></div><div class="flex-1"><div class="flex justify-between items-center mb-4 pb-2 border-b border-zinc-800"><span class="text-[10px] gold-text uppercase font-black tracking-widest">Music Assets</span><button onclick="addPipelineAsset('${p.id}', 'soundtracks')" class="text-[8px] bg-zinc-800/50 px-3 py-1 rounded border border-zinc-700 hover:border-gold">+ NEW SCORE</button></div><div class="space-y-3">${(p.soundtracks || []).map((st, idx) => `<div class="flex flex-col gap-2 bg-zinc-950/50 p-3 rounded-lg border border-zinc-800"><div class="flex items-center gap-4"><input type="checkbox" class="pipeline-checkbox scale-90" ${st.done ? 'checked' : ''} onchange="updatePipelineAsset('${p.id}', 'soundtracks', ${idx}, 'done', this.checked)"><input type="text" class="pipeline-input !text-[10px] flex-1 font-bold" value="${escapeHtml(st.title)}" oninput="updatePipelineAsset('${p.id}', 'soundtracks', ${idx}, 'title', this.value)"><button onclick="removePipelineAsset('${p.id}', 'soundtracks', ${idx})" class="text-zinc-700 hover:text-red-500 text-[10px]">✕</button></div><div class="flex items-center gap-3 pl-8"><span class="text-[8px] text-emerald-500 font-bold uppercase">Spotify Link:</span><input type="text" class="pipeline-input !text-[9px] flex-1 italic" value="${st.spotifyLink || ''}" oninput="updatePipelineAsset('${p.id}', 'soundtracks', ${idx}, 'spotifyLink', this.value)"></div></div>`).join('')}</div></div></div></td></tr></tbody></table></div>`;
-            }).join('');
-        };
+        window.renderPipeline = () => { let container=document.getElementById('pipeline-container'); container.innerHTML=pipelineProjects.map(p=>{ let sL=p.shorts?.length||0,stL=p.soundtracks?.length||0,bD=CORE_STEPS.reduce((a,s)=>a+(p[s]?1:0),0),aD=(p.shorts||[]).reduce((a,s)=>a+(s.done?1:0),0)+(p.soundtracks||[]).reduce((a,s)=>a+(s.done?1:0),0),target=CORE_STEPS.length+sL+stL,pct=target>0?Math.round((bD+aD)/target*100):0; return `<div class="glass-card p-4 mb-6"><div><input type="text" class="pipeline-input gold-text font-black !text-xs mb-1" value="${escapeHtml(p.title)}" oninput="updatePipelineField('${p.id}','title',this.value)"><div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div><div class="text-[7px] text-zinc-500">${pct}% COMPLETE</div></div><div class="grid grid-cols-2 md:grid-cols-4 gap-2 my-3">${CORE_STEPS.map(s=>`<label class="text-[8px] flex gap-1"><input type="checkbox" class="pipeline-checkbox scale-75" ${p[s]?'checked':''} onchange="togglePipelineStep('${p.id}','${s}')"> ${s}</label>`).join('')}</div><div class="flex justify-between"><button onclick="showConfirmModal('${p.id}')" class="upload-btn">UPLOAD</button><button onclick="deletePipelineProject('${p.id}')" class="text-[9px] text-zinc-600 hover:text-red-500">Discard</button></div><div class="mt-4 grid md:grid-cols-2 gap-4"><div><div class="flex justify-between"><span class="text-[9px] gold-text">Shorts</span><button onclick="addPipelineAsset('${p.id}','shorts')" class="text-[8px] bg-zinc-800 px-2 rounded">+</button></div>${(p.shorts||[]).map((s,idx)=>`<div class="flex gap-2 mt-1"><input type="checkbox" class="pipeline-checkbox scale-75" ${s.done?'checked':''} onchange="updatePipelineAsset('${p.id}','shorts',${idx},'done',this.checked)"><input type="text" class="pipeline-input !text-[9px] flex-1" value="${escapeHtml(s.title)}" oninput="updatePipelineAsset('${p.id}','shorts',${idx},'title',this.value)"><button onclick="removePipelineAsset('${p.id}','shorts',${idx})" class="text-red-500">✕</button></div>`).join('')}</div><div><div class="flex justify-between"><span class="text-[9px] gold-text">Music</span><button onclick="addPipelineAsset('${p.id}','soundtracks')" class="text-[8px] bg-zinc-800 px-2 rounded">+</button></div>${(p.soundtracks||[]).map((st,idx)=>`<div class="border border-zinc-800 p-2 mt-2 rounded"><div class="flex gap-2"><input type="checkbox" class="pipeline-checkbox scale-75" ${st.done?'checked':''} onchange="updatePipelineAsset('${p.id}','soundtracks',${idx},'done',this.checked)"><input type="text" class="pipeline-input !text-[9px] flex-1" value="${escapeHtml(st.title)}" oninput="updatePipelineAsset('${p.id}','soundtracks',${idx},'title',this.value)"><button onclick="removePipelineAsset('${p.id}','soundtracks',${idx})" class="text-red-500">✕</button></div><input type="text" class="pipeline-input !text-[8px] mt-1" placeholder="Spotify link" value="${st.spotifyLink||''}" oninput="updatePipelineAsset('${p.id}','soundtracks',${idx},'spotifyLink',this.value)"></div>`).join('')}</div></div></div>`; }).join(''); };
         
-        window.updateStats = () => { 
-            document.getElementById('stat-total').innerText = projects.length; 
-            document.getElementById('channel-views').innerText = channelStats.views || '0'; 
-            document.getElementById('channel-retention').innerText = channelStats.retention || '0%';
-            document.getElementById('channel-subs').innerText = channelStats.subscribers || '0';
-            document.getElementById('channel-impressions').innerText = channelStats.impressions || '0';
-            document.getElementById('channel-ctr').innerText = channelStats.ctr || '0%';
-            document.getElementById('channel-watchtime').innerText = channelStats.watchTime || '0';
-        };
+        window.updateStats = () => { document.getElementById('stat-total').innerText=projects.length; document.getElementById('channel-views').innerText=channelStats.views; document.getElementById('channel-retention').innerText=channelStats.retention; document.getElementById('channel-subs').innerText=channelStats.subscribers; document.getElementById('channel-impressions').innerText=channelStats.impressions; document.getElementById('channel-ctr').innerText=channelStats.ctr; document.getElementById('channel-watchtime').innerText=channelStats.watchTime; };
         
-        // Modal & forms
-        window.openModal = (id=null) => {
-            document.getElementById('project-form').reset();
-            document.getElementById('shorts-container').innerHTML = '';
-            document.getElementById('soundtracks-container').innerHTML = '';
-            document.getElementById('edit-id').value = id || '';
-            if(id) { const p = projects.find(item => item.id === id); if(p) { document.getElementById('main-title').value = p.mainVideo.title; document.getElementById('main-link').value = p.mainVideo.link||''; document.getElementById('main-status').checked = p.mainVideo.published === true; (p.shorts||[]).forEach(s => addShortRow(s)); (p.soundtracks||[]).forEach(st => addSoundtrackRow(st)); } }
-            else { addShortRow(); addSoundtrackRow(); }
-            document.getElementById('modal').classList.remove('hidden');
-        };
+        // Modal functions
+        window.openModal = (id=null) => { document.getElementById('project-form').reset(); document.getElementById('shorts-container').innerHTML=''; document.getElementById('soundtracks-container').innerHTML=''; document.getElementById('edit-id').value=id||''; if(id){ let p=projects.find(x=>x.id===id); if(p){ document.getElementById('main-title').value=p.mainVideo.title; document.getElementById('main-link').value=p.mainVideo.link||''; document.getElementById('main-status').checked=p.mainVideo.published===true; (p.shorts||[]).forEach(s=>addShortRow(s)); (p.soundtracks||[]).forEach(st=>addSoundtrackRow(st)); } }else{ addShortRow(); addSoundtrackRow(); } document.getElementById('modal').classList.remove('hidden'); };
         window.closeModal = () => document.getElementById('modal').classList.add('hidden');
-        
-        window.addShortRow = (d={title:'', analytics:{views:'0',retention:'0%'}, published:false, link:''}) => {
-            const div = document.createElement('div'); div.className="dynamic-row bg-zinc-800/10 p-3 rounded-lg border border-zinc-800 space-y-3";
-            div.innerHTML = `<div class="grid grid-cols-12 gap-3 items-center"><div class="col-span-1 flex justify-center"><input type="checkbox" class="pipeline-checkbox short-status" ${d.published ? 'checked' : ''}></div><div class="col-span-10"><input type="text" class="w-full short-title" value="${escapeHtml(d.title)}" placeholder="Short Title"></div><div class="col-span-1 text-right"><button type="button" onclick="this.closest('.dynamic-row').remove()" class="text-zinc-600 hover:text-red-500 font-bold">✕</button></div></div><div class="grid grid-cols-12 gap-3 items-center pl-10"><div class="col-span-4"><input type="url" class="w-full short-link !text-[10px]" value="${d.link||''}" placeholder="YouTube Link"></div><div class="col-span-4"><input type="text" class="w-full short-views !text-[10px]" value="${d.analytics?.views||'0'}" placeholder="Views"></div><div class="col-span-4"><input type="text" class="w-full short-retention !text-[10px]" value="${d.analytics?.retention||'0%'}" placeholder="Ret%"></div></div>`;
-            document.getElementById('shorts-container').appendChild(div);
-        };
-        
-        window.addSoundtrackRow = (d={title:'', spotifyLink:'', link:'', analytics:{views:'0',retention:'0%'}, published:false}) => {
-            const div = document.createElement('div'); div.className="dynamic-row bg-zinc-800/10 p-4 rounded-lg border border-zinc-800 space-y-3";
-            div.innerHTML = `<div class="grid grid-cols-12 gap-3 items-center"><div class="col-span-1 flex justify-center"><input type="checkbox" class="pipeline-checkbox st-status" ${d.published ? 'checked' : ''}></div><div class="col-span-10"><input type="text" class="w-full st-title font-bold" value="${escapeHtml(d.title)}" placeholder="Soundtrack Name"></div><div class="col-span-1 text-right"><button type="button" onclick="this.closest('.dynamic-row').remove()" class="text-zinc-600 hover:text-red-500 font-bold">✕</button></div></div><div class="grid grid-cols-12 gap-3 items-center pl-10"><div class="col-span-4"><input type="text" class="w-full st-spotify-link !text-[9px] italic" value="${d.spotifyLink||''}" placeholder="Spotify Link"></div><div class="col-span-4"><input type="url" class="w-full st-link !text-[10px]" value="${d.link||''}" placeholder="YouTube Link"></div><div class="col-span-2"><input type="text" class="w-full st-views !text-[10px]" value="${d.analytics?.views||'0'}"></div><div class="col-span-2"><input type="text" class="w-full st-retention !text-[10px]" value="${d.analytics?.retention||'0%'}"></div></div>`;
-            document.getElementById('soundtracks-container').appendChild(div);
-        };
-        
-        document.getElementById('project-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const id = document.getElementById('edit-id').value || Date.now().toString();
-            const existingP = projects.find(p => p.id === id);
-            const shorts = Array.from(document.querySelectorAll('#shorts-container .dynamic-row')).map(r => ({ title: r.querySelector('.short-title').value, link: r.querySelector('.short-link').value, published: r.querySelector('.short-status').checked, analytics: { views: r.querySelector('.short-views').value||'0', retention: r.querySelector('.short-retention').value||'0%', previousViews: existingP?.shorts?.find(s=>cleanForMatch(s.title)===cleanForMatch(r.querySelector('.short-title').value))?.analytics?.views||null } })).filter(x=>x.title);
-            const soundtracks = Array.from(document.querySelectorAll('#soundtracks-container .dynamic-row')).map(r => ({ title: r.querySelector('.st-title').value, spotifyLink: r.querySelector('.st-spotify-link').value, link: r.querySelector('.st-link').value, published: r.querySelector('.st-status').checked, analytics: { views: r.querySelector('.st-views').value||'0', retention: r.querySelector('.st-retention').value||'0%', previousViews: existingP?.soundtracks?.find(st=>cleanForMatch(st.title)===cleanForMatch(r.querySelector('.st-title').value))?.analytics?.views||null } })).filter(x=>x.title);
-            const data = { mainVideo: { title: document.getElementById('main-title').value, link: document.getElementById('main-link').value, published: document.getElementById('main-status').checked, analytics: { views: existingP?.mainVideo?.analytics?.views||'0', retention: existingP?.mainVideo?.analytics?.retention||'0%', previousViews: existingP?.mainVideo?.analytics?.views||null } }, shorts, soundtracks, orderIndex: existingP ? existingP.orderIndex : (projects.length>0 ? Math.min(...projects.map(p=>p.orderIndex))-1 : 1000), date: existingP ? existingP.date : new Date().toISOString() };
-            await window.saveProjectToDB(id, data); showToast('DATABASE UPDATED'); closeModal();
-        });
+        window.addShortRow = (d={title:'',analytics:{views:'0',retention:'0%'},published:false,link:''}) => { let div=document.createElement('div'); div.className='dynamic-row bg-zinc-800/10 p-2 rounded border border-zinc-800 mb-2'; div.innerHTML=`<div class="flex gap-2"><input type="checkbox" class="short-status pipeline-checkbox" ${d.published?'checked':''}><input type="text" class="short-title flex-1 text-[10px]" value="${escapeHtml(d.title)}" placeholder="Short title"><input type="url" class="short-link flex-1 text-[10px]" value="${d.link||''}" placeholder="YouTube link"><button type="button" onclick="this.closest('.dynamic-row').remove()" class="text-red-500">✕</button></div><div class="flex gap-2 pl-6 mt-1"><input type="text" class="short-views text-[9px] w-20" value="${d.analytics?.views||'0'}" placeholder="Views"><input type="text" class="short-retention text-[9px] w-20" value="${d.analytics?.retention||'0%'}" placeholder="Ret%"></div>`; document.getElementById('shorts-container').appendChild(div); };
+        window.addSoundtrackRow = (d={title:'',spotifyLink:'',link:'',analytics:{views:'0',retention:'0%'},published:false}) => { let div=document.createElement('div'); div.className='dynamic-row bg-zinc-800/10 p-2 rounded border border-zinc-800 mb-2'; div.innerHTML=`<div class="flex gap-2"><input type="checkbox" class="st-status pipeline-checkbox" ${d.published?'checked':''}><input type="text" class="st-title flex-1 text-[10px] font-bold" value="${escapeHtml(d.title)}" placeholder="Track title"><input type="url" class="st-link flex-1 text-[10px]" value="${d.link||''}" placeholder="YouTube link"><button type="button" onclick="this.closest('.dynamic-row').remove()" class="text-red-500">✕</button></div><div class="flex gap-2 pl-6 mt-1"><input type="text" class="st-spotify-link text-[9px] w-32" value="${d.spotifyLink||''}" placeholder="Spotify link"><input type="text" class="st-views text-[9px] w-16" value="${d.analytics?.views||'0'}" placeholder="Views"><input type="text" class="st-retention text-[9px] w-16" value="${d.analytics?.retention||'0%'}" placeholder="Ret%"></div>`; document.getElementById('soundtracks-container').appendChild(div); };
+        document.getElementById('project-form').addEventListener('submit',async(e)=>{ e.preventDefault(); let id=document.getElementById('edit-id').value||Date.now().toString(); let existing=projects.find(p=>p.id===id); let shorts=Array.from(document.querySelectorAll('#shorts-container .dynamic-row')).map(r=>({title:r.querySelector('.short-title').value,link:r.querySelector('.short-link').value,published:r.querySelector('.short-status').checked,analytics:{views:r.querySelector('.short-views').value||'0',retention:r.querySelector('.short-retention').value||'0%',previousViews:existing?.shorts?.find(s=>cleanForMatch(s.title)===cleanForMatch(r.querySelector('.short-title').value))?.analytics?.views||null}})).filter(x=>x.title); let soundtracks=Array.from(document.querySelectorAll('#soundtracks-container .dynamic-row')).map(r=>({title:r.querySelector('.st-title').value,spotifyLink:r.querySelector('.st-spotify-link').value,link:r.querySelector('.st-link').value,published:r.querySelector('.st-status').checked,analytics:{views:r.querySelector('.st-views').value||'0',retention:r.querySelector('.st-retention').value||'0%',previousViews:existing?.soundtracks?.find(st=>cleanForMatch(st.title)===cleanForMatch(r.querySelector('.st-title').value))?.analytics?.views||null}})).filter(x=>x.title); let data={mainVideo:{title:document.getElementById('main-title').value,link:document.getElementById('main-link').value,published:document.getElementById('main-status').checked,analytics:{views:existing?.mainVideo?.analytics?.views||'0',retention:existing?.mainVideo?.analytics?.retention||'0%',previousViews:existing?.mainVideo?.analytics?.views||null}},shorts,soundtracks,orderIndex:existing?existing.orderIndex:(projects.length>0?Math.min(...projects.map(p=>p.orderIndex))-1:1000),date:existing?existing.date:new Date().toISOString()}; await window.saveProjectToDB(id,data); showToast('DATABASE UPDATED'); closeModal(); });
         
         // Pipeline actions
-        window.updatePipelineField = (id, field, value) => { const p = pipelineProjects.find(item=>item.id===id); if(p) { p[field]=value; clearTimeout(saveTimeout); saveTimeout=setTimeout(()=>window.savePipelineToDB(id,p),800); } };
-        window.togglePipelineStep = async (id, step) => { const p = pipelineProjects.find(item=>item.id===id); if(p) { p[step]=!p[step]; await window.savePipelineToDB(id,p); } };
-        window.addPipelineAsset = async (id, type) => { const p = pipelineProjects.find(item=>item.id===id); if(p) { if(!p[type]) p[type]=[]; p[type].push(type==='shorts' ? {title:`Short ${p.shorts.length+1}`, done:false} : {title:'', done:false, spotifyLink:''}); await window.savePipelineToDB(id,p); } };
-        window.updatePipelineAsset = (pid, type, idx, field, value) => { const p = pipelineProjects.find(item=>item.id===pid); if(p && p[type][idx]) { p[type][idx][field]=value; clearTimeout(saveTimeout); saveTimeout=setTimeout(()=>window.savePipelineToDB(pid,p),800); } };
-        window.removePipelineAsset = async (pid, type, idx) => { const p = pipelineProjects.find(item=>item.id===pid); if(p) { p[type].splice(idx,1); await window.savePipelineToDB(pid,p); } };
-        window.openPipelineModal = () => { document.getElementById('pipeline-title-input').value=""; document.getElementById('pipeline-modal').classList.remove('hidden'); };
-        window.addPipelineProject = async () => { const title = document.getElementById('pipeline-title-input').value; if(title) { await window.savePipelineToDB(Date.now().toString(), { title, scenario:false, narration:false, artworks:false, video:false, subtitles:false, multilanguage:false, descriptions:false, shorts:[], soundtracks:[], upload:false, dateCreated:new Date().toISOString() }); document.getElementById('pipeline-modal').classList.add('hidden'); showToast('PRODUCTION INITIATED'); } };
+        window.updatePipelineField=(id,field,val)=>{ let p=pipelineProjects.find(x=>x.id===id); if(p){ p[field]=val; clearTimeout(saveTimeout); saveTimeout=setTimeout(()=>window.savePipelineToDB(id,p),800); } };
+        window.togglePipelineStep=async(id,step)=>{ let p=pipelineProjects.find(x=>x.id===id); if(p){ p[step]=!p[step]; await window.savePipelineToDB(id,p); } };
+        window.addPipelineAsset=async(id,type)=>{ let p=pipelineProjects.find(x=>x.id===id); if(p){ if(!p[type]) p[type]=[]; p[type].push(type==='shorts'?{title:`Short ${p.shorts.length+1}`,done:false}:{title:'',done:false,spotifyLink:''}); await window.savePipelineToDB(id,p); } };
+        window.updatePipelineAsset=(pid,type,idx,field,val)=>{ let p=pipelineProjects.find(x=>x.id===pid); if(p&&p[type][idx]){ p[type][idx][field]=val; clearTimeout(saveTimeout); saveTimeout=setTimeout(()=>window.savePipelineToDB(pid,p),800); } };
+        window.removePipelineAsset=async(pid,type,idx)=>{ let p=pipelineProjects.find(x=>x.id===pid); if(p){ p[type].splice(idx,1); await window.savePipelineToDB(pid,p); } };
+        window.openPipelineModal=()=>{ document.getElementById('pipeline-title-input').value=''; document.getElementById('pipeline-modal').classList.remove('hidden'); };
+        window.addPipelineProject=async()=>{ let title=document.getElementById('pipeline-title-input').value; if(title){ await window.savePipelineToDB(Date.now().toString(),{title,scenario:false,narration:false,artworks:false,video:false,subtitles:false,multilanguage:false,descriptions:false,shorts:[],soundtracks:[],upload:false,dateCreated:new Date().toISOString()}); document.getElementById('pipeline-modal').classList.add('hidden'); showToast('PRODUCTION INITIATED'); } };
         
         // Migration
-        window.showConfirmModal = (id) => { currentMigrationId = id; document.getElementById('confirm-modal').classList.remove('hidden'); document.getElementById('final-confirm-btn').onclick = () => window.executeMigration(id); };
-        window.hideConfirmModal = () => { document.getElementById('confirm-modal').classList.add('hidden'); currentMigrationId = null; };
-        window.executeMigration = async (id) => {
-            const p = pipelineProjects.find(item=>item.id===id); if(!p) return;
-            window.hideConfirmModal(); showToast('MIGRATING...');
-            const newProjectId = Date.now().toString();
-            const currentMinOrder = projects.length>0 ? Math.min(...projects.map(pr=>pr.orderIndex||0)) : 1000;
-            const archiveData = { mainVideo: { title: p.title||"Untitled", link:"", published: false, analytics:{views:"0",retention:"0%"} }, shorts: (p.shorts||[]).map(s=>({ title:s.title||"Short", published: s.done === true, analytics:{views:"0",retention:"0%"}, link:"" })), soundtracks: (p.soundtracks||[]).map(st=>({ title:st.title||"Score", published: st.done === true, spotifyLink:st.spotifyLink||"", link:"", analytics:{views:"0",retention:"0%" } })), orderIndex: currentMinOrder-1, date:new Date().toISOString() };
-            projects.unshift({ ...archiveData, id: newProjectId }); pipelineProjects = pipelineProjects.filter(item=>item.id!==id);
-            saveToLocal(); renderProjects(); renderPipeline(); updateStats();
-            showToast('MIGRATION COMPLETE'); switchTab('archive');
-        };
+        window.showConfirmModal=id=>{ window.currentMigrateId=id; document.getElementById('confirm-modal').classList.remove('hidden'); document.getElementById('final-confirm-btn').onclick=()=>window.executeMigration(id); };
+        window.hideConfirmModal=()=>document.getElementById('confirm-modal').classList.add('hidden');
+        window.executeMigration=async(id)=>{ let p=pipelineProjects.find(x=>x.id===id); if(!p) return; window.hideConfirmModal(); showToast('MIGRATING...'); let newId=Date.now().toString(); let minOrder=projects.length>0?Math.min(...projects.map(pr=>pr.orderIndex||0)):1000; let archive={mainVideo:{title:p.title||"Untitled",link:"",published:false,analytics:{views:"0",retention:"0%"}},shorts:(p.shorts||[]).map(s=>({title:s.title||"Short",published:s.done===true?true:false,analytics:{views:"0",retention:"0%"},link:""})),soundtracks:(p.soundtracks||[]).map(st=>({title:st.title||"Score",published:st.done===true?true:false,spotifyLink:st.spotifyLink||"",link:"",analytics:{views:"0",retention:"0%"}})),orderIndex:minOrder-1,date:new Date().toISOString()}; projects.unshift({...archive,id:newId}); pipelineProjects=pipelineProjects.filter(x=>x.id!==id); saveLocal(); renderProjects(); renderPipeline(); updateStats(); showToast('MIGRATION COMPLETE'); switchTab('archive'); };
         
         // Delete
-        window.hideDeleteModal = () => { document.getElementById('delete-modal').classList.add('hidden'); pendingDeleteId = null; };
-        window.deleteProject = (id) => { pendingDeleteId = id; document.getElementById('delete-modal').classList.remove('hidden'); };
-        document.getElementById('final-delete-btn').onclick = () => { if(pendingDeleteId) { projects = projects.filter(p => p.id !== pendingDeleteId); saveToLocal(); renderProjects(); updateStats(); hideDeleteModal(); showToast('DELETED'); } };
+        window.hideDeleteModal=()=>document.getElementById('delete-modal').classList.add('hidden');
+        window.deleteProject=id=>{ pendingDeleteId=id; document.getElementById('delete-modal').classList.remove('hidden'); };
+        document.getElementById('final-delete-btn').onclick=()=>{ if(pendingDeleteId){ projects=projects.filter(p=>p.id!==pendingDeleteId); saveLocal(); renderProjects(); updateStats(); window.hideDeleteModal(); showToast('DELETED'); } };
         
-        // YouTube OAuth & Sync (βασικό)
-        window.connectYouTube = async () => {
-            const clientId = document.getElementById('youtube-client-id').value.trim();
-            const channelId = document.getElementById('youtube-channel-id').value.trim();
-            if(!clientId || !channelId) { showToast('Please enter both Client ID and Channel ID'); return; }
-            if(!channelId.startsWith('UC')) { showToast('Channel ID should start with "UC"'); return; }
-            localStorage.setItem('youtube_client_id', clientId);
-            localStorage.setItem('youtube_channel_id', channelId);
-            await new Promise((resolve) => { const script = document.createElement('script'); script.src = 'https://accounts.google.com/gsi/client'; script.onload = resolve; document.head.appendChild(script); });
-            const tokenClient = google.accounts.oauth2.initTokenClient({ 
-                client_id: clientId, 
-                scope: 'https://www.googleapis.com/auth/yt-analytics.readonly https://www.googleapis.com/auth/youtube.readonly', 
-                callback: (tokenResponse) => { 
-                    if(tokenResponse.access_token) { 
-                        youtubeAccessToken = tokenResponse.access_token; 
-                        localStorage.setItem('youtube_access_token', youtubeAccessToken); 
-                        document.getElementById('token-status').innerHTML = '✅ Connected'; 
-                        showToast('YouTube connected successfully'); 
-                    } else if(tokenResponse.error) {
-                        showToast('OAuth Error: ' + tokenResponse.error);
-                    }
-                } 
-            });
-            tokenClient.requestAccessToken();
-        };
+        // YouTube (σύντομη έκδοση)
+        window.connectYouTube = async () => { let clientId=document.getElementById('youtube-client-id').value.trim(); let channelId=document.getElementById('youtube-channel-id').value.trim(); if(!clientId||!channelId){ showToast('Enter Client ID and Channel ID'); return; } localStorage.setItem('youtube_client_id',clientId); localStorage.setItem('youtube_channel_id',channelId); await new Promise(r=>{let s=document.createElement('script'); s.src='https://accounts.google.com/gsi/client'; s.onload=r; document.head.appendChild(s);}); let tc=google.accounts.oauth2.initTokenClient({client_id:clientId,scope:'https://www.googleapis.com/auth/yt-analytics.readonly https://www.googleapis.com/auth/youtube.readonly',callback:tr=>{if(tr.access_token){youtubeAccessToken=tr.access_token; localStorage.setItem('youtube_access_token',youtubeAccessToken); document.getElementById('token-status').innerHTML='✅ Connected'; showToast('YouTube connected');}}}); tc.requestAccessToken(); };
+        window.syncFromYouTube = async () => { if(!youtubeAccessToken){ let t=localStorage.getItem('youtube_access_token'); let cid=localStorage.getItem('youtube_client_id'); let ch=localStorage.getItem('youtube_channel_id'); if(t&&cid&&ch){ youtubeAccessToken=t; document.getElementById('youtube-client-id').value=cid; document.getElementById('youtube-channel-id').value=ch; document.getElementById('token-status').innerHTML='✅ Connected'; }else{ showToast('Connect YouTube first'); return; } } let chId=document.getElementById('youtube-channel-id').value.trim(); if(!chId){ showToast('Channel ID missing'); return; } showToast('Fetching...'); let end=new Date().toISOString().split('T')[0]; let start=new Date(Date.now()-28*86400000).toISOString().split('T')[0]; try{ let check=await fetch(`https://www.googleapis.com/youtube/v3/channels?part=id&id=${chId}`,{headers:{Authorization:`Bearer ${youtubeAccessToken}`}}); let checkData=await check.json(); if(!checkData.items||!checkData.items.length) throw new Error('Channel ID not owned'); let metrics='views,averageViewPercentage,subscribersGained,estimatedMinutesWatched'; let cRes=await fetch(`https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3D${chId}&startDate=${start}&endDate=${end}&metrics=${metrics}`,{headers:{Authorization:`Bearer ${youtubeAccessToken}`}}); if(!cRes.ok) throw new Error(`Analytics error ${cRes.status}`); let cData=await cRes.json(); let row=cData.rows?.[0]||[]; let total={views:row[0]?.toString()||'0',retention:row[1]?(row[1]/100).toFixed(1)+'%':'0%',subscribers:row[2]?.toString()||'0',watchTime:row[3]?Math.round(row[3]/60).toString():'0'}; let newChan={...channelStats},changed=false; if(total.views!==channelStats.views){ newChan.previousViews=channelStats.views; newChan.views=total.views; changed=true; } if(total.retention!==channelStats.retention){ newChan.previousRetention=channelStats.retention; newChan.retention=total.retention; changed=true; } if(total.subscribers!==channelStats.subscribers){ newChan.subscribers=total.subscribers; changed=true; } if(total.watchTime!==channelStats.watchTime){ newChan.watchTime=total.watchTime; changed=true; } if(changed) await window.saveChannelStats(newChan); showToast('Channel stats synced.'); }catch(err){ showToast('Error: '+err.message); } };
         
-        window.syncFromYouTube = async () => {
-            if(!youtubeAccessToken) { 
-                const storedToken = localStorage.getItem('youtube_access_token'); 
-                const clientId = localStorage.getItem('youtube_client_id'); 
-                const channelId = localStorage.getItem('youtube_channel_id'); 
-                if(storedToken && clientId && channelId) { 
-                    youtubeAccessToken = storedToken; 
-                    document.getElementById('youtube-client-id').value = clientId; 
-                    document.getElementById('youtube-channel-id').value = channelId; 
-                    document.getElementById('token-status').innerHTML = '✅ Connected'; 
-                } else { 
-                    showToast('Please connect YouTube first'); 
-                    return; 
-                } 
-            }
-            const channelId = document.getElementById('youtube-channel-id').value.trim();
-            if(!channelId) { showToast('Channel ID missing'); return; }
-            showToast('Fetching data from YouTube...');
-            const endDate = new Date().toISOString().split('T')[0];
-            const startDate = new Date(Date.now() - 28*24*60*60*1000).toISOString().split('T')[0];
-            try {
-                const checkUrl = `https://www.googleapis.com/youtube/v3/channels?part=id&id=${channelId}`;
-                const checkRes = await fetch(checkUrl, { headers: { Authorization: `Bearer ${youtubeAccessToken}` } });
-                const checkData = await checkRes.json();
-                if(!checkData.items || checkData.items.length === 0) throw new Error('Channel ID not found or not owned by authenticated user.');
-                const channelMetrics = 'views,averageViewPercentage,subscribersGained,estimatedMinutesWatched';
-                const channelUrl = `https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3D${channelId}&startDate=${startDate}&endDate=${endDate}&metrics=${channelMetrics}`;
-                const channelRes = await fetch(channelUrl, { headers: { Authorization: `Bearer ${youtubeAccessToken}` } });
-                if(!channelRes.ok) throw new Error(`Analytics API error: ${channelRes.status}`);
-                const channelData = await channelRes.json();
-                const row = channelData.rows?.[0] || [];
-                const totalStats = { views: row[0]?.toString() || '0', retention: (row[1] !== undefined ? (row[1]/100).toFixed(1)+'%' : '0%'), subscribers: row[2]?.toString() || '0', watchTime: row[3] ? Math.round(row[3]/60).toString() : '0' };
-                let channelChanged = false; const newChannel = { ...channelStats };
-                if(totalStats.views !== channelStats.views) { newChannel.previousViews = channelStats.views; newChannel.views = totalStats.views; channelChanged = true; }
-                if(totalStats.retention !== channelStats.retention) { newChannel.previousRetention = channelStats.retention; newChannel.retention = totalStats.retention; channelChanged = true; }
-                if(totalStats.subscribers !== channelStats.subscribers) { newChannel.subscribers = totalStats.subscribers; channelChanged = true; }
-                if(totalStats.watchTime !== channelStats.watchTime) { newChannel.watchTime = totalStats.watchTime; channelChanged = true; }
-                if(channelChanged) await window.saveChannelStats(newChannel);
-                showToast('Channel stats synced.');
-            } catch(err) { console.error(err); showToast('Error: '+err.message); }
-        };
-        
-        // CSV Import (χωρίς CTR)
+        // CSV Import
         window.triggerAnalyticsImport = () => document.getElementById('analytics-input').click();
-        window.handleAnalyticsImport = (inputEl) => {
-            const file = inputEl.files[0];
-            if(!file) return;
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                const text = e.target.result;
-                const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
-                if(lines.length < 2) { showToast('CSV has no data rows'); return; }
-                const delimiter = (lines[0].match(/;/g) || []).length > (lines[0].match(/,/g) || []).length ? ';' : ',';
-                const splitCSV = (s) => s.split(new RegExp(`${delimiter}(?=(?:(?:[^"]*"){2})*[^"]*$)`)).map(c => c.trim().replace(/^"|"$/g, ''));
-                const headers = splitCSV(lines[0]).map(h => h.toLowerCase());
-                const titleIdx = headers.findIndex(h => h.includes('περιεχόμενο') || h.includes('content') || h.includes('video title') || h.includes('title'));
-                const viewsIdx = headers.findIndex(h => h.includes('προβολές') || h === 'views');
-                const retentionIdx = headers.findIndex(h => h.includes('μέσο ποσοστό προβολής') || h.includes('average percentage viewed') || (h.includes('%') && h.includes('retention')));
-                const subsIdx = headers.findIndex(h => h.includes('συνδρομητές') || h === 'subscribers');
-                const impressionsIdx = headers.findIndex(h => h.includes('εμφανίσεις') || h === 'impressions');
-                const ctrIdx = headers.findIndex(h => h.includes('προωθήσεις') || h.includes('click-through') || h === 'ctr');
-                const watchTimeIdx = headers.findIndex(h => h.includes('διάρκεια') || h.includes('watch time') || h === 'watch time');
-                let totalStats = null;
-                const videoStats = new Map();
-                for(let i = 1; i < lines.length; i++) {
-                    const row = splitCSV(lines[i]);
-                    if(row.length < 2) continue;
-                    const firstCell = row[0].toLowerCase();
-                    if(firstCell === 'σύνολο' || firstCell === 'total' || firstCell === 'channel') {
-                        totalStats = {
-                            views: viewsIdx!==-1 ? row[viewsIdx] : undefined,
-                            retention: retentionIdx!==-1 ? row[retentionIdx] : undefined,
-                            subscribers: subsIdx!==-1 ? row[subsIdx] : undefined,
-                            impressions: impressionsIdx!==-1 ? row[impressionsIdx] : undefined,
-                            ctr: ctrIdx!==-1 ? row[ctrIdx] : undefined,
-                            watchTime: watchTimeIdx!==-1 ? row[watchTimeIdx] : undefined
-                        };
-                        continue;
-                    }
-                    if(titleIdx !== -1 && viewsIdx !== -1) {
-                        const rawTitle = row[titleIdx];
-                        if(rawTitle && rawTitle.trim() !== '') {
-                            const cleanTitle = cleanForMatch(rawTitle);
-                            videoStats.set(cleanTitle, {
-                                views: row[viewsIdx] || '0',
-                                retention: retentionIdx!==-1 ? row[retentionIdx] : '0%'
-                            });
-                        }
-                    }
-                }
-                if(totalStats) {
-                    let changed = false;
-                    const newStats = { ...channelStats };
-                    const isNonZero = (val) => {
-                        if(val === undefined || val === null) return false;
-                        const s = val.toString().trim();
-                        if(s === '' || s === '0' || s === '0%' || s === '0.0' || s === '0.0%') return false;
-                        return true;
-                    };
-                    if(isNonZero(totalStats.views) && totalStats.views !== channelStats.views) { newStats.previousViews = channelStats.views; newStats.views = totalStats.views; changed = true; }
-                    if(isNonZero(totalStats.retention) && totalStats.retention !== channelStats.retention) { newStats.previousRetention = channelStats.retention; newStats.retention = totalStats.retention; changed = true; }
-                    if(isNonZero(totalStats.subscribers) && totalStats.subscribers !== channelStats.subscribers) { newStats.subscribers = totalStats.subscribers; changed = true; }
-                    if(isNonZero(totalStats.impressions) && totalStats.impressions !== channelStats.impressions) { newStats.impressions = totalStats.impressions; changed = true; }
-                    if(isNonZero(totalStats.ctr) && totalStats.ctr !== channelStats.ctr) { newStats.ctr = totalStats.ctr; changed = true; }
-                    if(isNonZero(totalStats.watchTime) && totalStats.watchTime !== channelStats.watchTime) { newStats.watchTime = totalStats.watchTime; changed = true; }
-                    if(changed) await window.saveChannelStats(newStats);
-                }
-                let updatedCount = 0;
-                for(let project of projects) {
-                    let projectModified = false;
-                    const projectCopy = JSON.parse(JSON.stringify(project));
-                    if(project.mainVideo.title) {
-                        const cleanTitle = cleanForMatch(project.mainVideo.title);
-                        if(videoStats.has(cleanTitle)) {
-                            const stats = videoStats.get(cleanTitle);
-                            const old = project.mainVideo.analytics || {};
-                            let changed = false;
-                            const newAnalytics = { ...old };
-                            if(stats.views !== old.views) { newAnalytics.previousViews = old.views || null; newAnalytics.views = stats.views; changed = true; }
-                            if(stats.retention !== old.retention) { newAnalytics.retention = stats.retention; changed = true; }
-                            if(changed) { projectCopy.mainVideo.analytics = newAnalytics; projectModified = true; }
-                        }
-                    }
-                    for(let short of projectCopy.shorts) {
-                        const cleanTitle = cleanForMatch(short.title);
-                        if(videoStats.has(cleanTitle)) {
-                            const stats = videoStats.get(cleanTitle);
-                            const old = short.analytics || {};
-                            let changed = false;
-                            const newAnalytics = { ...old };
-                            if(stats.views !== old.views) { newAnalytics.previousViews = old.views || null; newAnalytics.views = stats.views; changed = true; }
-                            if(stats.retention !== old.retention) { newAnalytics.retention = stats.retention; changed = true; }
-                            if(changed) { short.analytics = newAnalytics; projectModified = true; }
-                        }
-                    }
-                    for(let st of projectCopy.soundtracks) {
-                        const cleanTitle = cleanForMatch(st.title);
-                        if(videoStats.has(cleanTitle)) {
-                            const stats = videoStats.get(cleanTitle);
-                            const old = st.analytics || {};
-                            let changed = false;
-                            const newAnalytics = { ...old };
-                            if(stats.views !== old.views) { newAnalytics.previousViews = old.views || null; newAnalytics.views = stats.views; changed = true; }
-                            if(stats.retention !== old.retention) { newAnalytics.retention = stats.retention; changed = true; }
-                            if(changed) { st.analytics = newAnalytics; projectModified = true; }
-                        }
-                    }
-                    if(projectModified) { await window.saveProjectToDB(project.id, projectCopy); updatedCount++; showToast(`CSV import: ${updatedCount} projects updated...`); await new Promise(r => setTimeout(r, 100)); }
-                }
-                showToast(`CSV import complete! ${updatedCount} projects updated.`);
-                renderProjects(); renderAnalytics(); updateStats();
-            };
-            reader.readAsText(file);
-        };
+        window.handleAnalyticsImport = (inputEl) => { /* απλοποιημένο, κρατάμε μόνο views και retention */ let file=inputEl.files[0]; if(!file) return; let reader=new FileReader(); reader.onload=async(e)=>{ let text=e.target.result; let lines=text.split(/\r?\n/).filter(l=>l.trim()); if(lines.length<2){ showToast('No data'); return; } let delim=(lines[0].match(/;/g)||[]).length>(lines[0].match(/,/g)||[]).length?';':','; let split=s=>s.split(new RegExp(`${delim}(?=(?:(?:[^"]*"){2})*[^"]*$)`)).map(c=>c.trim().replace(/^"|"$/g,'')); let headers=split(lines[0]).map(h=>h.toLowerCase()); let titleIdx=headers.findIndex(h=>h.includes('περιεχόμενο')||h.includes('content')||h.includes('title')); let viewsIdx=headers.findIndex(h=>h.includes('προβολές')||h==='views'); let retentionIdx=headers.findIndex(h=>h.includes('μέσο ποσοστό προβολής')||h.includes('average percentage viewed')); let subsIdx=headers.findIndex(h=>h.includes('συνδρομητές')||h==='subscribers'); let imprIdx=headers.findIndex(h=>h.includes('εμφανίσεις')||h==='impressions'); let ctrIdx=headers.findIndex(h=>h.includes('προωθήσεις')||h.includes('click-through')); let wtIdx=headers.findIndex(h=>h.includes('διάρκεια')||h.includes('watch time')); let totalStats=null, videoStats=new Map(); for(let i=1;i<lines.length;i++){ let row=split(lines[i]); if(row.length<2) continue; let first=row[0].toLowerCase(); if(first==='σύνολο'||first==='total'||first==='channel'){ totalStats={views:viewsIdx!==-1?row[viewsIdx]:undefined,retention:retentionIdx!==-1?row[retentionIdx]:undefined,subscribers:subsIdx!==-1?row[subsIdx]:undefined,impressions:imprIdx!==-1?row[imprIdx]:undefined,ctr:ctrIdx!==-1?row[ctrIdx]:undefined,watchTime:wtIdx!==-1?row[wtIdx]:undefined}; continue; } if(titleIdx!==-1&&viewsIdx!==-1){ let raw=row[titleIdx]; if(raw&&raw.trim()) videoStats.set(cleanForMatch(raw),{views:row[viewsIdx]||'0',retention:retentionIdx!==-1?row[retentionIdx]:'0%'}); } } if(totalStats){ let newChan={...channelStats},ch=false; let nz=v=>{if(v===undefined||v===null)return false; let s=v.toString().trim(); return !(s===''||s==='0'||s==='0%'||s==='0.0'||s==='0.0%');}; if(nz(totalStats.views)&&totalStats.views!==channelStats.views){ newChan.previousViews=channelStats.views; newChan.views=totalStats.views; ch=true; } if(nz(totalStats.retention)&&totalStats.retention!==channelStats.retention){ newChan.previousRetention=channelStats.retention; newChan.retention=totalStats.retention; ch=true; } if(nz(totalStats.subscribers)&&totalStats.subscribers!==channelStats.subscribers){ newChan.subscribers=totalStats.subscribers; ch=true; } if(nz(totalStats.impressions)&&totalStats.impressions!==channelStats.impressions){ newChan.impressions=totalStats.impressions; ch=true; } if(nz(totalStats.ctr)&&totalStats.ctr!==channelStats.ctr){ newChan.ctr=totalStats.ctr; ch=true; } if(nz(totalStats.watchTime)&&totalStats.watchTime!==channelStats.watchTime){ newChan.watchTime=totalStats.watchTime; ch=true; } if(ch) await window.saveChannelStats(newChan); } let updated=0; for(let proj of projects){ let mod=false; let copy=JSON.parse(JSON.stringify(proj)); if(proj.mainVideo.title){ let ct=cleanForMatch(proj.mainVideo.title); if(videoStats.has(ct)){ let st=videoStats.get(ct); let old=proj.mainVideo.analytics||{}; let na={...old}; let changed=false; if(st.views!==old.views){ na.previousViews=old.views||null; na.views=st.views; changed=true; } if(st.retention!==old.retention){ na.retention=st.retention; changed=true; } if(changed){ copy.mainVideo.analytics=na; mod=true; } } } for(let s of copy.shorts){ let ct=cleanForMatch(s.title); if(videoStats.has(ct)){ let st=videoStats.get(ct); let old=s.analytics||{}; let na={...old}; let changed=false; if(st.views!==old.views){ na.previousViews=old.views||null; na.views=st.views; changed=true; } if(st.retention!==old.retention){ na.retention=st.retention; changed=true; } if(changed){ s.analytics=na; mod=true; } } } for(let st of copy.soundtracks){ let ct=cleanForMatch(st.title); if(videoStats.has(ct)){ let stats=videoStats.get(ct); let old=st.analytics||{}; let na={...old}; let changed=false; if(stats.views!==old.views){ na.previousViews=old.views||null; na.views=stats.views; changed=true; } if(stats.retention!==old.retention){ na.retention=stats.retention; changed=true; } if(changed){ st.analytics=na; mod=true; } } } if(mod){ await window.saveProjectToDB(proj.id,copy); updated++; } } showToast(`CSV import done. ${updated} projects updated.`); renderProjects(); renderAnalytics(); updateStats(); }; reader.readAsText(file); };
         
         // Import/Export
         window.importDatabase = () => document.getElementById('import-input').click();
-        window.handleImport = (inputEl) => {
-            const file = inputEl.files[0];
-            if(!file) return;
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    if(data.p && Array.isArray(data.p)) for(const p of data.p) await window.saveProjectToDB(p.id || Date.now()+Math.random(), p);
-                    if(data.c) await window.saveChannelStats(data.c);
-                    if(data.pipe && Array.isArray(data.pipe)) for(const pipe of data.pipe) await window.savePipelineToDB(pipe.id || Date.now()+Math.random(), pipe);
-                    showToast('Restore successful');
-                    renderProjects(); renderPipeline(); updateStats();
-                } catch(err) { alert('Restore failed: '+err.message); }
-            };
-            reader.readAsText(file);
-        };
-        window.exportDatabase = () => {
-            const d = JSON.stringify({p:projects, c:channelStats, pipe:pipelineProjects});
-            const a = document.createElement('a');
-            a.href = "data:text/json;charset=utf-8,"+encodeURIComponent(d);
-            a.download = `hst_backup_v19.8_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`;
-            a.click();
-        };
+        window.handleImport = (inputEl) => { let file=inputEl.files[0]; if(!file) return; let r=new FileReader(); r.onload=async e=>{ try{ let d=JSON.parse(e.target.result); if(d.p) for(let p of d.p) await window.saveProjectToDB(p.id||Date.now()+Math.random(),p); if(d.c) await window.saveChannelStats(d.c); if(d.pipe) for(let pipe of d.pipe) await window.savePipelineToDB(pipe.id||Date.now()+Math.random(),pipe); showToast('Restore successful'); renderProjects(); renderPipeline(); updateStats(); }catch(err){ alert('Restore failed: '+err.message); } }; r.readAsText(file); };
+        window.exportDatabase = () => { let d=JSON.stringify({p:projects,c:channelStats,pipe:pipelineProjects}); let a=document.createElement('a'); a.href="data:text/json;charset=utf-8,"+encodeURIComponent(d); a.download=`hst_backup_${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.json`; a.click(); };
         
-        window.switchTab = (tab) => {
-            document.getElementById('tab-archive').classList.toggle('active', tab==='archive');
-            document.getElementById('tab-pipeline').classList.toggle('active', tab==='pipeline');
-            document.getElementById('tab-analytics').classList.toggle('active', tab==='analytics');
-            document.getElementById('view-archive').classList.toggle('hidden', tab!=='archive');
-            document.getElementById('view-pipeline').classList.toggle('hidden', tab!=='pipeline');
-            document.getElementById('view-analytics').classList.toggle('hidden', tab!=='analytics');
-            if(tab==='analytics') renderAnalytics();
-        };
+        window.switchTab = tab => { document.getElementById('tab-archive').classList.toggle('active',tab==='archive'); document.getElementById('tab-pipeline').classList.toggle('active',tab==='pipeline'); document.getElementById('tab-analytics').classList.toggle('active',tab==='analytics'); document.getElementById('view-archive').classList.toggle('hidden',tab!=='archive'); document.getElementById('view-pipeline').classList.toggle('hidden',tab!=='pipeline'); document.getElementById('view-analytics').classList.toggle('hidden',tab!=='analytics'); if(tab==='analytics') renderAnalytics(); };
         
-        const init = () => {
-            loadFromLocal();
-            renderProjects(); renderPipeline(); updateStats();
-            const savedClient = localStorage.getItem('youtube_client_id');
-            const savedChannel = localStorage.getItem('youtube_channel_id');
-            const savedToken = localStorage.getItem('youtube_access_token');
-            if(savedClient) document.getElementById('youtube-client-id').value = savedClient;
-            if(savedChannel) document.getElementById('youtube-channel-id').value = savedChannel;
-            if(savedToken) { youtubeAccessToken = savedToken; document.getElementById('token-status').innerHTML = '✅ Connected'; }
-            document.getElementById('loader').style.opacity = '0';
-            setTimeout(() => document.getElementById('loader').classList.add('hidden'), 500);
-            document.getElementById('analytics-input').addEventListener('change', (e) => window.handleAnalyticsImport(e.target));
-            document.getElementById('import-input').addEventListener('change', (e) => window.handleImport(e.target));
-            document.getElementById('db-status').innerText = 'Local Storage Mode';
-            document.getElementById('db-status').className = 'text-amber-500 font-black tracking-tighter uppercase';
-        };
+        const init = () => { loadLocal(); renderProjects(); renderPipeline(); updateStats(); let cid=localStorage.getItem('youtube_client_id'); let ch=localStorage.getItem('youtube_channel_id'); let tok=localStorage.getItem('youtube_access_token'); if(cid) document.getElementById('youtube-client-id').value=cid; if(ch) document.getElementById('youtube-channel-id').value=ch; if(tok){ youtubeAccessToken=tok; document.getElementById('token-status').innerHTML='✅ Connected'; } document.getElementById('loader').style.opacity='0'; setTimeout(()=>document.getElementById('loader').classList.add('hidden'),500); document.getElementById('analytics-input').addEventListener('change',e=>window.handleAnalyticsImport(e.target)); document.getElementById('import-input').addEventListener('change',e=>window.handleImport(e.target)); document.getElementById('db-status').innerText='Local Storage Mode'; };
         init();
     </script>
 </body>
