@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hellenic Score & Tales | V2 – Production Redesign</title>
+    <title>Hellenic Score & Tales | V3 – Production Workflow</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -12,12 +12,12 @@
         .gold-text { color: var(--gold); }
         .gold-bg { background-color: var(--gold); }
         .glass-card { background: var(--card-bg); border: 1px solid rgba(197, 160, 89, 0.2); border-radius: 12px; }
-        input, select { background: #242427 !important; border: 1px solid #3f3f46 !important; color: white !important; padding: 0.4rem 0.6rem !important; border-radius: 4px !important; font-size: 0.8rem !important; }
+        input, select, textarea { background: #242427 !important; border: 1px solid #3f3f46 !important; color: white !important; padding: 0.4rem 0.6rem !important; border-radius: 4px !important; font-size: 0.8rem !important; }
         .nav-btn { padding: 0.75rem 1.5rem; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; border-bottom: 2px solid transparent; opacity: 0.5; cursor: pointer; }
         .nav-btn.active { opacity: 1; color: var(--gold); border-bottom-color: var(--gold); }
         .pipeline-checkbox { width: 1.1rem; height: 1.1rem; accent-color: var(--gold); cursor: pointer; }
-        .progress-bar { height: 4px; background: #222; border-radius: 2px; }
-        .progress-fill { height: 100%; background: var(--gold); transition: width 0.5s; }
+        .progress-bar { height: 6px; background: #222; border-radius: 3px; }
+        .progress-fill { height: 100%; background: var(--gold); transition: width 0.3s; }
         .thumbnail-frame { width: 70px; height: 40px; border: 1px solid var(--gold); border-radius: 4px; overflow: hidden; background: #000; flex-shrink: 0; }
         .thumbnail-frame img { width: 100%; height: 100%; object-fit: cover; }
         .stat-badge { font-size: 10px; background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; color: #ccc; display: inline-flex; align-items: center; gap: 4px; border: 1px solid rgba(197, 160, 89, 0.15); white-space: nowrap; }
@@ -44,17 +44,18 @@
         .short-title-text, .soundtrack-title-text { font-size: 0.8rem; line-height: 1.3; font-weight: 500; }
         a.title-red, a.title-green, a.title-white { text-decoration: none; }
         a.title-red:hover, a.title-green:hover, a.title-white:hover { text-decoration: underline; }
-        /* Pipeline buttons */
-        .pipeline-category-btn { background: #1f1f24; border: 1px solid #333; border-radius: 8px; padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: 600; color: #ccc; transition: all 0.2s; cursor: pointer; width: 100%; text-align: center; }
-        .pipeline-category-btn:hover { background: #2a2a30; border-color: var(--gold); color: var(--gold); }
-        .item-count { font-size: 0.7rem; color: #888; margin-top: 4px; display: block; }
-        .modal-item-list { max-height: 300px; overflow-y: auto; margin-top: 1rem; border-top: 1px solid #333; padding-top: 0.5rem; }
-        .modal-item { background: #1e1e22; border-radius: 6px; padding: 0.5rem; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; }
-        .modal-item-info { font-size: 0.8rem; }
-        @media (max-width: 1200px) {
-            .data-table th, .data-table td { padding: 0.4rem 0.3rem; }
-            .short-title-text, .soundtrack-title-text { font-size: 0.7rem; }
-        }
+        /* Production cards */
+        .prod-card { background: rgba(22,22,24,0.8); border-radius: 16px; padding: 1.5rem; margin-bottom: 2rem; border: 1px solid rgba(197,160,89,0.2); }
+        .step-group { background: rgba(0,0,0,0.3); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; }
+        .step-item { display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
+        .step-check { margin-top: 0.2rem; }
+        .step-content { flex: 1; min-width: 150px; }
+        .step-label { font-weight: 600; font-size: 0.8rem; color: #ccc; margin-bottom: 0.2rem; }
+        .inline-input { width: 100%; font-size: 0.75rem !important; padding: 0.25rem 0.4rem !important; }
+        .short-item { background: #1e1e22; border-radius: 8px; padding: 0.75rem; margin-bottom: 0.75rem; }
+        .lang-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
+        .lang-check { display: flex; align-items: center; gap: 0.25rem; font-size: 0.7rem; }
+        @media (max-width: 768px) { .step-item { flex-direction: column; } .step-check { align-self: flex-start; } }
     </style>
 </head>
 <body class="p-4 md:p-6">
@@ -67,29 +68,11 @@
     <div id="confirm-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-4 z-50"><div class="glass-card max-w-sm w-full p-8 text-center"><h3 class="cinzel gold-text text-xl mb-4">ΕΠΙΒΕΒΑΙΩΣΗ UPLOAD</h3><p class="text-zinc-400 text-xs mb-8">Θέλετε να μεταφέρετε το project στο Αρχείο;</p><div class="flex justify-center gap-4"><button onclick="hideConfirmModal()" class="text-zinc-500 text-[10px] uppercase font-bold">ΑΚΥΡΟ</button><button id="final-confirm-btn" class="bg-emerald-500 text-black font-black text-[10px] px-8 py-3 rounded">ΜΕΤΑΦΟΡΑ</button></div></div></div>
     <div id="delete-modal" class="fixed inset-0 bg-black/95 backdrop-blur-xl hidden flex items-center justify-center p-4 z-50"><div class="glass-card max-w-sm w-full p-10 text-center"><div class="text-red-500 text-4xl mb-6">⚠️</div><h3 class="cinzel text-red-500 text-xl mb-4">ΔΙΑΓΡΑΦΗ PROJECT</h3><p class="text-zinc-500 text-xs mb-10">Μόνιμη ενέργεια. Είστε σίγουροι;</p><button id="final-delete-btn" class="bg-red-600 text-white font-black text-[11px] py-4 rounded w-full">ΝΑΙ, ΔΙΑΓΡΑΦΗ</button><button onclick="hideDeleteModal()" class="text-zinc-500 text-[10px] py-3 mt-2 w-full">ΑΚΥΡΩΣΗ</button></div></div>
 
-    <!-- Modal for pipeline asset management -->
-    <div id="pipeline-asset-modal" class="fixed inset-0 bg-black/98 backdrop-blur-xl hidden flex items-center justify-center p-4 z-50">
-        <div class="glass-card w-full max-w-lg bg-zinc-900 p-6 border-gold/40 shadow-2xl">
-            <div class="flex justify-between items-center mb-4 border-b border-zinc-800 pb-2"><h3 id="asset-modal-title" class="text-xl gold-text cinzel">Manage Assets</h3><button onclick="closeAssetModal()" class="text-zinc-500 text-2xl hover:text-white">✕</button></div>
-            <div>
-                <div class="grid grid-cols-1 gap-3 mb-4">
-                    <input type="text" id="asset-title" placeholder="Title" class="w-full text-sm">
-                    <input type="text" id="asset-link" placeholder="Link (URL)" class="w-full text-sm">
-                    <input type="text" id="asset-local" placeholder="Local Address" class="w-full text-sm">
-                    <textarea id="asset-text" rows="2" placeholder="Text / Notes" class="w-full text-sm"></textarea>
-                </div>
-                <button id="asset-add-btn" class="bg-emerald-600 text-white text-xs px-4 py-2 rounded w-full mb-4">+ ADD ITEM</button>
-                <div id="asset-items-list" class="modal-item-list"></div>
-            </div>
-            <div class="mt-4 flex justify-end"><button onclick="closeAssetModal()" class="text-zinc-400 text-xs">Close</button></div>
-        </div>
-    </div>
-
     <div class="max-w-full mx-auto">
         <div class="flex flex-col md:flex-row justify-between items-start mb-6 gap-3 border-b border-zinc-800/50 pb-4">
             <div class="flex flex-col gap-1"><div class="flex gap-2 text-[9px] text-zinc-500"><span>Database Status:</span><span id="db-status" class="text-zinc-400">Local Storage Mode</span></div><div class="flex gap-2 flex-wrap"><button onclick="exportDatabase()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text">💾 Backup</button><button onclick="importDatabase()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text">📂 Restore</button><button onclick="triggerAnalyticsImport()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text">📁 Import CSV</button><input type="file" id="import-input" class="hidden" accept=".json"><input type="file" id="analytics-input" class="hidden" accept=".csv"></div></div>
             <div class="flex gap-4"><button onclick="switchTab('archive')" id="tab-archive" class="nav-btn active cinzel">Αρχείο</button><button onclick="switchTab('pipeline')" id="tab-pipeline" class="nav-btn cinzel">Παραγωγή</button></div>
-            <div class="text-right hidden md:block"><p class="text-[9px] text-zinc-600">Strategic Control</p><p class="text-[10px] gold-text cinzel">V2 – Production Redesign</p></div>
+            <div class="text-right hidden md:block"><p class="text-[9px] text-zinc-600">Strategic Control</p><p class="text-[10px] gold-text cinzel">V3 – Production Workflow</p></div>
         </div>
 
         <!-- Archive View (με στατιστικά badges επαναφερμένα) -->
@@ -108,9 +91,12 @@
             <div class="glass-card overflow-hidden"><div class="overflow-x-auto"><table class="data-table"><thead><tr class="bg-zinc-900/70 text-zinc-500 text-[9px] uppercase font-black tracking-widest border-b border-zinc-800"><th class="p-2 text-center">#</th><th class="p-2 text-center">Order</th><th class="p-2">Project</th><th class="p-2">Shorts</th><th class="p-2">Soundtracks</th><th class="p-2 text-right">Actions</th></tr></thead><tbody id="project-list"></tbody></table></div></div>
         </div>
 
-        <!-- Pipeline View (εντελώς ανανεωμένο) -->
+        <!-- Production View (νέα δομή) -->
         <div id="view-pipeline" class="hidden">
-            <div class="flex justify-between items-center mb-8 border-l-4 border-gold pl-6"><div><h2 class="text-2xl gold-text cinzel uppercase">PRODUCTION PIPELINE</h2><p class="text-[10px] text-zinc-500">Asset Management</p></div><button onclick="openPipelineModal()" class="px-8 py-4 bg-zinc-800 text-gold font-black rounded-xl text-[10px] border border-gold/20">🔨 NEW PRODUCTION</button></div>
+            <div class="flex justify-between items-center mb-8 border-l-4 border-gold pl-6">
+                <div><h2 class="text-2xl gold-text cinzel uppercase">PRODUCTION WORKFLOW</h2><p class="text-[10px] text-zinc-500">Track your progress step by step</p></div>
+                <button onclick="openPipelineModal()" class="px-8 py-4 bg-zinc-800 text-gold font-black rounded-xl text-[10px] border border-gold/20">🔨 NEW PRODUCTION</button>
+            </div>
             <div id="pipeline-container" class="space-y-10 pb-40"></div>
         </div>
     </div>
@@ -149,10 +135,6 @@
         let projects = [], pipelineProjects = [], channelStats = { views: '0', retention: '0%', subscribers: '0', impressions: '0', ctr: '0%', watchTime: '0' };
         let pendingDeleteId = null;
         let saveTimeout = null;
-        // Asset modal state
-        let currentPipelineId = null;
-        let currentCategory = null;
-        let currentAssetItems = [];
 
         const cleanForMatch = (s) => s ? s.toString().toLowerCase().trim().replace(/[^\w\s\u0370-\u03ff]/gi, '').normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
         const parseViews = (v) => { if(!v) return 0; let str = v.toString().toUpperCase().replace(/,/g, '').trim(); let factor = 1; if(str.endsWith('K')) { factor = 1000; str = str.slice(0, -1); } else if(str.endsWith('M')) { factor = 1000000; str = str.slice(0, -1); } return (parseFloat(str) || 0) * factor; };
@@ -166,12 +148,30 @@
             const savedStats = localStorage.getItem('hst_stats');
             if(savedStats) channelStats = JSON.parse(savedStats);
             projects.sort((a,b) => (a.orderIndex||0) - (b.orderIndex||0));
-            // Ensure pipeline projects have the new asset structure
-            const defaultCategories = ['script', 'narration', 'artworks', 'music', 'ostArtwork', 'subtitles', 'thumbnailYT', 'ostYTThumbnail', 'shortsPipeline'];
+            // Εξασφάλιση δομής για pipeline projects
+            const defaultWorkflow = (title) => ({
+                title: title,
+                main: {
+                    script: { done: false, text: '', link: '' },
+                    narration: { done: false, link: '' },
+                    visuals: { done: false, items: [] }, // array of {link, description}
+                    montage: { done: false, link: '' },
+                    subtitlesEn: { done: false, file: '' },
+                    translations: { en: true, gr: false, fr: false, it: false, es: false, pt: false, de: false, ja: false, zh: false },
+                    musicSFX: { done: false, link: '' },
+                    exportUpload: { done: false, link: '' },
+                    metadata: { done: false, title: '', description: '', tags: '', socialPosts: '' }
+                },
+                shorts: [], // array of { title, done, link, metadata }
+                soundtrack: { done: false, link: '' }
+            });
             for(let p of pipelineProjects) {
-                for(let cat of defaultCategories) {
-                    if(!p[cat]) p[cat] = [];
-                }
+                if(!p.main) p.main = defaultWorkflow(p.title).main;
+                if(!p.shorts) p.shorts = [];
+                if(p.soundtrack === undefined) p.soundtrack = { done: false, link: '' };
+                // Ensure translations object
+                if(!p.main.translations) p.main.translations = { en: true, gr: false, fr: false, it: false, es: false, pt: false, de: false, ja: false, zh: false };
+                if(!p.main.visuals) p.main.visuals = { done: false, items: [] };
             }
         };
         
@@ -202,7 +202,7 @@
             return 'title-red';
         }
         
-        // RENDER PROJECTS (με στατιστικά badges)
+        // RENDER PROJECTS (ίδιο με πριν)
         window.renderProjects = () => {
             const list = document.getElementById('project-list');
             list.innerHTML = projects.map((p, i) => {
@@ -223,119 +223,181 @@
             }).join('');
         };
         
-        // PIPELINE RENDER (νέο layout)
-        const categoryLabels = {
-            script: 'Script', narration: 'Narration', artworks: 'Artworks', music: 'Music',
-            ostArtwork: 'OST Artwork', subtitles: 'Subtitles', thumbnailYT: 'Thumbnail YT',
-            ostYTThumbnail: 'OST YT Thumbnail', shortsPipeline: 'Shorts'
-        };
-        
+        // RENDER PIPELINE (νέα δομή)
         window.renderPipeline = () => {
             const container = document.getElementById('pipeline-container');
             container.innerHTML = pipelineProjects.map(p => {
-                // Υπολογισμός προόδου: κάθε κατηγορία που έχει τουλάχιστον 1 στοιχείο μετράει
-                const categories = ['script', 'narration', 'artworks', 'music', 'ostArtwork', 'subtitles', 'thumbnailYT', 'ostYTThumbnail', 'shortsPipeline'];
-                let completed = 0;
-                for(let cat of categories) {
-                    if(p[cat] && p[cat].length > 0) completed++;
+                // Υπολογισμός προόδου
+                let totalSteps = 0;
+                let completedSteps = 0;
+                // Main steps
+                const mainSteps = ['script', 'narration', 'visuals', 'montage', 'subtitlesEn', 'musicSFX', 'exportUpload', 'metadata'];
+                for(let step of mainSteps) {
+                    totalSteps++;
+                    if(p.main[step] && p.main[step].done === true) completedSteps++;
                 }
-                const pct = Math.round((completed / categories.length) * 100);
-                return `<div class="glass-card overflow-hidden shadow-2xl border-gold/5 bg-zinc-900/40 p-5 mb-6" data-pid="${p.id}">
-                    <div class="flex justify-between items-start flex-wrap gap-4">
+                // Translations: each language is a step (excluding English which is base)
+                const langKeys = ['gr','fr','it','es','pt','de','ja','zh'];
+                for(let lang of langKeys) {
+                    totalSteps++;
+                    if(p.main.translations && p.main.translations[lang] === true) completedSteps++;
+                }
+                // Shorts: each short has its own done flag
+                for(let short of p.shorts) {
+                    totalSteps++;
+                    if(short.done === true) completedSteps++;
+                }
+                // Soundtrack
+                totalSteps++;
+                if(p.soundtrack && p.soundtrack.done === true) completedSteps++;
+                
+                const pct = totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0;
+                
+                return `<div class="prod-card" data-pid="${p.id}">
+                    <div class="flex justify-between items-start flex-wrap gap-4 mb-4">
                         <div class="flex-1">
-                            <input type="text" class="pipeline-input gold-text font-black !text-sm mb-1 uppercase tracking-tighter w-full" value="${escapeHtml(p.title)}" oninput="updatePipelineField('${p.id}', 'title', this.value)">
+                            <input type="text" class="pipeline-input gold-text font-black !text-lg mb-1 uppercase tracking-tighter w-full" value="${escapeHtml(p.title)}" oninput="updatePipelineField('${p.id}', 'title', this.value)">
                             <div class="progress-bar w-full mt-2"><div class="progress-fill" style="width: ${pct}%"></div></div>
-                            <div class="text-[7px] text-zinc-500 mt-1 uppercase font-bold tracking-widest">${pct}% COMPLETE (${completed}/${categories.length})</div>
+                            <div class="text-[9px] text-zinc-500 mt-1">${completedSteps}/${totalSteps} steps completed</div>
                         </div>
                         <div class="flex gap-3">
                             <button onclick="showConfirmModal('${p.id}')" class="upload-btn">FINALIZE</button>
                             <button onclick="deletePipelineProject('${p.id}')" class="text-[9px] text-zinc-600 hover:text-red-500 font-black uppercase tracking-widest">Discard</button>
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 mt-6">
-                        ${categories.map(cat => {
-                            const items = p[cat] || [];
-                            const count = items.length;
-                            return `<div class="text-center">
-                                <button onclick="openAssetModal('${p.id}', '${cat}')" class="pipeline-category-btn">${categoryLabels[cat]}</button>
-                                <div class="item-count">${count} element${count !== 1 ? 's' : ''}</div>
-                            </div>`;
-                        }).join('')}
+                    
+                    <!-- MAIN VIDEO SECTION -->
+                    <div class="step-group">
+                        <div class="text-gold text-sm font-bold mb-3 flex items-center gap-2">🎬 Main Video</div>
+                        ${renderMainStep(p, 'script', 'Script', 'textarea')}
+                        ${renderMainStep(p, 'narration', 'Narration (Suno)', 'link')}
+                        ${renderVisualsStep(p)}
+                        ${renderMainStep(p, 'montage', 'Montage', 'link')}
+                        ${renderMainStep(p, 'subtitlesEn', 'Subtitles SRT (English)', 'file')}
+                        ${renderTranslationsStep(p)}
+                        ${renderMainStep(p, 'musicSFX', 'Music & SFX', 'link')}
+                        ${renderMainStep(p, 'exportUpload', 'Export & Upload (Unlisted)', 'link')}
+                        ${renderMetadataStep(p)}
+                    </div>
+                    
+                    <!-- SHORTS SECTION -->
+                    <div class="step-group">
+                        <div class="text-gold text-sm font-bold mb-3 flex items-center gap-2 flex-wrap justify-between">📱 Shorts <button onclick="addShortToPipeline('${p.id}')" class="text-[9px] bg-zinc-800 px-3 py-1 rounded border border-zinc-700 hover:border-gold">+ Add Short</button></div>
+                        <div id="shorts-list-${p.id}">
+                            ${p.shorts.map((short, idx) => renderShortItem(p.id, idx, short)).join('')}
+                        </div>
+                    </div>
+                    
+                    <!-- OFFICIAL SOUNDTRACK -->
+                    <div class="step-group">
+                        <div class="text-gold text-sm font-bold mb-3">🎵 Official Soundtrack</div>
+                        <div class="step-item">
+                            <input type="checkbox" class="step-check pipeline-checkbox" ${p.soundtrack.done ? 'checked' : ''} onchange="updateSoundtrackDone('${p.id}', this.checked)">
+                            <div class="step-content">
+                                <div class="step-label">Soundtrack Video</div>
+                                <input type="text" class="inline-input" placeholder="YouTube link (unlisted)" value="${escapeHtml(p.soundtrack.link || '')}" onchange="updateSoundtrackLink('${p.id}', this.value)">
+                            </div>
+                        </div>
                     </div>
                 </div>`;
             }).join('');
         };
         
-        // Asset Modal functions
-        window.openAssetModal = (pid, category) => {
-            currentPipelineId = pid;
-            currentCategory = category;
-            const project = pipelineProjects.find(p => p.id === pid);
-            if(!project) return;
-            currentAssetItems = project[category] || [];
-            document.getElementById('asset-modal-title').innerText = `Manage ${categoryLabels[category]}`;
-            document.getElementById('asset-title').value = '';
-            document.getElementById('asset-link').value = '';
-            document.getElementById('asset-local').value = '';
-            document.getElementById('asset-text').value = '';
-            renderAssetItemsList();
-            document.getElementById('pipeline-asset-modal').classList.remove('hidden');
-        };
-        
-        function renderAssetItemsList() {
-            const container = document.getElementById('asset-items-list');
-            if(!currentAssetItems.length) {
-                container.innerHTML = '<div class="text-zinc-500 text-center text-sm py-4">No items yet. Add your first asset.</div>';
-                return;
-            }
-            container.innerHTML = currentAssetItems.map((item, idx) => `
-                <div class="modal-item">
-                    <div class="modal-item-info">
-                        <div class="font-bold text-sm">${escapeHtml(item.title || 'Untitled')}</div>
-                        ${item.link ? `<div class="text-xs text-blue-400 truncate max-w-[200px]">${escapeHtml(item.link)}</div>` : ''}
-                        ${item.localAddress ? `<div class="text-xs text-zinc-500">${escapeHtml(item.localAddress)}</div>` : ''}
-                        ${item.text ? `<div class="text-xs text-zinc-400 italic">${escapeHtml(item.text)}</div>` : ''}
-                    </div>
-                    <button onclick="removeAssetItem(${idx})" class="text-red-500 text-xs hover:text-red-400">✕</button>
+        function renderMainStep(p, key, label, type) {
+            const data = p.main[key] || { done: false, text: '', link: '', file: '' };
+            const inputHtml = type === 'textarea' ? 
+                `<textarea class="inline-input" rows="2" placeholder="Write script here..." onchange="updateMainField('${p.id}', '${key}', 'text', this.value)">${escapeHtml(data.text || '')}</textarea>` :
+                type === 'file' ?
+                `<input type="text" class="inline-input" placeholder="Link to SRT file" value="${escapeHtml(data.file || '')}" onchange="updateMainField('${p.id}', '${key}', 'file', this.value)">` :
+                `<input type="text" class="inline-input" placeholder="Link (YouTube, Drive, etc.)" value="${escapeHtml(data.link || '')}" onchange="updateMainField('${p.id}', '${key}', 'link', this.value)">`;
+            return `<div class="step-item">
+                <input type="checkbox" class="step-check pipeline-checkbox" ${data.done ? 'checked' : ''} onchange="updateMainDone('${p.id}', '${key}', this.checked)">
+                <div class="step-content">
+                    <div class="step-label">${label}</div>
+                    ${inputHtml}
                 </div>
-            `).join('');
+            </div>`;
         }
         
-        window.removeAssetItem = (idx) => {
-            currentAssetItems.splice(idx, 1);
-            renderAssetItemsList();
-        };
+        function renderVisualsStep(p) {
+            const visuals = p.main.visuals || { done: false, items: [] };
+            return `<div class="step-item">
+                <input type="checkbox" class="step-check pipeline-checkbox" ${visuals.done ? 'checked' : ''} onchange="updateMainDone('${p.id}', 'visuals', this.checked)">
+                <div class="step-content">
+                    <div class="step-label">Visuals (images, video clips)</div>
+                    <div id="visuals-list-${p.id}">
+                        ${visuals.items.map((item, idx) => `<div class="flex gap-2 mb-2 items-center"><input type="text" class="inline-input flex-1" placeholder="Link or description" value="${escapeHtml(item)}" onchange="updateVisualsItem('${p.id}', ${idx}, this.value)"><button onclick="removeVisualsItem('${p.id}', ${idx})" class="text-red-500 text-xs">✕</button></div>`).join('')}
+                    </div>
+                    <button onclick="addVisualsItem('${p.id}')" class="text-[8px] bg-zinc-800 px-2 py-1 rounded mt-1">+ Add visual</button>
+                </div>
+            </div>`;
+        }
         
-        document.getElementById('asset-add-btn').onclick = () => {
-            const title = document.getElementById('asset-title').value.trim();
-            if(!title) { showToast('Please enter a title'); return; }
-            const link = document.getElementById('asset-link').value.trim();
-            const localAddress = document.getElementById('asset-local').value.trim();
-            const text = document.getElementById('asset-text').value.trim();
-            currentAssetItems.push({ title, link, localAddress, text });
-            // Clear form
-            document.getElementById('asset-title').value = '';
-            document.getElementById('asset-link').value = '';
-            document.getElementById('asset-local').value = '';
-            document.getElementById('asset-text').value = '';
-            renderAssetItemsList();
-        };
+        function renderTranslationsStep(p) {
+            const trans = p.main.translations || { en: true, gr: false, fr: false, it: false, es: false, pt: false, de: false, ja: false, zh: false };
+            const languages = { en:'English', gr:'Greek', fr:'French', it:'Italian', es:'Spanish', pt:'Portuguese', de:'German', ja:'Japanese', zh:'Chinese' };
+            return `<div class="step-item">
+                <div class="step-content">
+                    <div class="step-label">Translations (SRT files)</div>
+                    <div class="lang-grid">
+                        ${Object.keys(languages).map(code => `<label class="lang-check"><input type="checkbox" class="pipeline-checkbox scale-75" ${trans[code] ? 'checked' : ''} onchange="updateTranslation('${p.id}', '${code}', this.checked)"> ${languages[code]}</label>`).join('')}
+                    </div>
+                </div>
+            </div>`;
+        }
         
-        window.closeAssetModal = () => {
-            // Save changes to pipeline project
-            if(currentPipelineId && currentCategory) {
-                const project = pipelineProjects.find(p => p.id === currentPipelineId);
-                if(project) {
-                    project[currentCategory] = [...currentAssetItems];
-                    saveToLocal();
-                    renderPipeline();
-                }
-            }
-            document.getElementById('pipeline-asset-modal').classList.add('hidden');
-            currentPipelineId = null;
-            currentCategory = null;
-            currentAssetItems = [];
-        };
+        function renderMetadataStep(p) {
+            const meta = p.main.metadata || { done: false, title: '', description: '', tags: '', socialPosts: '' };
+            return `<div class="step-item">
+                <input type="checkbox" class="step-check pipeline-checkbox" ${meta.done ? 'checked' : ''} onchange="updateMetadataDone('${p.id}', this.checked)">
+                <div class="step-content">
+                    <div class="step-label">Metadata & Social Posts</div>
+                    <input type="text" class="inline-input mb-1" placeholder="Video Title" value="${escapeHtml(meta.title || '')}" onchange="updateMetadataField('${p.id}', 'title', this.value)">
+                    <textarea class="inline-input mb-1" rows="2" placeholder="Description" onchange="updateMetadataField('${p.id}', 'description', this.value)">${escapeHtml(meta.description || '')}</textarea>
+                    <input type="text" class="inline-input mb-1" placeholder="Tags (comma separated)" value="${escapeHtml(meta.tags || '')}" onchange="updateMetadataField('${p.id}', 'tags', this.value)">
+                    <textarea class="inline-input" rows="2" placeholder="Social posts (one per line)" onchange="updateMetadataField('${p.id}', 'socialPosts', this.value)">${escapeHtml(meta.socialPosts || '')}</textarea>
+                </div>
+            </div>`;
+        }
+        
+        function renderShortItem(pid, idx, short) {
+            return `<div class="short-item" data-idx="${idx}">
+                <div class="flex justify-between items-start gap-2">
+                    <input type="text" class="inline-input flex-1" placeholder="Short title" value="${escapeHtml(short.title || '')}" onchange="updateShortField('${pid}', ${idx}, 'title', this.value)">
+                    <button onclick="removeShortFromPipeline('${pid}', ${idx})" class="text-red-500 text-xs">✕</button>
+                </div>
+                <div class="step-item mt-2">
+                    <input type="checkbox" class="step-check pipeline-checkbox" ${short.done ? 'checked' : ''} onchange="updateShortDone('${pid}', ${idx}, this.checked)">
+                    <div class="step-content">
+                        <div class="step-label">Short Video Link (unlisted)</div>
+                        <input type="text" class="inline-input" placeholder="YouTube link" value="${escapeHtml(short.link || '')}" onchange="updateShortField('${pid}', ${idx}, 'link', this.value)">
+                    </div>
+                </div>
+                <div class="step-item mt-2">
+                    <div class="step-content">
+                        <div class="step-label">Metadata (title, description, tags)</div>
+                        <textarea class="inline-input" rows="2" placeholder="Metadata text" onchange="updateShortField('${pid}', ${idx}, 'metadata', this.value)">${escapeHtml(short.metadata || '')}</textarea>
+                    </div>
+                </div>
+            </div>`;
+        }
+        
+        // Helper functions for pipeline updates
+        window.updatePipelineField = (id, field, value) => { const p = pipelineProjects.find(p=>p.id===id); if(p) { p[field]=value; saveToLocal(); renderPipeline(); } };
+        window.updateMainDone = (id, key, done) => { const p = pipelineProjects.find(p=>p.id===id); if(p) { p.main[key].done = done; saveToLocal(); renderPipeline(); } };
+        window.updateMainField = (id, key, subkey, value) => { const p = pipelineProjects.find(p=>p.id===id); if(p) { p.main[key][subkey] = value; saveToLocal(); renderPipeline(); } };
+        window.updateVisualsItem = (id, idx, value) => { const p = pipelineProjects.find(p=>p.id===id); if(p && p.main.visuals.items[idx]) { p.main.visuals.items[idx] = value; saveToLocal(); renderPipeline(); } };
+        window.addVisualsItem = (id) => { const p = pipelineProjects.find(p=>p.id===id); if(p) { if(!p.main.visuals.items) p.main.visuals.items = []; p.main.visuals.items.push(''); saveToLocal(); renderPipeline(); } };
+        window.removeVisualsItem = (id, idx) => { const p = pipelineProjects.find(p=>p.id===id); if(p && p.main.visuals.items) { p.main.visuals.items.splice(idx,1); saveToLocal(); renderPipeline(); } };
+        window.updateTranslation = (id, lang, checked) => { const p = pipelineProjects.find(p=>p.id===id); if(p) { p.main.translations[lang] = checked; saveToLocal(); renderPipeline(); } };
+        window.updateMetadataDone = (id, done) => { const p = pipelineProjects.find(p=>p.id===id); if(p) { p.main.metadata.done = done; saveToLocal(); renderPipeline(); } };
+        window.updateMetadataField = (id, field, value) => { const p = pipelineProjects.find(p=>p.id===id); if(p) { p.main.metadata[field] = value; saveToLocal(); renderPipeline(); } };
+        window.updateSoundtrackDone = (id, done) => { const p = pipelineProjects.find(p=>p.id===id); if(p) { p.soundtrack.done = done; saveToLocal(); renderPipeline(); } };
+        window.updateSoundtrackLink = (id, link) => { const p = pipelineProjects.find(p=>p.id===id); if(p) { p.soundtrack.link = link; saveToLocal(); renderPipeline(); } };
+        window.addShortToPipeline = (id) => { const p = pipelineProjects.find(p=>p.id===id); if(p) { p.shorts.push({ title: 'New Short', done: false, link: '', metadata: '' }); saveToLocal(); renderPipeline(); } };
+        window.updateShortField = (pid, idx, field, value) => { const p = pipelineProjects.find(p=>p.id===pid); if(p && p.shorts[idx]) { p.shorts[idx][field] = value; saveToLocal(); renderPipeline(); } };
+        window.updateShortDone = (pid, idx, done) => { const p = pipelineProjects.find(p=>p.id===pid); if(p && p.shorts[idx]) { p.shorts[idx].done = done; saveToLocal(); renderPipeline(); } };
+        window.removeShortFromPipeline = (pid, idx) => { const p = pipelineProjects.find(p=>p.id===pid); if(p && p.shorts) { p.shorts.splice(idx,1); saveToLocal(); renderPipeline(); } };
         
         window.updateStats = () => { 
             document.getElementById('stat-total').innerText = projects.length; 
@@ -467,13 +529,29 @@
             await window.saveProjectToDB(id, data); showToast('DATABASE UPDATED'); closeModal();
         });
         
-        window.updatePipelineField = (id, field, value) => { const p = pipelineProjects.find(item=>item.id===id); if(p) { p[field]=value; clearTimeout(saveTimeout); saveTimeout=setTimeout(()=>window.savePipelineToDB(id,p),800); } };
         window.openPipelineModal = () => { document.getElementById('pipeline-title-input').value=""; document.getElementById('pipeline-modal').classList.remove('hidden'); };
         window.addPipelineProject = async () => { 
             const title = document.getElementById('pipeline-title-input').value; 
             if(title) { 
-                const defaultCategories = { script:[], narration:[], artworks:[], music:[], ostArtwork:[], subtitles:[], thumbnailYT:[], ostYTThumbnail:[], shortsPipeline:[] };
-                await window.savePipelineToDB(Date.now().toString(), { title, ...defaultCategories, dateCreated:new Date().toISOString() }); 
+                const newProject = {
+                    id: Date.now().toString(),
+                    title: title,
+                    main: {
+                        script: { done: false, text: '', link: '' },
+                        narration: { done: false, link: '' },
+                        visuals: { done: false, items: [] },
+                        montage: { done: false, link: '' },
+                        subtitlesEn: { done: false, file: '' },
+                        translations: { en: true, gr: false, fr: false, it: false, es: false, pt: false, de: false, ja: false, zh: false },
+                        musicSFX: { done: false, link: '' },
+                        exportUpload: { done: false, link: '' },
+                        metadata: { done: false, title: '', description: '', tags: '', socialPosts: '' }
+                    },
+                    shorts: [],
+                    soundtrack: { done: false, link: '' },
+                    dateCreated: new Date().toISOString()
+                };
+                await window.savePipelineToDB(newProject.id, newProject);
                 document.getElementById('pipeline-modal').classList.add('hidden'); 
                 showToast('PRODUCTION INITIATED'); 
             } 
@@ -504,7 +582,7 @@
         window.deleteProject = (id) => { pendingDeleteId = id; document.getElementById('delete-modal').classList.remove('hidden'); };
         document.getElementById('final-delete-btn').onclick = () => { if(pendingDeleteId) { projects = projects.filter(p => p.id !== pendingDeleteId); saveToLocal(); renderProjects(); updateStats(); hideDeleteModal(); showToast('DELETED'); } };
         
-        // CSV IMPORT (μόνο για το αρχείο – ίδιος κώδικας, αλλά δεν χρειάζεται analytics tab)
+        // CSV IMPORT (μόνο για το αρχείο)
         window.triggerAnalyticsImport = () => document.getElementById('analytics-input').click();
         window.handleAnalyticsImport = (inputEl) => {
             const file = inputEl.files[0];
@@ -624,7 +702,7 @@
             const d = JSON.stringify({p:projects, c:channelStats, pipe:pipelineProjects});
             const a = document.createElement('a');
             a.href = "data:text/json;charset=utf-8,"+encodeURIComponent(d);
-            a.download = `hst_backup_V2_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`;
+            a.download = `hst_backup_V3_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`;
             a.click();
         };
         
