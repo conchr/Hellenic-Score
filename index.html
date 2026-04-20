@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hellenic Score & Tales | v20.7 – Red Titles for Shorts & Soundtracks</title>
+    <title>Hellenic Score & Tales | V1 – Uploaded / Live Status</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: #c5a059; --dark-bg: #0a0a0b; --card-bg: #161618; --spotify: #1DB954; --red: #ef4444; }
+        :root { --gold: #c5a059; --dark-bg: #0a0a0b; --card-bg: #161618; --spotify: #1DB954; --red: #ef4444; --green: #10b981; }
         body { background-color: var(--dark-bg); color: #e5e7eb; font-family: 'Inter', sans-serif; margin: 0; overflow-x: auto; }
         .gold-text { color: var(--gold); }
         .gold-bg { background-color: var(--gold); }
@@ -48,11 +48,17 @@
         .trend-down { color: #ef4444; font-weight: bold; margin-left: 2px; }
         .trend-steady { color: #71717a; margin-left: 2px; }
         .loading-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: flex; align-items: center; justify-content: center; z-index: 1000; transition: opacity 0.5s; }
-        .red-title { color: #ef4444; }
+        /* Χρώματα τίτλων */
+        .title-red { color: #ef4444; }
+        .title-green { color: #10b981; }
+        .title-white { color: #e5e7eb; }
         @media (max-width: 1200px) {
             .data-table th, .data-table td { padding: 0.4rem 0.3rem; font-size: 0.7rem; }
             .stat-badge { font-size: 8px; }
         }
+        /* Στυλ για τα checkboxes στο modal */
+        .status-group { display: flex; gap: 1rem; align-items: center; margin-top: 0.25rem; }
+        .status-group label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; color: #aaa; }
     </style>
 </head>
 <body class="p-4 md:p-6">
@@ -69,7 +75,7 @@
         <div class="flex flex-col md:flex-row justify-between items-start mb-6 gap-3 border-b border-zinc-800/50 pb-4">
             <div class="flex flex-col gap-1"><div class="flex gap-2 text-[9px] text-zinc-500"><span>Database Status:</span><span id="db-status" class="text-zinc-400">Local Storage Mode</span></div><div class="flex gap-2 flex-wrap"><button onclick="exportDatabase()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text">💾 Backup</button><button onclick="importDatabase()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text">📂 Restore</button><button onclick="triggerAnalyticsImport()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text">📁 Import CSV</button><input type="file" id="import-input" class="hidden" accept=".json"><input type="file" id="analytics-input" class="hidden" accept=".csv"></div></div>
             <div class="flex gap-4"><button onclick="switchTab('archive')" id="tab-archive" class="nav-btn active cinzel">Αρχείο</button><button onclick="switchTab('pipeline')" id="tab-pipeline" class="nav-btn cinzel">Παραγωγή</button><button onclick="switchTab('analytics')" id="tab-analytics" class="nav-btn cinzel">Analytics</button></div>
-            <div class="text-right hidden md:block"><p class="text-[9px] text-zinc-600">Strategic Control</p><p class="text-[10px] gold-text cinzel">v20.7 Red Titles</p></div>
+            <div class="text-right hidden md:block"><p class="text-[9px] text-zinc-600">Strategic Control</p><p class="text-[10px] gold-text cinzel">V1 – Uploaded/Live</p></div>
         </div>
 
         <!-- Archive View -->
@@ -88,7 +94,7 @@
             <div class="glass-card overflow-hidden"><div class="overflow-x-auto"><table class="data-table"><thead><tr class="bg-zinc-900/70 text-zinc-500 text-[9px] uppercase font-black tracking-widest border-b border-zinc-800"><th class="p-2 text-center">#</th><th class="p-2 text-center">Order</th><th class="p-2">Project</th><th class="p-2">Shorts</th><th class="p-2">Soundtracks</th><th class="p-2 text-right">Actions</th></tr></thead><tbody id="project-list"></tbody></table></div></div>
         </div>
 
-        <!-- Pipeline View -->
+        <!-- Pipeline View (σύντομο, λειτουργικό) -->
         <div id="view-pipeline" class="hidden"><div class="flex justify-between items-center mb-8 border-l-4 border-gold pl-6"><div><h2 class="text-2xl gold-text cinzel uppercase">PRODUCTION PIPELINE</h2></div><button onclick="openPipelineModal()" class="px-8 py-4 bg-zinc-800 text-gold font-black rounded-xl text-[10px] border border-gold/20">🔨 NEW PRODUCTION</button></div><div id="pipeline-container" class="space-y-10 pb-40"></div></div>
 
         <!-- Analytics View -->
@@ -98,20 +104,27 @@
         </div>
     </div>
 
-    <!-- Master Edit Modal -->
+    <!-- Master Edit Modal (με Uploaded/Live checkboxes) -->
     <div id="modal" class="fixed inset-0 bg-black/98 backdrop-blur-xl hidden flex items-center justify-center p-4 z-50 overflow-y-auto">
         <div class="glass-card w-full max-w-5xl my-4 bg-zinc-900 p-8 border-gold/40 shadow-2xl">
             <div class="flex justify-between items-center mb-8 border-b border-zinc-800 pb-4"><h2 class="text-2xl gold-text cinzel uppercase">ΣΤΟΙΧΕΙΑ PROJECT</h2><button onclick="closeModal()" class="text-zinc-500 text-3xl hover:text-white">✕</button></div>
             <form id="project-form" class="space-y-8 max-h-[75vh] overflow-y-auto pr-3">
                 <input type="hidden" id="edit-id">
+                <!-- Κύριο Βίντεο -->
                 <section class="bg-black/20 p-6 rounded-xl border border-zinc-800">
-                    <div class="flex items-center justify-between mb-4"><label class="text-[11px] gold-text uppercase font-black tracking-widest">Κύριο Βίντεο</label><div class="flex items-center gap-3"><input type="checkbox" id="main-status" class="pipeline-checkbox"><label class="text-[10px] text-zinc-400 font-bold uppercase">YouTube Live</label></div></div>
-                    <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
-                        <div class="md:col-span-6 space-y-1"><label class="text-[9px] text-zinc-500 uppercase font-bold">Τίτλος</label><input type="text" id="main-title" required class="w-full" placeholder="Enter title..."></div>
-                        <div class="md:col-span-6 space-y-1"><label class="text-[9px] text-zinc-500 uppercase font-bold">YouTube Link</label><input type="url" id="main-link" class="w-full" placeholder="https://youtube.com/..."></div>
+                    <div class="flex justify-between items-center mb-2"><label class="text-[11px] gold-text uppercase font-black tracking-widest">Κύριο Βίντεο</label></div>
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                        <div class="md:col-span-6"><label class="text-[9px] text-zinc-500">Τίτλος</label><input type="text" id="main-title" required class="w-full"></div>
+                        <div class="md:col-span-6"><label class="text-[9px] text-zinc-500">YouTube Link</label><input type="url" id="main-link" class="w-full"></div>
+                    </div>
+                    <div class="status-group mt-3">
+                        <label><input type="checkbox" id="main-uploaded" class="pipeline-checkbox"> Uploaded</label>
+                        <label><input type="checkbox" id="main-live" class="pipeline-checkbox"> Live</label>
                     </div>
                 </section>
+                <!-- Shorts -->
                 <div><div class="flex justify-between items-center mb-3"><p class="text-[11px] gold-text font-black uppercase tracking-widest">Shorts Production</p><button type="button" onclick="addShortRow()" class="text-[9px] bg-zinc-800 px-4 py-1.5 rounded border border-zinc-700 hover:border-gold font-bold uppercase">+ Add Short</button></div><div id="shorts-container" class="space-y-3"></div></div>
+                <!-- Soundtracks -->
                 <div><div class="flex justify-between items-center mb-3"><p class="text-[11px] gold-text font-black uppercase tracking-widest">Soundtracks & Scoring</p><button type="button" onclick="addSoundtrackRow()" class="text-[9px] bg-zinc-800 px-4 py-1.5 rounded border border-zinc-700 hover:border-gold font-bold uppercase">+ Add Score</button></div><div id="soundtracks-container" class="space-y-3"></div></div>
                 <div class="pt-10 flex justify-end gap-6 border-t border-zinc-800"><button type="button" onclick="closeModal()" class="text-zinc-500 font-black uppercase text-xs tracking-widest hover:text-white">Cancel</button><button type="submit" class="px-14 py-4 gold-bg text-black font-black rounded-xl uppercase text-xs tracking-[0.2em] shadow-2xl hover:brightness-110 transition-all">Save Project</button></div>
             </form>
@@ -142,10 +155,20 @@
             const savedStats = localStorage.getItem('hst_stats');
             if(savedStats) channelStats = JSON.parse(savedStats);
             projects.sort((a,b) => (a.orderIndex||0) - (b.orderIndex||0));
+            // Εξασφάλιση πεδίων uploaded/live για παλιά δεδομένα
             for(let p of projects) {
-                if(p.mainVideo && p.mainVideo.published === undefined) p.mainVideo.published = false;
-                if(p.shorts) for(let s of p.shorts) if(s.published === undefined) s.published = false;
-                if(p.soundtracks) for(let st of p.soundtracks) if(st.published === undefined) st.published = false;
+                if(p.mainVideo) {
+                    if(p.mainVideo.uploaded === undefined) p.mainVideo.uploaded = false;
+                    if(p.mainVideo.live === undefined) p.mainVideo.live = false;
+                }
+                if(p.shorts) for(let s of p.shorts) {
+                    if(s.uploaded === undefined) s.uploaded = false;
+                    if(s.live === undefined) s.live = false;
+                }
+                if(p.soundtracks) for(let st of p.soundtracks) {
+                    if(st.uploaded === undefined) st.uploaded = false;
+                    if(st.live === undefined) st.live = false;
+                }
             }
         };
         
@@ -170,19 +193,26 @@
         
         function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => m==='&'?'&amp;':m==='<'?'&lt;':'&gt;'); }
         
-        // RENDER PROJECTS (σταθερή χρυσή άρπα, κόκκινοι τίτλοι αν published === false)
+        // Χρώμα τίτλου βάσει uploaded/live
+        function getTitleClass(uploaded, live) {
+            if (live) return 'title-white';      // Live -> λευκό
+            if (uploaded) return 'title-green';  // Μόνο uploaded -> πράσινο
+            return 'title-red';                  // Κανένα -> κόκκινο
+        }
+        
+        // RENDER PROJECTS (σταθερή χρυσή άρπα, χρώμα τίτλου ανάλογα με uploaded/live)
         window.renderProjects = () => {
             const list = document.getElementById('project-list');
             list.innerHTML = projects.map((p, i) => {
                 const m = (p.mainVideo.link || "").match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?\s*v=|&v=)([^#&?]*).*/);
                 const ytId = m && m[2].length === 11 ? m[2] : null;
-                const mainTitleClass = (p.mainVideo.published === true) ? '' : 'red-title';
+                const mainClass = getTitleClass(p.mainVideo.uploaded, p.mainVideo.live);
                 return `<tr class="group hover:bg-zinc-800/40 transition-all archive-row">
                     <td class="p-2 text-center text-zinc-600 font-mono text-[10px]">${i+1}</td>
                     <td class="p-2 text-center"><div class="flex flex-col gap-0.5"><button onclick="moveProject('${p.id}', 'up')" class="hover:text-gold text-[10px]">▲</button><button onclick="moveProject('${p.id}', 'down')" class="hover:text-gold text-[10px]">▼</button></div></td>
-                    <td class="p-2"><div class="flex items-center gap-2"><div class="thumbnail-frame shadow-xl">${ytId ? `<img src="https://img.youtube.com/vi/${ytId}/mqdefault.jpg">` : '<span class="text-[7px] text-zinc-700">NO ART</span>'}</div><div><div class="flex items-center gap-1 mb-0.5"><span style="color: var(--gold);">🔱</span><div class="font-black text-xs uppercase break-words ${mainTitleClass}">${escapeHtml(p.mainVideo.title)}</div></div><div class="flex gap-2"><span class="stat-badge">👁 ${p.mainVideo.analytics?.views || 0} ${getTrendIcon(p.mainVideo.analytics?.views, p.mainVideo.analytics?.previousViews)}</span><span class="stat-badge">⏱ ${p.mainVideo.analytics?.retention || '0%'}</span></div></div></div></div></td>
-                    <td class="p-2"><div class="space-y-1">${(p.shorts || []).map(s => { const titleClass = (s.published === true) ? '' : 'red-title'; return `<div><div class="flex items-center gap-1"><span style="color: var(--gold);">🔱</span>${s.link ? `<a href="${s.link}" target="_blank" class="text-zinc-400 text-[9px] hover:gold-text break-words ${titleClass}">${escapeHtml(s.title)}</a>` : `<span class="text-zinc-400 text-[9px] break-words ${titleClass}">${escapeHtml(s.title)}</span>`}</div><div class="flex gap-2 pl-4"><span class="stat-badge">👁 ${s.analytics?.views || 0} ${getTrendIcon(s.analytics?.views, s.analytics?.previousViews)}</span><span class="stat-badge">⏱ ${s.analytics?.retention || '0%'}</span></div></div>`}).join('')}</div></td>
-                    <td class="p-2"><div class="space-y-1">${(p.soundtracks || []).map(st => { const titleClass = (st.published === true) ? '' : 'red-title'; return `<div><div class="flex items-center gap-1 flex-wrap"><span style="color: var(--gold);">🔱</span>${st.link ? `<a href="${st.link}" target="_blank" class="text-zinc-400 text-[9px] hover:gold-text soundtrack-title ${titleClass}">${escapeHtml(st.title)}</a>` : `<span class="text-zinc-400 text-[9px] soundtrack-title ${titleClass}">${escapeHtml(st.title)}</span>`}${st.spotifyLink ? '<span class="spotify-tag ml-1">● Spotify</span>' : ''}</div><div class="flex gap-2 pl-4"><span class="stat-badge">👁 ${st.analytics?.views || 0} ${getTrendIcon(st.analytics?.views, st.analytics?.previousViews)}</span><span class="stat-badge">⏱ ${st.analytics?.retention || '0%'}</span></div></div>`}).join('')}</div></td>
+                    <td class="p-2"><div class="flex items-center gap-2"><div class="thumbnail-frame shadow-xl">${ytId ? `<img src="https://img.youtube.com/vi/${ytId}/mqdefault.jpg">` : '<span class="text-[7px] text-zinc-700">NO ART</span>'}</div><div><div class="flex items-center gap-1 mb-0.5"><span style="color: var(--gold);">🔱</span><div class="font-black text-xs uppercase break-words ${mainClass}">${escapeHtml(p.mainVideo.title)}</div></div><div class="flex gap-2"><span class="stat-badge">👁 ${p.mainVideo.analytics?.views || 0} ${getTrendIcon(p.mainVideo.analytics?.views, p.mainVideo.analytics?.previousViews)}</span><span class="stat-badge">⏱ ${p.mainVideo.analytics?.retention || '0%'}</span></div></div></div></div></td>
+                    <td class="p-2"><div class="space-y-1">${(p.shorts || []).map(s => { const titleClass = getTitleClass(s.uploaded, s.live); return `<div><div class="flex items-center gap-1"><span style="color: var(--gold);">🔱</span>${s.link ? `<a href="${s.link}" target="_blank" class="text-zinc-400 text-[9px] hover:gold-text break-words ${titleClass}">${escapeHtml(s.title)}</a>` : `<span class="text-zinc-400 text-[9px] break-words ${titleClass}">${escapeHtml(s.title)}</span>`}</div><div class="flex gap-2 pl-4"><span class="stat-badge">👁 ${s.analytics?.views || 0} ${getTrendIcon(s.analytics?.views, s.analytics?.previousViews)}</span><span class="stat-badge">⏱ ${s.analytics?.retention || '0%'}</span></div></div>`}).join('')}</div></td>
+                    <td class="p-2"><div class="space-y-1">${(p.soundtracks || []).map(st => { const titleClass = getTitleClass(st.uploaded, st.live); return `<div><div class="flex items-center gap-1 flex-wrap"><span style="color: var(--gold);">🔱</span>${st.link ? `<a href="${st.link}" target="_blank" class="text-zinc-400 text-[9px] hover:gold-text soundtrack-title ${titleClass}">${escapeHtml(st.title)}</a>` : `<span class="text-zinc-400 text-[9px] soundtrack-title ${titleClass}">${escapeHtml(st.title)}</span>`}${st.spotifyLink ? '<span class="spotify-tag ml-1">● Spotify</span>' : ''}</div><div class="flex gap-2 pl-4"><span class="stat-badge">👁 ${st.analytics?.views || 0} ${getTrendIcon(st.analytics?.views, st.analytics?.previousViews)}</span><span class="stat-badge">⏱ ${st.analytics?.retention || '0%'}</span></div></div>`}).join('')}</div></td>
                     <td class="p-2 text-right actions-cell"><div class="action-buttons"><button onclick="openModal('${p.id}')" class="text-[9px] gold-text hover:underline font-black uppercase tracking-widest">Edit</button><button onclick="deleteProject('${p.id}')" class="text-[9px] delete-btn font-black uppercase tracking-widest">Delete</button></div></div></td>
                 </tr>`;
             }).join('');
@@ -222,7 +252,7 @@
                 const aD = (p.shorts || []).reduce((acc, s) => acc + (s.done ? 1 : 0), 0) + (p.soundtracks || []).reduce((acc, s) => acc + (s.done ? 1 : 0), 0);
                 const target = CORE_STEPS.length + sL + stL;
                 const pct = target > 0 ? Math.round(((bD + aD) / target) * 100) : 0;
-                return `<div class="glass-card overflow-hidden shadow-2xl border-gold/5 bg-zinc-900/40" data-pid="${p.id}"><table class="w-full text-left text-xs"><thead><tr class="bg-zinc-950/80 text-zinc-500 text-[8px] uppercase font-black text-center tracking-[0.2em] border-b border-zinc-800"><th class="p-5 text-left w-72">Project Title</th>${CORE_STEPS.map(s => `<th class="p-2">${s}</th>`).join('')}<th class="p-5 bg-emerald-950/30 text-emerald-400 font-black">FINALIZE</th><th class="p-5 text-right">Actions</th></tr></thead><tbody><tr class="text-center border-b border-zinc-800/50"><td class="p-5 text-left"><input type="text" class="pipeline-input gold-text font-black !text-xs mb-1 uppercase tracking-tighter" value="${escapeHtml(p.title)}" oninput="updatePipelineField('${p.id}', 'title', this.value)"><div class="progress-bar w-full"><div class="progress-fill" style="width: ${pct}%"></div></div><div class="text-[7px] text-zinc-500 mt-1 uppercase font-bold tracking-widest">${pct}% COMPLETE</div></td>${CORE_STEPS.map(s => `<td class="p-2"><input type="checkbox" class="pipeline-checkbox" ${p[s] ? 'checked' : ''} onchange="togglePipelineStep('${p.id}', '${s}')"></td>`).join('')}<td class="p-4 bg-emerald-900/5"><button onclick="showConfirmModal('${p.id}')" class="upload-btn">UPLOAD</button></td><td class="p-5 text-right"><button onclick="deletePipelineProject('${p.id}')" class="text-[9px] text-zinc-600 hover:text-red-500 font-black uppercase tracking-widest">Discard</button></td></tr><tr class="bg-black/40"><td colspan="10" class="p-6"><div class="flex flex-col lg:flex-row gap-16"><div class="flex-1"><div class="flex justify-between items-center mb-4 pb-2 border-b border-zinc-800"><span class="text-[10px] gold-text uppercase font-black tracking-widest">Shorts Pipeline</span><button onclick="addPipelineAsset('${p.id}', 'shorts')" class="text-[8px] bg-zinc-800/50 px-3 py-1 rounded border border-zinc-700 hover:border-gold">+ NEW SHORT</button></div><div class="grid grid-cols-1 sm:grid-cols-2 gap-3">${(p.shorts || []).map((s, idx) => `<div class="flex items-center gap-3 bg-zinc-950/50 p-2 rounded-lg border border-zinc-800"><input type="checkbox" class="pipeline-checkbox scale-90" ${s.done ? 'checked' : ''} onchange="updatePipelineAsset('${p.id}', 'shorts', ${idx}, 'done', this.checked)"><input type="text" class="pipeline-input !text-[10px] flex-1" value="${escapeHtml(s.title)}" oninput="updatePipelineAsset('${p.id}', 'shorts', ${idx}, 'title', this.value)"><button onclick="removePipelineAsset('${p.id}', 'shorts', ${idx})" class="text-zinc-700 hover:text-red-500 text-[10px]">✕</button></div>`).join('')}</div></div><div class="flex-1"><div class="flex justify-between items-center mb-4 pb-2 border-b border-zinc-800"><span class="text-[10px] gold-text uppercase font-black tracking-widest">Music Assets</span><button onclick="addPipelineAsset('${p.id}', 'soundtracks')" class="text-[8px] bg-zinc-800/50 px-3 py-1 rounded border border-zinc-700 hover:border-gold">+ NEW SCORE</button></div><div class="space-y-3">${(p.soundtracks || []).map((st, idx) => `<div class="flex flex-col gap-2 bg-zinc-950/50 p-3 rounded-lg border border-zinc-800"><div class="flex items-center gap-4"><input type="checkbox" class="pipeline-checkbox scale-90" ${st.done ? 'checked' : ''} onchange="updatePipelineAsset('${p.id}', 'soundtracks', ${idx}, 'done', this.checked)"><input type="text" class="pipeline-input !text-[10px] flex-1 font-bold" value="${escapeHtml(st.title)}" oninput="updatePipelineAsset('${p.id}', 'soundtracks', ${idx}, 'title', this.value)"><button onclick="removePipelineAsset('${p.id}', 'soundtracks', ${idx})" class="text-zinc-700 hover:text-red-500 text-[10px]">✕</button></div><div class="flex items-center gap-3 pl-8"><span class="text-[8px] text-emerald-500 font-bold uppercase">Spotify Link:</span><input type="text" class="pipeline-input !text-[9px] flex-1 italic" value="${st.spotifyLink || ''}" oninput="updatePipelineAsset('${p.id}', 'soundtracks', ${idx}, 'spotifyLink', this.value)"></div></div>`).join('')}</div></div></div></td></tr></tbody></tr></div>`;
+                return `<div class="glass-card overflow-hidden shadow-2xl border-gold/5 bg-zinc-900/40" data-pid="${p.id}"><table class="w-full text-left text-xs"><thead><tr class="bg-zinc-950/80 text-zinc-500 text-[8px] uppercase font-black text-center tracking-[0.2em] border-b border-zinc-800"><th class="p-5 text-left w-72">Project Title</th>${CORE_STEPS.map(s => `<th class="p-2">${s}</th>`).join('')}<th class="p-5 bg-emerald-950/30 text-emerald-400 font-black">FINALIZE</th><th class="p-5 text-right">Actions</th></tr></thead><tbody><tr class="text-center border-b border-zinc-800/50"><td class="p-5 text-left"><input type="text" class="pipeline-input gold-text font-black !text-xs mb-1 uppercase tracking-tighter" value="${escapeHtml(p.title)}" oninput="updatePipelineField('${p.id}', 'title', this.value)"><div class="progress-bar w-full"><div class="progress-fill" style="width: ${pct}%"></div></div><div class="text-[7px] text-zinc-500 mt-1 uppercase font-bold tracking-widest">${pct}% COMPLETE</div></td>${CORE_STEPS.map(s => `<td class="p-2"><input type="checkbox" class="pipeline-checkbox" ${p[s] ? 'checked' : ''} onchange="togglePipelineStep('${p.id}', '${s}')"></td>`).join('')}<td class="p-4 bg-emerald-900/5"><button onclick="showConfirmModal('${p.id}')" class="upload-btn">UPLOAD</button></td><td class="p-5 text-right"><button onclick="deletePipelineProject('${p.id}')" class="text-[9px] text-zinc-600 hover:text-red-500 font-black uppercase tracking-widest">Discard</button></td><tr><tr class="bg-black/40"><td colspan="10" class="p-6"><div class="flex flex-col lg:flex-row gap-16"><div class="flex-1"><div class="flex justify-between items-center mb-4 pb-2 border-b border-zinc-800"><span class="text-[10px] gold-text uppercase font-black tracking-widest">Shorts Pipeline</span><button onclick="addPipelineAsset('${p.id}', 'shorts')" class="text-[8px] bg-zinc-800/50 px-3 py-1 rounded border border-zinc-700 hover:border-gold">+ NEW SHORT</button></div><div class="grid grid-cols-1 sm:grid-cols-2 gap-3">${(p.shorts || []).map((s, idx) => `<div class="flex items-center gap-3 bg-zinc-950/50 p-2 rounded-lg border border-zinc-800"><input type="checkbox" class="pipeline-checkbox scale-90" ${s.done ? 'checked' : ''} onchange="updatePipelineAsset('${p.id}', 'shorts', ${idx}, 'done', this.checked)"><input type="text" class="pipeline-input !text-[10px] flex-1" value="${escapeHtml(s.title)}" oninput="updatePipelineAsset('${p.id}', 'shorts', ${idx}, 'title', this.value)"><button onclick="removePipelineAsset('${p.id}', 'shorts', ${idx})" class="text-zinc-700 hover:text-red-500 text-[10px]">✕</button></div>`).join('')}</div></div><div class="flex-1"><div class="flex justify-between items-center mb-4 pb-2 border-b border-zinc-800"><span class="text-[10px] gold-text uppercase font-black tracking-widest">Music Assets</span><button onclick="addPipelineAsset('${p.id}', 'soundtracks')" class="text-[8px] bg-zinc-800/50 px-3 py-1 rounded border border-zinc-700 hover:border-gold">+ NEW SCORE</button></div><div class="space-y-3">${(p.soundtracks || []).map((st, idx) => `<div class="flex flex-col gap-2 bg-zinc-950/50 p-3 rounded-lg border border-zinc-800"><div class="flex items-center gap-4"><input type="checkbox" class="pipeline-checkbox scale-90" ${st.done ? 'checked' : ''} onchange="updatePipelineAsset('${p.id}', 'soundtracks', ${idx}, 'done', this.checked)"><input type="text" class="pipeline-input !text-[10px] flex-1 font-bold" value="${escapeHtml(st.title)}" oninput="updatePipelineAsset('${p.id}', 'soundtracks', ${idx}, 'title', this.value)"><button onclick="removePipelineAsset('${p.id}', 'soundtracks', ${idx})" class="text-zinc-700 hover:text-red-500 text-[10px]">✕</button></div><div class="flex items-center gap-3 pl-8"><span class="text-[8px] text-emerald-500 font-bold uppercase">Spotify Link:</span><input type="text" class="pipeline-input !text-[9px] flex-1 italic" value="${st.spotifyLink || ''}" oninput="updatePipelineAsset('${p.id}', 'soundtracks', ${idx}, 'spotifyLink', this.value)"></div></div>`).join('')}</div></div></div></td></tr></tbody></table></div>`;
             }).join('');
         };
         
@@ -236,7 +266,7 @@
             document.getElementById('channel-watchtime').innerText = channelStats.watchTime || '0';
         };
         
-        // MODAL & FORMS
+        // MODAL & FORMS (με uploaded/live)
         window.openModal = (id=null) => {
             document.getElementById('project-form').reset();
             document.getElementById('shorts-container').innerHTML = '';
@@ -247,7 +277,8 @@
                 if(p) { 
                     document.getElementById('main-title').value = p.mainVideo.title; 
                     document.getElementById('main-link').value = p.mainVideo.link||''; 
-                    document.getElementById('main-status').checked = p.mainVideo.published === true; 
+                    document.getElementById('main-uploaded').checked = p.mainVideo.uploaded === true;
+                    document.getElementById('main-live').checked = p.mainVideo.live === true;
                     (p.shorts||[]).forEach(s => addShortRow(s)); 
                     (p.soundtracks||[]).forEach(st => addSoundtrackRow(st)); 
                 } 
@@ -259,29 +290,108 @@
         };
         window.closeModal = () => document.getElementById('modal').classList.add('hidden');
         
-        window.addShortRow = (d={title:'', analytics:{views:'0',retention:'0%'}, published:false, link:''}) => {
+        // Live checkbox αυτόματα τσεκάρει το Uploaded
+        function setupLiveCheckbox(uploadedCheck, liveCheck) {
+            if (liveCheck) {
+                liveCheck.addEventListener('change', function() {
+                    if (this.checked) {
+                        uploadedCheck.checked = true;
+                    }
+                });
+            }
+        }
+        
+        window.addShortRow = (d={title:'', analytics:{views:'0',retention:'0%'}, uploaded:false, live:false, link:''}) => {
             const div = document.createElement('div'); div.className="dynamic-row bg-zinc-800/10 p-3 rounded-lg border border-zinc-800 space-y-3";
-            div.innerHTML = `<div class="grid grid-cols-12 gap-3 items-center"><div class="col-span-1 flex justify-center"><input type="checkbox" class="pipeline-checkbox short-status" ${d.published ? 'checked' : ''}></div><div class="col-span-10"><input type="text" class="w-full short-title" value="${escapeHtml(d.title)}" placeholder="Short Title"></div><div class="col-span-1 text-right"><button type="button" onclick="this.closest('.dynamic-row').remove()" class="text-zinc-600 hover:text-red-500 font-bold">✕</button></div></div><div class="grid grid-cols-12 gap-3 items-center pl-10"><div class="col-span-4"><input type="url" class="w-full short-link !text-[10px]" value="${d.link||''}" placeholder="YouTube Link"></div><div class="col-span-4"><input type="text" class="w-full short-views !text-[10px]" value="${d.analytics?.views||'0'}" placeholder="Views"></div><div class="col-span-4"><input type="text" class="w-full short-retention !text-[10px]" value="${d.analytics?.retention||'0%'}" placeholder="Ret%"></div></div>`;
+            div.innerHTML = `<div class="grid grid-cols-12 gap-3 items-center">
+                <div class="col-span-10"><input type="text" class="w-full short-title" value="${escapeHtml(d.title)}" placeholder="Short Title"></div>
+                <div class="col-span-2 text-right"><button type="button" onclick="this.closest('.dynamic-row').remove()" class="text-zinc-600 hover:text-red-500 font-bold">✕</button></div>
+            </div>
+            <div class="grid grid-cols-12 gap-3 items-center pl-10">
+                <div class="col-span-4"><input type="url" class="w-full short-link !text-[10px]" value="${d.link||''}" placeholder="YouTube Link"></div>
+                <div class="col-span-4"><input type="text" class="w-full short-views !text-[10px]" value="${d.analytics?.views||'0'}" placeholder="Views"></div>
+                <div class="col-span-4"><input type="text" class="w-full short-retention !text-[10px]" value="${d.analytics?.retention||'0%'}" placeholder="Ret%"></div>
+            </div>
+            <div class="status-group pl-10">
+                <label><input type="checkbox" class="short-uploaded pipeline-checkbox" ${d.uploaded ? 'checked' : ''}> Uploaded</label>
+                <label><input type="checkbox" class="short-live pipeline-checkbox" ${d.live ? 'checked' : ''}> Live</label>
+            </div>`;
             document.getElementById('shorts-container').appendChild(div);
+            const uploadedCheck = div.querySelector('.short-uploaded');
+            const liveCheck = div.querySelector('.short-live');
+            setupLiveCheckbox(uploadedCheck, liveCheck);
         };
         
-        window.addSoundtrackRow = (d={title:'', spotifyLink:'', link:'', analytics:{views:'0',retention:'0%'}, published:false}) => {
+        window.addSoundtrackRow = (d={title:'', spotifyLink:'', link:'', analytics:{views:'0',retention:'0%'}, uploaded:false, live:false}) => {
             const div = document.createElement('div'); div.className="dynamic-row bg-zinc-800/10 p-4 rounded-lg border border-zinc-800 space-y-3";
-            div.innerHTML = `<div class="grid grid-cols-12 gap-3 items-center"><div class="col-span-1 flex justify-center"><input type="checkbox" class="pipeline-checkbox st-status" ${d.published ? 'checked' : ''}></div><div class="col-span-10"><input type="text" class="w-full st-title font-bold" value="${escapeHtml(d.title)}" placeholder="Soundtrack Name"></div><div class="col-span-1 text-right"><button type="button" onclick="this.closest('.dynamic-row').remove()" class="text-zinc-600 hover:text-red-500 font-bold">✕</button></div></div><div class="grid grid-cols-12 gap-3 items-center pl-10"><div class="col-span-4"><input type="text" class="w-full st-spotify-link !text-[9px] italic" value="${d.spotifyLink||''}" placeholder="Spotify Link"></div><div class="col-span-4"><input type="url" class="w-full st-link !text-[10px]" value="${d.link||''}" placeholder="YouTube Link"></div><div class="col-span-2"><input type="text" class="w-full st-views !text-[10px]" value="${d.analytics?.views||'0'}"></div><div class="col-span-2"><input type="text" class="w-full st-retention !text-[10px]" value="${d.analytics?.retention||'0%'}"></div></div>`;
+            div.innerHTML = `<div class="grid grid-cols-12 gap-3 items-center">
+                <div class="col-span-10"><input type="text" class="w-full st-title font-bold" value="${escapeHtml(d.title)}" placeholder="Soundtrack Name"></div>
+                <div class="col-span-2 text-right"><button type="button" onclick="this.closest('.dynamic-row').remove()" class="text-zinc-600 hover:text-red-500 font-bold">✕</button></div>
+            </div>
+            <div class="grid grid-cols-12 gap-3 items-center pl-10">
+                <div class="col-span-4"><input type="text" class="w-full st-spotify-link !text-[9px] italic" value="${d.spotifyLink||''}" placeholder="Spotify Link"></div>
+                <div class="col-span-4"><input type="url" class="w-full st-link !text-[10px]" value="${d.link||''}" placeholder="YouTube Link"></div>
+                <div class="col-span-2"><input type="text" class="w-full st-views !text-[10px]" value="${d.analytics?.views||'0'}"></div>
+                <div class="col-span-2"><input type="text" class="w-full st-retention !text-[10px]" value="${d.analytics?.retention||'0%'}"></div>
+            </div>
+            <div class="status-group pl-10">
+                <label><input type="checkbox" class="st-uploaded pipeline-checkbox" ${d.uploaded ? 'checked' : ''}> Uploaded</label>
+                <label><input type="checkbox" class="st-live pipeline-checkbox" ${d.live ? 'checked' : ''}> Live</label>
+            </div>`;
             document.getElementById('soundtracks-container').appendChild(div);
+            const uploadedCheck = div.querySelector('.st-uploaded');
+            const liveCheck = div.querySelector('.st-live');
+            setupLiveCheckbox(uploadedCheck, liveCheck);
         };
         
         document.getElementById('project-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('edit-id').value || Date.now().toString();
             const existingP = projects.find(p => p.id === id);
-            const shorts = Array.from(document.querySelectorAll('#shorts-container .dynamic-row')).map(r => ({ title: r.querySelector('.short-title').value, link: r.querySelector('.short-link').value, published: r.querySelector('.short-status').checked, analytics: { views: r.querySelector('.short-views').value||'0', retention: r.querySelector('.short-retention').value||'0%', previousViews: existingP?.shorts?.find(s=>cleanForMatch(s.title)===cleanForMatch(r.querySelector('.short-title').value))?.analytics?.views||null } })).filter(x=>x.title);
-            const soundtracks = Array.from(document.querySelectorAll('#soundtracks-container .dynamic-row')).map(r => ({ title: r.querySelector('.st-title').value, spotifyLink: r.querySelector('.st-spotify-link').value, link: r.querySelector('.st-link').value, published: r.querySelector('.st-status').checked, analytics: { views: r.querySelector('.st-views').value||'0', retention: r.querySelector('.st-retention').value||'0%', previousViews: existingP?.soundtracks?.find(st=>cleanForMatch(st.title)===cleanForMatch(r.querySelector('.st-title').value))?.analytics?.views||null } })).filter(x=>x.title);
-            const data = { mainVideo: { title: document.getElementById('main-title').value, link: document.getElementById('main-link').value, published: document.getElementById('main-status').checked, analytics: { views: existingP?.mainVideo?.analytics?.views||'0', retention: existingP?.mainVideo?.analytics?.retention||'0%', previousViews: existingP?.mainVideo?.analytics?.views||null } }, shorts, soundtracks, orderIndex: existingP ? existingP.orderIndex : (projects.length>0 ? Math.min(...projects.map(p=>p.orderIndex))-1 : 1000), date: existingP ? existingP.date : new Date().toISOString() };
+            const shorts = Array.from(document.querySelectorAll('#shorts-container .dynamic-row')).map(r => ({ 
+                title: r.querySelector('.short-title').value, 
+                link: r.querySelector('.short-link').value, 
+                uploaded: r.querySelector('.short-uploaded').checked,
+                live: r.querySelector('.short-live').checked,
+                analytics: { 
+                    views: r.querySelector('.short-views').value||'0', 
+                    retention: r.querySelector('.short-retention').value||'0%', 
+                    previousViews: existingP?.shorts?.find(s=>cleanForMatch(s.title)===cleanForMatch(r.querySelector('.short-title').value))?.analytics?.views||null 
+                } 
+            })).filter(x=>x.title);
+            const soundtracks = Array.from(document.querySelectorAll('#soundtracks-container .dynamic-row')).map(r => ({ 
+                title: r.querySelector('.st-title').value, 
+                spotifyLink: r.querySelector('.st-spotify-link').value, 
+                link: r.querySelector('.st-link').value, 
+                uploaded: r.querySelector('.st-uploaded').checked,
+                live: r.querySelector('.st-live').checked,
+                analytics: { 
+                    views: r.querySelector('.st-views').value||'0', 
+                    retention: r.querySelector('.st-retention').value||'0%', 
+                    previousViews: existingP?.soundtracks?.find(st=>cleanForMatch(st.title)===cleanForMatch(r.querySelector('.st-title').value))?.analytics?.views||null 
+                } 
+            })).filter(x=>x.title);
+            const data = { 
+                mainVideo: { 
+                    title: document.getElementById('main-title').value, 
+                    link: document.getElementById('main-link').value, 
+                    uploaded: document.getElementById('main-uploaded').checked,
+                    live: document.getElementById('main-live').checked,
+                    analytics: { 
+                        views: existingP?.mainVideo?.analytics?.views||'0', 
+                        retention: existingP?.mainVideo?.analytics?.retention||'0%', 
+                        previousViews: existingP?.mainVideo?.analytics?.views||null 
+                    } 
+                }, 
+                shorts, 
+                soundtracks, 
+                orderIndex: existingP ? existingP.orderIndex : (projects.length>0 ? Math.min(...projects.map(p=>p.orderIndex))-1 : 1000), 
+                date: existingP ? existingP.date : new Date().toISOString() 
+            };
             await window.saveProjectToDB(id, data); showToast('DATABASE UPDATED'); closeModal();
         });
         
-        // PIPELINE ACTIONS
+        // PIPELINE ACTIONS (ίδιες)
         window.updatePipelineField = (id, field, value) => { const p = pipelineProjects.find(item=>item.id===id); if(p) { p[field]=value; clearTimeout(saveTimeout); saveTimeout=setTimeout(()=>window.savePipelineToDB(id,p),800); } };
         window.togglePipelineStep = async (id, step) => { const p = pipelineProjects.find(item=>item.id===id); if(p) { p[step]=!p[step]; await window.savePipelineToDB(id,p); } };
         window.addPipelineAsset = async (id, type) => { const p = pipelineProjects.find(item=>item.id===id); if(p) { if(!p[type]) p[type]=[]; p[type].push(type==='shorts' ? {title:`Short ${p.shorts.length+1}`, done:false} : {title:'', done:false, spotifyLink:''}); await window.savePipelineToDB(id,p); } };
@@ -290,7 +400,7 @@
         window.openPipelineModal = () => { document.getElementById('pipeline-title-input').value=""; document.getElementById('pipeline-modal').classList.remove('hidden'); };
         window.addPipelineProject = async () => { const title = document.getElementById('pipeline-title-input').value; if(title) { await window.savePipelineToDB(Date.now().toString(), { title, scenario:false, narration:false, artworks:false, video:false, subtitles:false, multilanguage:false, descriptions:false, shorts:[], soundtracks:[], upload:false, dateCreated:new Date().toISOString() }); document.getElementById('pipeline-modal').classList.add('hidden'); showToast('PRODUCTION INITIATED'); } };
         
-        // MIGRATION
+        // MIGRATION (νέα projects με uploaded/live false)
         window.showConfirmModal = (id) => { currentMigrationId = id; document.getElementById('confirm-modal').classList.remove('hidden'); document.getElementById('final-confirm-btn').onclick = () => window.executeMigration(id); };
         window.hideConfirmModal = () => { document.getElementById('confirm-modal').classList.add('hidden'); currentMigrationId = null; };
         window.executeMigration = async (id) => {
@@ -298,7 +408,13 @@
             window.hideConfirmModal(); showToast('MIGRATING...');
             const newProjectId = Date.now().toString();
             const currentMinOrder = projects.length>0 ? Math.min(...projects.map(pr=>pr.orderIndex||0)) : 1000;
-            const archiveData = { mainVideo: { title: p.title||"Untitled", link:"", published: false, analytics:{views:"0",retention:"0%"} }, shorts: (p.shorts||[]).map(s=>({ title:s.title||"Short", published: s.done === true, analytics:{views:"0",retention:"0%"}, link:"" })), soundtracks: (p.soundtracks||[]).map(st=>({ title:st.title||"Score", published: st.done === true, spotifyLink:st.spotifyLink||"", link:"", analytics:{views:"0",retention:"0%" } })), orderIndex: currentMinOrder-1, date:new Date().toISOString() };
+            const archiveData = { 
+                mainVideo: { title: p.title||"Untitled", link:"", uploaded: false, live: false, analytics:{views:"0",retention:"0%"} }, 
+                shorts: (p.shorts||[]).map(s=>({ title:s.title||"Short", uploaded: false, live: false, analytics:{views:"0",retention:"0%"}, link:"" })), 
+                soundtracks: (p.soundtracks||[]).map(st=>({ title:st.title||"Score", uploaded: false, live: false, spotifyLink:st.spotifyLink||"", link:"", analytics:{views:"0",retention:"0%" } })), 
+                orderIndex: currentMinOrder-1, 
+                date:new Date().toISOString() 
+            };
             projects.unshift({ ...archiveData, id: newProjectId }); pipelineProjects = pipelineProjects.filter(item=>item.id!==id);
             saveToLocal(); renderProjects(); renderPipeline(); updateStats();
             showToast('MIGRATION COMPLETE'); switchTab('archive');
@@ -309,7 +425,7 @@
         window.deleteProject = (id) => { pendingDeleteId = id; document.getElementById('delete-modal').classList.remove('hidden'); };
         document.getElementById('final-delete-btn').onclick = () => { if(pendingDeleteId) { projects = projects.filter(p => p.id !== pendingDeleteId); saveToLocal(); renderProjects(); updateStats(); hideDeleteModal(); showToast('DELETED'); } };
         
-        // CSV IMPORT
+        // CSV IMPORT (unchanged, only views/retention)
         window.triggerAnalyticsImport = () => document.getElementById('analytics-input').click();
         window.handleAnalyticsImport = (inputEl) => {
             const file = inputEl.files[0];
@@ -429,7 +545,7 @@
             const d = JSON.stringify({p:projects, c:channelStats, pipe:pipelineProjects});
             const a = document.createElement('a');
             a.href = "data:text/json;charset=utf-8,"+encodeURIComponent(d);
-            a.download = `hst_backup_v20.7_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`;
+            a.download = `hst_backup_V1_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`;
             a.click();
         };
         
