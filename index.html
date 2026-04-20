@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hellenic Score & Tales | V3 – Production Workflow</title>
+    <title>Hellenic Score & Tales | V4 – Production Cards & Modal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -45,7 +45,8 @@
         a.title-red, a.title-green, a.title-white { text-decoration: none; }
         a.title-red:hover, a.title-green:hover, a.title-white:hover { text-decoration: underline; }
         /* Production cards */
-        .prod-card { background: rgba(22,22,24,0.8); border-radius: 16px; padding: 1.5rem; margin-bottom: 2rem; border: 1px solid rgba(197,160,89,0.2); }
+        .prod-card { background: rgba(22,22,24,0.8); border-radius: 16px; padding: 1.2rem; margin-bottom: 1.2rem; border: 1px solid rgba(197,160,89,0.2); transition: all 0.2s; }
+        .prod-card:hover { border-color: rgba(197,160,89,0.5); }
         .step-group { background: rgba(0,0,0,0.3); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; }
         .step-item { display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
         .step-check { margin-top: 0.2rem; }
@@ -55,7 +56,10 @@
         .short-item { background: #1e1e22; border-radius: 8px; padding: 0.75rem; margin-bottom: 0.75rem; }
         .lang-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
         .lang-check { display: flex; align-items: center; gap: 0.25rem; font-size: 0.7rem; }
+        .music-item { background: #1e1e22; border-radius: 8px; padding: 0.75rem; margin-bottom: 0.75rem; }
         @media (max-width: 768px) { .step-item { flex-direction: column; } .step-check { align-self: flex-start; } }
+        /* Modal for editing production */
+        .production-modal { max-width: 90vw; width: 900px; max-height: 85vh; overflow-y: auto; }
     </style>
 </head>
 <body class="p-4 md:p-6">
@@ -68,14 +72,23 @@
     <div id="confirm-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-4 z-50"><div class="glass-card max-w-sm w-full p-8 text-center"><h3 class="cinzel gold-text text-xl mb-4">ΕΠΙΒΕΒΑΙΩΣΗ UPLOAD</h3><p class="text-zinc-400 text-xs mb-8">Θέλετε να μεταφέρετε το project στο Αρχείο;</p><div class="flex justify-center gap-4"><button onclick="hideConfirmModal()" class="text-zinc-500 text-[10px] uppercase font-bold">ΑΚΥΡΟ</button><button id="final-confirm-btn" class="bg-emerald-500 text-black font-black text-[10px] px-8 py-3 rounded">ΜΕΤΑΦΟΡΑ</button></div></div></div>
     <div id="delete-modal" class="fixed inset-0 bg-black/95 backdrop-blur-xl hidden flex items-center justify-center p-4 z-50"><div class="glass-card max-w-sm w-full p-10 text-center"><div class="text-red-500 text-4xl mb-6">⚠️</div><h3 class="cinzel text-red-500 text-xl mb-4">ΔΙΑΓΡΑΦΗ PROJECT</h3><p class="text-zinc-500 text-xs mb-10">Μόνιμη ενέργεια. Είστε σίγουροι;</p><button id="final-delete-btn" class="bg-red-600 text-white font-black text-[11px] py-4 rounded w-full">ΝΑΙ, ΔΙΑΓΡΑΦΗ</button><button onclick="hideDeleteModal()" class="text-zinc-500 text-[10px] py-3 mt-2 w-full">ΑΚΥΡΩΣΗ</button></div></div>
 
+    <!-- Production Edit Modal (με όλες τις λεπτομέρειες) -->
+    <div id="production-edit-modal" class="fixed inset-0 bg-black/98 backdrop-blur-xl hidden flex items-center justify-center p-4 z-50 overflow-y-auto">
+        <div class="glass-card production-modal bg-zinc-900 p-6 border-gold/40 shadow-2xl">
+            <div class="flex justify-between items-center mb-4 border-b border-zinc-800 pb-3"><h3 id="prod-modal-title" class="text-2xl gold-text cinzel">Edit Production</h3><button onclick="closeProductionModal()" class="text-zinc-500 text-3xl hover:text-white">✕</button></div>
+            <div id="production-modal-content" class="space-y-6 max-h-[70vh] overflow-y-auto pr-2"></div>
+            <div class="mt-6 flex justify-end"><button onclick="closeProductionModal()" class="px-6 py-2 gold-bg text-black font-black rounded-xl text-xs">Close</button></div>
+        </div>
+    </div>
+
     <div class="max-w-full mx-auto">
         <div class="flex flex-col md:flex-row justify-between items-start mb-6 gap-3 border-b border-zinc-800/50 pb-4">
             <div class="flex flex-col gap-1"><div class="flex gap-2 text-[9px] text-zinc-500"><span>Database Status:</span><span id="db-status" class="text-zinc-400">Local Storage Mode</span></div><div class="flex gap-2 flex-wrap"><button onclick="exportDatabase()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text">💾 Backup</button><button onclick="importDatabase()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text">📂 Restore</button><button onclick="triggerAnalyticsImport()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text">📁 Import CSV</button><input type="file" id="import-input" class="hidden" accept=".json"><input type="file" id="analytics-input" class="hidden" accept=".csv"></div></div>
             <div class="flex gap-4"><button onclick="switchTab('archive')" id="tab-archive" class="nav-btn active cinzel">Αρχείο</button><button onclick="switchTab('pipeline')" id="tab-pipeline" class="nav-btn cinzel">Παραγωγή</button></div>
-            <div class="text-right hidden md:block"><p class="text-[9px] text-zinc-600">Strategic Control</p><p class="text-[10px] gold-text cinzel">V3 – Production Workflow</p></div>
+            <div class="text-right hidden md:block"><p class="text-[9px] text-zinc-600">Strategic Control</p><p class="text-[10px] gold-text cinzel">V4 – Production Cards</p></div>
         </div>
 
-        <!-- Archive View (με στατιστικά badges επαναφερμένα) -->
+        <!-- Archive View (ίδιο) -->
         <div id="view-archive">
             <header class="mb-10 text-center"><h1 class="text-4xl font-bold gold-text mb-1 uppercase tracking-[0.2em]">HELLENIC SCORE & TALES</h1>
                 <div class="flex flex-wrap justify-center gap-4 mt-6">
@@ -91,41 +104,18 @@
             <div class="glass-card overflow-hidden"><div class="overflow-x-auto"><table class="data-table"><thead><tr class="bg-zinc-900/70 text-zinc-500 text-[9px] uppercase font-black tracking-widest border-b border-zinc-800"><th class="p-2 text-center">#</th><th class="p-2 text-center">Order</th><th class="p-2">Project</th><th class="p-2">Shorts</th><th class="p-2">Soundtracks</th><th class="p-2 text-right">Actions</th></tr></thead><tbody id="project-list"></tbody></table></div></div>
         </div>
 
-        <!-- Production View (νέα δομή) -->
+        <!-- Production View (κάρτες projects) -->
         <div id="view-pipeline" class="hidden">
             <div class="flex justify-between items-center mb-8 border-l-4 border-gold pl-6">
-                <div><h2 class="text-2xl gold-text cinzel uppercase">PRODUCTION WORKFLOW</h2><p class="text-[10px] text-zinc-500">Track your progress step by step</p></div>
+                <div><h2 class="text-2xl gold-text cinzel uppercase">PRODUCTION WORKFLOW</h2><p class="text-[10px] text-zinc-500">Projects overview – click Edit to manage details</p></div>
                 <button onclick="openPipelineModal()" class="px-8 py-4 bg-zinc-800 text-gold font-black rounded-xl text-[10px] border border-gold/20">🔨 NEW PRODUCTION</button>
             </div>
-            <div id="pipeline-container" class="space-y-10 pb-40"></div>
+            <div id="pipeline-container" class="space-y-4 pb-40"></div>
         </div>
     </div>
 
     <!-- Master Edit Modal (ίδιο, για αρχείο) -->
-    <div id="modal" class="fixed inset-0 bg-black/98 backdrop-blur-xl hidden flex items-center justify-center p-4 z-50 overflow-y-auto">
-        <div class="glass-card w-full max-w-5xl my-4 bg-zinc-900 p-8 border-gold/40 shadow-2xl">
-            <div class="flex justify-between items-center mb-8 border-b border-zinc-800 pb-4"><h2 class="text-2xl gold-text cinzel uppercase">ΣΤΟΙΧΕΙΑ PROJECT</h2><button onclick="closeModal()" class="text-zinc-500 text-3xl hover:text-white">✕</button></div>
-            <form id="project-form" class="space-y-8 max-h-[75vh] overflow-y-auto pr-3">
-                <input type="hidden" id="edit-id">
-                <section class="bg-black/20 p-6 rounded-xl border border-zinc-800">
-                    <div class="flex justify-between items-center mb-2"><label class="text-[11px] gold-text uppercase font-black tracking-widest">Κύριο Βίντεο</label></div>
-                    <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-                        <div class="md:col-span-6"><label class="text-[9px] text-zinc-500">Τίτλος</label><input type="text" id="main-title" required class="w-full"></div>
-                        <div class="md:col-span-6"><label class="text-[9px] text-zinc-500">YouTube Link</label><input type="url" id="main-link" class="w-full"></div>
-                    </div>
-                    <div class="status-group mt-3">
-                        <label><input type="checkbox" id="main-uploaded" class="pipeline-checkbox"> Uploaded</label>
-                        <label><input type="checkbox" id="main-live" class="pipeline-checkbox"> Live</label>
-                    </div>
-                </section>
-                <div><div class="flex justify-between items-center mb-3"><p class="text-[11px] gold-text font-black uppercase tracking-widest">Shorts Production</p><button type="button" onclick="addShortRow()" class="text-[9px] bg-zinc-800 px-4 py-1.5 rounded border border-zinc-700 hover:border-gold font-bold uppercase">+ Add Short</button></div><div id="shorts-container" class="space-y-3"></div></div>
-                <div><div class="flex justify-between items-center mb-3"><p class="text-[11px] gold-text font-black uppercase tracking-widest">Soundtracks & Scoring</p><button type="button" onclick="addSoundtrackRow()" class="text-[9px] bg-zinc-800 px-4 py-1.5 rounded border border-zinc-700 hover:border-gold font-bold uppercase">+ Add Score</button></div><div id="soundtracks-container" class="space-y-3"></div></div>
-                <div class="pt-10 flex justify-end gap-6 border-t border-zinc-800"><button type="button" onclick="closeModal()" class="text-zinc-500 font-black uppercase text-xs tracking-widest hover:text-white">Cancel</button><button type="submit" class="px-14 py-4 gold-bg text-black font-black rounded-xl uppercase text-xs tracking-[0.2em] shadow-2xl hover:brightness-110 transition-all">Save Project</button></div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Pipeline Start Modal -->
+    <div id="modal" class="fixed inset-0 bg-black/98 backdrop-blur-xl hidden flex items-center justify-center p-4 z-50 overflow-y-auto">...</div>
     <div id="pipeline-modal" class="fixed inset-0 bg-black/98 backdrop-blur-xl hidden flex items-center justify-center p-4 z-50"><div class="glass-card max-w-md bg-zinc-900 p-10 text-center"><h2 class="text-2xl gold-text cinzel mb-6">START PRODUCTION</h2><input type="text" id="pipeline-title-input" placeholder="Project Name" class="w-full mb-6 text-center"><div class="flex justify-center gap-4"><button onclick="document.getElementById('pipeline-modal').classList.add('hidden')" class="text-zinc-500 text-xs">Cancel</button><button onclick="addPipelineProject()" class="px-8 py-2 gold-bg text-black font-black rounded-xl text-xs">Initiate</button></div></div></div>
 
     <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 gold-bg text-black px-8 py-3 rounded-full hidden z-50 text-xs font-black text-center whitespace-nowrap"></div>
@@ -134,6 +124,7 @@
         // GLOBAL STATE
         let projects = [], pipelineProjects = [], channelStats = { views: '0', retention: '0%', subscribers: '0', impressions: '0', ctr: '0%', watchTime: '0' };
         let pendingDeleteId = null;
+        let currentEditProjectId = null;
         let saveTimeout = null;
 
         const cleanForMatch = (s) => s ? s.toString().toLowerCase().trim().replace(/[^\w\s\u0370-\u03ff]/gi, '').normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
@@ -149,29 +140,23 @@
             if(savedStats) channelStats = JSON.parse(savedStats);
             projects.sort((a,b) => (a.orderIndex||0) - (b.orderIndex||0));
             // Εξασφάλιση δομής για pipeline projects
-            const defaultWorkflow = (title) => ({
-                title: title,
-                main: {
-                    script: { done: false, text: '', link: '' },
-                    narration: { done: false, link: '' },
-                    visuals: { done: false, items: [] }, // array of {link, description}
-                    montage: { done: false, link: '' },
-                    subtitlesEn: { done: false, file: '' },
-                    translations: { en: true, gr: false, fr: false, it: false, es: false, pt: false, de: false, ja: false, zh: false },
-                    musicSFX: { done: false, link: '' },
-                    exportUpload: { done: false, link: '' },
-                    metadata: { done: false, title: '', description: '', tags: '', socialPosts: '' }
-                },
-                shorts: [], // array of { title, done, link, metadata }
-                soundtrack: { done: false, link: '' }
+            const defaultMain = () => ({
+                script: { done: false, text: '', link: '' },
+                narration: { done: false, link: '' },
+                visuals: { done: false, items: [] },
+                montage: { done: false, link: '' },
+                subtitlesEn: { done: false, file: '' },
+                translations: { en: true, gr: false, fr: false, it: false, es: false, pt: false, de: false, ja: false, zh: false },
+                musicSFX: { done: false, link: '' },
+                exportUpload: { done: false, link: '' },
+                metadata: { done: false, title: '', description: '', tags: '', socialPosts: '' }
             });
             for(let p of pipelineProjects) {
-                if(!p.main) p.main = defaultWorkflow(p.title).main;
+                if(!p.main) p.main = defaultMain();
                 if(!p.shorts) p.shorts = [];
-                if(p.soundtrack === undefined) p.soundtrack = { done: false, link: '' };
-                // Ensure translations object
-                if(!p.main.translations) p.main.translations = { en: true, gr: false, fr: false, it: false, es: false, pt: false, de: false, ja: false, zh: false };
+                if(!p.soundtracks) p.soundtracks = [];
                 if(!p.main.visuals) p.main.visuals = { done: false, items: [] };
+                if(!p.main.translations) p.main.translations = { en: true, gr: false, fr: false, it: false, es: false, pt: false, de: false, ja: false, zh: false };
             }
         };
         
@@ -188,9 +173,9 @@
             if(idx > -1) pipelineProjects[idx] = { ...data, id }; 
             else pipelineProjects.push({ ...data, id }); 
             saveToLocal(); 
-            renderPipeline(); 
+            renderPipelineCards(); 
         };
-        window.deletePipelineProject = (id) => { if(confirm('Discard production?')) { pipelineProjects = pipelineProjects.filter(p => p.id !== id); saveToLocal(); renderPipeline(); } };
+        window.deletePipelineProject = (id) => { if(confirm('Discard production?')) { pipelineProjects = pipelineProjects.filter(p => p.id !== id); saveToLocal(); renderPipelineCards(); } };
         window.saveChannelStats = (data) => { channelStats = data; saveToLocal(); updateStats(); };
         window.moveProject = (id, dir) => { const idx = projects.findIndex(p => p.id === id), tIdx = dir === 'up' ? idx-1 : idx+1; if(tIdx<0 || tIdx>=projects.length) return; const p1=projects[idx], p2=projects[tIdx]; [p1.orderIndex, p2.orderIndex] = [p2.orderIndex, p1.orderIndex]; projects.sort((a,b)=> (a.orderIndex||0)-(b.orderIndex||0)); saveToLocal(); renderProjects(); };
         
@@ -223,85 +208,79 @@
             }).join('');
         };
         
-        // RENDER PIPELINE (νέα δομή)
-        window.renderPipeline = () => {
+        // Υπολογισμός προόδου για ένα pipeline project
+        function computeProgress(p) {
+            let total = 0, completed = 0;
+            const mainSteps = ['script', 'narration', 'visuals', 'montage', 'subtitlesEn', 'musicSFX', 'exportUpload', 'metadata'];
+            for(let step of mainSteps) { total++; if(p.main[step] && p.main[step].done === true) completed++; }
+            const langKeys = ['gr','fr','it','es','pt','de','ja','zh'];
+            for(let lang of langKeys) { total++; if(p.main.translations && p.main.translations[lang] === true) completed++; }
+            for(let short of p.shorts) { total++; if(short.done === true) completed++; }
+            for(let music of p.soundtracks) { total++; if(music.done === true) completed++; }
+            return { total, completed, percent: total > 0 ? Math.round((completed/total)*100) : 0 };
+        }
+        
+        // RENDER CARDS (συμπαγής λίστα)
+        window.renderPipelineCards = () => {
             const container = document.getElementById('pipeline-container');
             container.innerHTML = pipelineProjects.map(p => {
-                // Υπολογισμός προόδου
-                let totalSteps = 0;
-                let completedSteps = 0;
-                // Main steps
-                const mainSteps = ['script', 'narration', 'visuals', 'montage', 'subtitlesEn', 'musicSFX', 'exportUpload', 'metadata'];
-                for(let step of mainSteps) {
-                    totalSteps++;
-                    if(p.main[step] && p.main[step].done === true) completedSteps++;
-                }
-                // Translations: each language is a step (excluding English which is base)
-                const langKeys = ['gr','fr','it','es','pt','de','ja','zh'];
-                for(let lang of langKeys) {
-                    totalSteps++;
-                    if(p.main.translations && p.main.translations[lang] === true) completedSteps++;
-                }
-                // Shorts: each short has its own done flag
-                for(let short of p.shorts) {
-                    totalSteps++;
-                    if(short.done === true) completedSteps++;
-                }
-                // Soundtrack
-                totalSteps++;
-                if(p.soundtrack && p.soundtrack.done === true) completedSteps++;
-                
-                const pct = totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0;
-                
-                return `<div class="prod-card" data-pid="${p.id}">
-                    <div class="flex justify-between items-start flex-wrap gap-4 mb-4">
+                const progress = computeProgress(p);
+                return `<div class="prod-card">
+                    <div class="flex justify-between items-start flex-wrap gap-3">
                         <div class="flex-1">
-                            <input type="text" class="pipeline-input gold-text font-black !text-lg mb-1 uppercase tracking-tighter w-full" value="${escapeHtml(p.title)}" oninput="updatePipelineField('${p.id}', 'title', this.value)">
-                            <div class="progress-bar w-full mt-2"><div class="progress-fill" style="width: ${pct}%"></div></div>
-                            <div class="text-[9px] text-zinc-500 mt-1">${completedSteps}/${totalSteps} steps completed</div>
+                            <input type="text" class="pipeline-input gold-text font-black !text-base mb-1 uppercase tracking-tighter w-full" value="${escapeHtml(p.title)}" onchange="updatePipelineTitle('${p.id}', this.value)">
+                            <div class="progress-bar w-full mt-1"><div class="progress-fill" style="width: ${progress.percent}%"></div></div>
+                            <div class="text-[9px] text-zinc-500 mt-1">${progress.completed}/${progress.total} steps completed (${progress.percent}%)</div>
                         </div>
-                        <div class="flex gap-3">
-                            <button onclick="showConfirmModal('${p.id}')" class="upload-btn">FINALIZE</button>
-                            <button onclick="deletePipelineProject('${p.id}')" class="text-[9px] text-zinc-600 hover:text-red-500 font-black uppercase tracking-widest">Discard</button>
-                        </div>
-                    </div>
-                    
-                    <!-- MAIN VIDEO SECTION -->
-                    <div class="step-group">
-                        <div class="text-gold text-sm font-bold mb-3 flex items-center gap-2">🎬 Main Video</div>
-                        ${renderMainStep(p, 'script', 'Script', 'textarea')}
-                        ${renderMainStep(p, 'narration', 'Narration (Suno)', 'link')}
-                        ${renderVisualsStep(p)}
-                        ${renderMainStep(p, 'montage', 'Montage', 'link')}
-                        ${renderMainStep(p, 'subtitlesEn', 'Subtitles SRT (English)', 'file')}
-                        ${renderTranslationsStep(p)}
-                        ${renderMainStep(p, 'musicSFX', 'Music & SFX', 'link')}
-                        ${renderMainStep(p, 'exportUpload', 'Export & Upload (Unlisted)', 'link')}
-                        ${renderMetadataStep(p)}
-                    </div>
-                    
-                    <!-- SHORTS SECTION -->
-                    <div class="step-group">
-                        <div class="text-gold text-sm font-bold mb-3 flex items-center gap-2 flex-wrap justify-between">📱 Shorts <button onclick="addShortToPipeline('${p.id}')" class="text-[9px] bg-zinc-800 px-3 py-1 rounded border border-zinc-700 hover:border-gold">+ Add Short</button></div>
-                        <div id="shorts-list-${p.id}">
-                            ${p.shorts.map((short, idx) => renderShortItem(p.id, idx, short)).join('')}
-                        </div>
-                    </div>
-                    
-                    <!-- OFFICIAL SOUNDTRACK -->
-                    <div class="step-group">
-                        <div class="text-gold text-sm font-bold mb-3">🎵 Official Soundtrack</div>
-                        <div class="step-item">
-                            <input type="checkbox" class="step-check pipeline-checkbox" ${p.soundtrack.done ? 'checked' : ''} onchange="updateSoundtrackDone('${p.id}', this.checked)">
-                            <div class="step-content">
-                                <div class="step-label">Soundtrack Video</div>
-                                <input type="text" class="inline-input" placeholder="YouTube link (unlisted)" value="${escapeHtml(p.soundtrack.link || '')}" onchange="updateSoundtrackLink('${p.id}', this.value)">
-                            </div>
+                        <div class="flex gap-2">
+                            <button onclick="openProductionEditor('${p.id}')" class="text-[10px] bg-zinc-800 px-3 py-1 rounded border border-zinc-700 hover:border-gold">Edit</button>
+                            <button onclick="showConfirmModal('${p.id}')" class="upload-btn" style="padding: 4px 12px;">FINALIZE</button>
+                            <button onclick="deletePipelineProject('${p.id}')" class="text-[9px] text-zinc-600 hover:text-red-500 font-black">Delete</button>
                         </div>
                     </div>
                 </div>`;
             }).join('');
         };
+        
+        // Άνοιγμα modal επεξεργασίας με πλήρη φόρμα
+        window.openProductionEditor = (id) => {
+            currentEditProjectId = id;
+            const p = pipelineProjects.find(x => x.id === id);
+            if(!p) return;
+            document.getElementById('prod-modal-title').innerText = `Editing: ${escapeHtml(p.title)}`;
+            const content = document.getElementById('production-modal-content');
+            content.innerHTML = renderProductionForm(p);
+            document.getElementById('production-edit-modal').classList.remove('hidden');
+        };
+        
+        function renderProductionForm(p) {
+            return `
+                <div class="step-group">
+                    <div class="text-gold text-sm font-bold mb-3">🎬 Main Video</div>
+                    ${renderMainStep(p, 'script', 'Script', 'textarea')}
+                    ${renderMainStep(p, 'narration', 'Narration (Suno)', 'link')}
+                    ${renderVisualsStep(p)}
+                    ${renderMainStep(p, 'montage', 'Montage', 'link')}
+                    ${renderMainStep(p, 'subtitlesEn', 'Subtitles SRT (English)', 'file')}
+                    ${renderTranslationsStep(p)}
+                    ${renderMainStep(p, 'musicSFX', 'Music & SFX', 'link')}
+                    ${renderMainStep(p, 'exportUpload', 'Export & Upload (Unlisted)', 'link')}
+                    ${renderMetadataStep(p)}
+                </div>
+                <div class="step-group">
+                    <div class="text-gold text-sm font-bold mb-3 flex justify-between">📱 Shorts <button onclick="addShortToProduction('${p.id}')" class="text-[9px] bg-zinc-800 px-3 py-1 rounded border border-zinc-700 hover:border-gold">+ Add Short</button></div>
+                    <div id="shorts-editor-${p.id}">
+                        ${p.shorts.map((short, idx) => renderShortEditor(p.id, idx, short)).join('')}
+                    </div>
+                </div>
+                <div class="step-group">
+                    <div class="text-gold text-sm font-bold mb-3 flex justify-between">🎵 Official Soundtracks <button onclick="addMusicToProduction('${p.id}')" class="text-[9px] bg-zinc-800 px-3 py-1 rounded border border-zinc-700 hover:border-gold">+ Add Music</button></div>
+                    <div id="music-editor-${p.id}">
+                        ${p.soundtracks.map((music, idx) => renderMusicEditor(p.id, idx, music)).join('')}
+                    </div>
+                </div>
+            `;
+        }
         
         function renderMainStep(p, key, label, type) {
             const data = p.main[key] || { done: false, text: '', link: '', file: '' };
@@ -360,11 +339,11 @@
             </div>`;
         }
         
-        function renderShortItem(pid, idx, short) {
+        function renderShortEditor(pid, idx, short) {
             return `<div class="short-item" data-idx="${idx}">
                 <div class="flex justify-between items-start gap-2">
                     <input type="text" class="inline-input flex-1" placeholder="Short title" value="${escapeHtml(short.title || '')}" onchange="updateShortField('${pid}', ${idx}, 'title', this.value)">
-                    <button onclick="removeShortFromPipeline('${pid}', ${idx})" class="text-red-500 text-xs">✕</button>
+                    <button onclick="removeShortFromProduction('${pid}', ${idx})" class="text-red-500 text-xs">✕</button>
                 </div>
                 <div class="step-item mt-2">
                     <input type="checkbox" class="step-check pipeline-checkbox" ${short.done ? 'checked' : ''} onchange="updateShortDone('${pid}', ${idx}, this.checked)">
@@ -382,22 +361,51 @@
             </div>`;
         }
         
-        // Helper functions for pipeline updates
-        window.updatePipelineField = (id, field, value) => { const p = pipelineProjects.find(p=>p.id===id); if(p) { p[field]=value; saveToLocal(); renderPipeline(); } };
-        window.updateMainDone = (id, key, done) => { const p = pipelineProjects.find(p=>p.id===id); if(p) { p.main[key].done = done; saveToLocal(); renderPipeline(); } };
-        window.updateMainField = (id, key, subkey, value) => { const p = pipelineProjects.find(p=>p.id===id); if(p) { p.main[key][subkey] = value; saveToLocal(); renderPipeline(); } };
-        window.updateVisualsItem = (id, idx, value) => { const p = pipelineProjects.find(p=>p.id===id); if(p && p.main.visuals.items[idx]) { p.main.visuals.items[idx] = value; saveToLocal(); renderPipeline(); } };
-        window.addVisualsItem = (id) => { const p = pipelineProjects.find(p=>p.id===id); if(p) { if(!p.main.visuals.items) p.main.visuals.items = []; p.main.visuals.items.push(''); saveToLocal(); renderPipeline(); } };
-        window.removeVisualsItem = (id, idx) => { const p = pipelineProjects.find(p=>p.id===id); if(p && p.main.visuals.items) { p.main.visuals.items.splice(idx,1); saveToLocal(); renderPipeline(); } };
-        window.updateTranslation = (id, lang, checked) => { const p = pipelineProjects.find(p=>p.id===id); if(p) { p.main.translations[lang] = checked; saveToLocal(); renderPipeline(); } };
-        window.updateMetadataDone = (id, done) => { const p = pipelineProjects.find(p=>p.id===id); if(p) { p.main.metadata.done = done; saveToLocal(); renderPipeline(); } };
-        window.updateMetadataField = (id, field, value) => { const p = pipelineProjects.find(p=>p.id===id); if(p) { p.main.metadata[field] = value; saveToLocal(); renderPipeline(); } };
-        window.updateSoundtrackDone = (id, done) => { const p = pipelineProjects.find(p=>p.id===id); if(p) { p.soundtrack.done = done; saveToLocal(); renderPipeline(); } };
-        window.updateSoundtrackLink = (id, link) => { const p = pipelineProjects.find(p=>p.id===id); if(p) { p.soundtrack.link = link; saveToLocal(); renderPipeline(); } };
-        window.addShortToPipeline = (id) => { const p = pipelineProjects.find(p=>p.id===id); if(p) { p.shorts.push({ title: 'New Short', done: false, link: '', metadata: '' }); saveToLocal(); renderPipeline(); } };
-        window.updateShortField = (pid, idx, field, value) => { const p = pipelineProjects.find(p=>p.id===pid); if(p && p.shorts[idx]) { p.shorts[idx][field] = value; saveToLocal(); renderPipeline(); } };
-        window.updateShortDone = (pid, idx, done) => { const p = pipelineProjects.find(p=>p.id===pid); if(p && p.shorts[idx]) { p.shorts[idx].done = done; saveToLocal(); renderPipeline(); } };
-        window.removeShortFromPipeline = (pid, idx) => { const p = pipelineProjects.find(p=>p.id===pid); if(p && p.shorts) { p.shorts.splice(idx,1); saveToLocal(); renderPipeline(); } };
+        function renderMusicEditor(pid, idx, music) {
+            return `<div class="music-item" data-idx="${idx}">
+                <div class="flex justify-between items-start gap-2">
+                    <input type="text" class="inline-input flex-1" placeholder="Music title" value="${escapeHtml(music.title || '')}" onchange="updateMusicField('${pid}', ${idx}, 'title', this.value)">
+                    <button onclick="removeMusicFromProduction('${pid}', ${idx})" class="text-red-500 text-xs">✕</button>
+                </div>
+                <div class="step-item mt-2">
+                    <input type="checkbox" class="step-check pipeline-checkbox" ${music.done ? 'checked' : ''} onchange="updateMusicDone('${pid}', ${idx}, this.checked)">
+                    <div class="step-content">
+                        <div class="step-label">Music Video Link (unlisted)</div>
+                        <input type="text" class="inline-input" placeholder="YouTube link" value="${escapeHtml(music.link || '')}" onchange="updateMusicField('${pid}', ${idx}, 'link', this.value)">
+                    </div>
+                </div>
+                <div class="step-item mt-2">
+                    <div class="step-content">
+                        <div class="step-label">Spotify Link</div>
+                        <input type="text" class="inline-input" placeholder="Spotify URL" value="${escapeHtml(music.spotifyLink || '')}" onchange="updateMusicField('${pid}', ${idx}, 'spotifyLink', this.value)">
+                    </div>
+                </div>
+            </div>`;
+        }
+        
+        // Helper functions for production editor
+        window.updatePipelineTitle = (id, val) => { const p = pipelineProjects.find(x=>x.id===id); if(p) { p.title = val; saveToLocal(); renderPipelineCards(); } };
+        window.updateMainDone = (id, key, done) => { const p = pipelineProjects.find(x=>x.id===id); if(p) { p.main[key].done = done; saveToLocal(); renderPipelineCards(); if(currentEditProjectId === id) openProductionEditor(id); } };
+        window.updateMainField = (id, key, subkey, val) => { const p = pipelineProjects.find(x=>x.id===id); if(p) { p.main[key][subkey] = val; saveToLocal(); renderPipelineCards(); } };
+        window.updateVisualsItem = (id, idx, val) => { const p = pipelineProjects.find(x=>x.id===id); if(p && p.main.visuals.items[idx]) { p.main.visuals.items[idx] = val; saveToLocal(); renderPipelineCards(); } };
+        window.addVisualsItem = (id) => { const p = pipelineProjects.find(x=>x.id===id); if(p) { p.main.visuals.items.push(''); saveToLocal(); renderPipelineCards(); if(currentEditProjectId === id) openProductionEditor(id); } };
+        window.removeVisualsItem = (id, idx) => { const p = pipelineProjects.find(x=>x.id===id); if(p && p.main.visuals.items) { p.main.visuals.items.splice(idx,1); saveToLocal(); renderPipelineCards(); if(currentEditProjectId === id) openProductionEditor(id); } };
+        window.updateTranslation = (id, lang, checked) => { const p = pipelineProjects.find(x=>x.id===id); if(p) { p.main.translations[lang] = checked; saveToLocal(); renderPipelineCards(); if(currentEditProjectId === id) openProductionEditor(id); } };
+        window.updateMetadataDone = (id, done) => { const p = pipelineProjects.find(x=>x.id===id); if(p) { p.main.metadata.done = done; saveToLocal(); renderPipelineCards(); if(currentEditProjectId === id) openProductionEditor(id); } };
+        window.updateMetadataField = (id, field, val) => { const p = pipelineProjects.find(x=>x.id===id); if(p) { p.main.metadata[field] = val; saveToLocal(); renderPipelineCards(); } };
+        window.addShortToProduction = (id) => { const p = pipelineProjects.find(x=>x.id===id); if(p) { p.shorts.push({ title: 'New Short', done: false, link: '', metadata: '' }); saveToLocal(); renderPipelineCards(); if(currentEditProjectId === id) openProductionEditor(id); } };
+        window.updateShortField = (pid, idx, field, val) => { const p = pipelineProjects.find(x=>x.id===pid); if(p && p.shorts[idx]) { p.shorts[idx][field] = val; saveToLocal(); renderPipelineCards(); } };
+        window.updateShortDone = (pid, idx, done) => { const p = pipelineProjects.find(x=>x.id===pid); if(p && p.shorts[idx]) { p.shorts[idx].done = done; saveToLocal(); renderPipelineCards(); if(currentEditProjectId === pid) openProductionEditor(pid); } };
+        window.removeShortFromProduction = (pid, idx) => { const p = pipelineProjects.find(x=>x.id===pid); if(p && p.shorts) { p.shorts.splice(idx,1); saveToLocal(); renderPipelineCards(); if(currentEditProjectId === pid) openProductionEditor(pid); } };
+        window.addMusicToProduction = (id) => { const p = pipelineProjects.find(x=>x.id===id); if(p) { p.soundtracks.push({ title: 'New Music', done: false, link: '', spotifyLink: '' }); saveToLocal(); renderPipelineCards(); if(currentEditProjectId === id) openProductionEditor(id); } };
+        window.updateMusicField = (pid, idx, field, val) => { const p = pipelineProjects.find(x=>x.id===pid); if(p && p.soundtracks[idx]) { p.soundtracks[idx][field] = val; saveToLocal(); renderPipelineCards(); } };
+        window.updateMusicDone = (pid, idx, done) => { const p = pipelineProjects.find(x=>x.id===pid); if(p && p.soundtracks[idx]) { p.soundtracks[idx].done = done; saveToLocal(); renderPipelineCards(); if(currentEditProjectId === pid) openProductionEditor(pid); } };
+        window.removeMusicFromProduction = (pid, idx) => { const p = pipelineProjects.find(x=>x.id===pid); if(p && p.soundtracks) { p.soundtracks.splice(idx,1); saveToLocal(); renderPipelineCards(); if(currentEditProjectId === pid) openProductionEditor(pid); } };
+        
+        window.closeProductionModal = () => {
+            document.getElementById('production-edit-modal').classList.add('hidden');
+            currentEditProjectId = null;
+        };
         
         window.updateStats = () => { 
             document.getElementById('stat-total').innerText = projects.length; 
@@ -548,7 +556,7 @@
                         metadata: { done: false, title: '', description: '', tags: '', socialPosts: '' }
                     },
                     shorts: [],
-                    soundtrack: { done: false, link: '' },
+                    soundtracks: [],
                     dateCreated: new Date().toISOString()
                 };
                 await window.savePipelineToDB(newProject.id, newProject);
@@ -573,7 +581,7 @@
                 date:new Date().toISOString() 
             };
             projects.unshift({ ...archiveData, id: newProjectId }); pipelineProjects = pipelineProjects.filter(item=>item.id!==id);
-            saveToLocal(); renderProjects(); renderPipeline(); updateStats();
+            saveToLocal(); renderProjects(); renderPipelineCards(); updateStats();
             showToast('MIGRATION COMPLETE'); switchTab('archive');
         };
         
@@ -693,7 +701,7 @@
                     if(data.c) await window.saveChannelStats(data.c);
                     if(data.pipe && Array.isArray(data.pipe)) for(const pipe of data.pipe) await window.savePipelineToDB(pipe.id || Date.now()+Math.random(), pipe);
                     showToast('Restore successful');
-                    renderProjects(); renderPipeline(); updateStats();
+                    renderProjects(); renderPipelineCards(); updateStats();
                 } catch(err) { alert('Restore failed: '+err.message); }
             };
             reader.readAsText(file);
@@ -702,7 +710,7 @@
             const d = JSON.stringify({p:projects, c:channelStats, pipe:pipelineProjects});
             const a = document.createElement('a');
             a.href = "data:text/json;charset=utf-8,"+encodeURIComponent(d);
-            a.download = `hst_backup_V3_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`;
+            a.download = `hst_backup_V4_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`;
             a.click();
         };
         
@@ -715,7 +723,7 @@
         
         const init = () => {
             loadFromLocal();
-            renderProjects(); renderPipeline(); updateStats();
+            renderProjects(); renderPipelineCards(); updateStats();
             document.getElementById('loader').style.opacity = '0';
             setTimeout(() => document.getElementById('loader').classList.add('hidden'), 500);
             document.getElementById('analytics-input').addEventListener('change', (e) => window.handleAnalyticsImport(e.target));
