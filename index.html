@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hellenic Score & Tales | V1.5 – Fixed CSV Import & Colors</title>
+    <title>Hellenic Score & Tales | V2 – Production Redesign</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -20,6 +20,7 @@
         .progress-fill { height: 100%; background: var(--gold); transition: width 0.5s; }
         .thumbnail-frame { width: 70px; height: 40px; border: 1px solid var(--gold); border-radius: 4px; overflow: hidden; background: #000; flex-shrink: 0; }
         .thumbnail-frame img { width: 100%; height: 100%; object-fit: cover; }
+        .stat-badge { font-size: 10px; background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; color: #ccc; display: inline-flex; align-items: center; gap: 4px; border: 1px solid rgba(197, 160, 89, 0.15); white-space: nowrap; }
         .upload-btn { background: #10b981; color: black; padding: 6px 16px; border-radius: 6px; font-size: 9px; font-weight: 900; text-transform: uppercase; box-shadow: 0 4px 0 #065f46; cursor: pointer; transition: 0.2s; }
         .upload-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 0 #065f46; }
         .spotify-tag { color: var(--spotify); font-weight: bold; font-size: 9px; }
@@ -36,24 +37,20 @@
         .soundtrack-title { word-break: break-word; max-width: 220px; display: inline-block; }
         .actions-cell { white-space: nowrap; text-align: right; }
         .action-buttons { display: inline-flex; gap: 0.75rem; justify-content: flex-end; flex-wrap: nowrap; }
-        .analytics-table { width: 100%; border-collapse: collapse; }
-        .analytics-table th, .analytics-table td { padding: 0.75rem 0.5rem; vertical-align: middle; }
-        .analytics-table th { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: #888; }
-        .analytics-table td { font-size: 0.85rem; }
-        .pill-main { background: rgba(197, 160, 89, 0.2); color: var(--gold); padding: 2px 8px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; display: inline-block; }
-        .pill-short { background: rgba(16, 185, 129, 0.2); color: #10b981; padding: 2px 8px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; display: inline-block; }
-        .pill-music { background: rgba(29, 185, 84, 0.2); color: var(--spotify); padding: 2px 8px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; display: inline-block; }
-        .trend-up { color: #10b981; font-weight: bold; margin-left: 2px; }
-        .trend-down { color: #ef4444; font-weight: bold; margin-left: 2px; }
-        .trend-steady { color: #71717a; margin-left: 2px; }
         .loading-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: flex; align-items: center; justify-content: center; z-index: 1000; transition: opacity 0.5s; }
         .title-red { color: #ef4444; }
         .title-green { color: #10b981; }
         .title-white { color: #e5e7eb; }
         .short-title-text, .soundtrack-title-text { font-size: 0.8rem; line-height: 1.3; font-weight: 500; }
-        /* Force link colors to respect our classes */
         a.title-red, a.title-green, a.title-white { text-decoration: none; }
         a.title-red:hover, a.title-green:hover, a.title-white:hover { text-decoration: underline; }
+        /* Pipeline buttons */
+        .pipeline-category-btn { background: #1f1f24; border: 1px solid #333; border-radius: 8px; padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: 600; color: #ccc; transition: all 0.2s; cursor: pointer; width: 100%; text-align: center; }
+        .pipeline-category-btn:hover { background: #2a2a30; border-color: var(--gold); color: var(--gold); }
+        .item-count { font-size: 0.7rem; color: #888; margin-top: 4px; display: block; }
+        .modal-item-list { max-height: 300px; overflow-y: auto; margin-top: 1rem; border-top: 1px solid #333; padding-top: 0.5rem; }
+        .modal-item { background: #1e1e22; border-radius: 6px; padding: 0.5rem; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; }
+        .modal-item-info { font-size: 0.8rem; }
         @media (max-width: 1200px) {
             .data-table th, .data-table td { padding: 0.4rem 0.3rem; }
             .short-title-text, .soundtrack-title-text { font-size: 0.7rem; }
@@ -70,14 +67,32 @@
     <div id="confirm-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-4 z-50"><div class="glass-card max-w-sm w-full p-8 text-center"><h3 class="cinzel gold-text text-xl mb-4">ΕΠΙΒΕΒΑΙΩΣΗ UPLOAD</h3><p class="text-zinc-400 text-xs mb-8">Θέλετε να μεταφέρετε το project στο Αρχείο;</p><div class="flex justify-center gap-4"><button onclick="hideConfirmModal()" class="text-zinc-500 text-[10px] uppercase font-bold">ΑΚΥΡΟ</button><button id="final-confirm-btn" class="bg-emerald-500 text-black font-black text-[10px] px-8 py-3 rounded">ΜΕΤΑΦΟΡΑ</button></div></div></div>
     <div id="delete-modal" class="fixed inset-0 bg-black/95 backdrop-blur-xl hidden flex items-center justify-center p-4 z-50"><div class="glass-card max-w-sm w-full p-10 text-center"><div class="text-red-500 text-4xl mb-6">⚠️</div><h3 class="cinzel text-red-500 text-xl mb-4">ΔΙΑΓΡΑΦΗ PROJECT</h3><p class="text-zinc-500 text-xs mb-10">Μόνιμη ενέργεια. Είστε σίγουροι;</p><button id="final-delete-btn" class="bg-red-600 text-white font-black text-[11px] py-4 rounded w-full">ΝΑΙ, ΔΙΑΓΡΑΦΗ</button><button onclick="hideDeleteModal()" class="text-zinc-500 text-[10px] py-3 mt-2 w-full">ΑΚΥΡΩΣΗ</button></div></div>
 
+    <!-- Modal for pipeline asset management -->
+    <div id="pipeline-asset-modal" class="fixed inset-0 bg-black/98 backdrop-blur-xl hidden flex items-center justify-center p-4 z-50">
+        <div class="glass-card w-full max-w-lg bg-zinc-900 p-6 border-gold/40 shadow-2xl">
+            <div class="flex justify-between items-center mb-4 border-b border-zinc-800 pb-2"><h3 id="asset-modal-title" class="text-xl gold-text cinzel">Manage Assets</h3><button onclick="closeAssetModal()" class="text-zinc-500 text-2xl hover:text-white">✕</button></div>
+            <div>
+                <div class="grid grid-cols-1 gap-3 mb-4">
+                    <input type="text" id="asset-title" placeholder="Title" class="w-full text-sm">
+                    <input type="text" id="asset-link" placeholder="Link (URL)" class="w-full text-sm">
+                    <input type="text" id="asset-local" placeholder="Local Address" class="w-full text-sm">
+                    <textarea id="asset-text" rows="2" placeholder="Text / Notes" class="w-full text-sm"></textarea>
+                </div>
+                <button id="asset-add-btn" class="bg-emerald-600 text-white text-xs px-4 py-2 rounded w-full mb-4">+ ADD ITEM</button>
+                <div id="asset-items-list" class="modal-item-list"></div>
+            </div>
+            <div class="mt-4 flex justify-end"><button onclick="closeAssetModal()" class="text-zinc-400 text-xs">Close</button></div>
+        </div>
+    </div>
+
     <div class="max-w-full mx-auto">
         <div class="flex flex-col md:flex-row justify-between items-start mb-6 gap-3 border-b border-zinc-800/50 pb-4">
             <div class="flex flex-col gap-1"><div class="flex gap-2 text-[9px] text-zinc-500"><span>Database Status:</span><span id="db-status" class="text-zinc-400">Local Storage Mode</span></div><div class="flex gap-2 flex-wrap"><button onclick="exportDatabase()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text">💾 Backup</button><button onclick="importDatabase()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text">📂 Restore</button><button onclick="triggerAnalyticsImport()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text">📁 Import CSV</button><input type="file" id="import-input" class="hidden" accept=".json"><input type="file" id="analytics-input" class="hidden" accept=".csv"></div></div>
-            <div class="flex gap-4"><button onclick="switchTab('archive')" id="tab-archive" class="nav-btn active cinzel">Αρχείο</button><button onclick="switchTab('pipeline')" id="tab-pipeline" class="nav-btn cinzel">Παραγωγή</button><button onclick="switchTab('analytics')" id="tab-analytics" class="nav-btn cinzel">Analytics</button></div>
-            <div class="text-right hidden md:block"><p class="text-[9px] text-zinc-600">Strategic Control</p><p class="text-[10px] gold-text cinzel">V1.5 – Fixed CSV & Colors</p></div>
+            <div class="flex gap-4"><button onclick="switchTab('archive')" id="tab-archive" class="nav-btn active cinzel">Αρχείο</button><button onclick="switchTab('pipeline')" id="tab-pipeline" class="nav-btn cinzel">Παραγωγή</button></div>
+            <div class="text-right hidden md:block"><p class="text-[9px] text-zinc-600">Strategic Control</p><p class="text-[10px] gold-text cinzel">V2 – Production Redesign</p></div>
         </div>
 
-        <!-- Archive View (χωρίς στατιστικά badges) -->
+        <!-- Archive View (με στατιστικά badges επαναφερμένα) -->
         <div id="view-archive">
             <header class="mb-10 text-center"><h1 class="text-4xl font-bold gold-text mb-1 uppercase tracking-[0.2em]">HELLENIC SCORE & TALES</h1>
                 <div class="flex flex-wrap justify-center gap-4 mt-6">
@@ -90,20 +105,17 @@
                 </div>
             </header>
             <div class="flex justify-between mb-6"><div class="glass-card px-6 py-2"><p class="text-[9px] text-zinc-500">Live Projects</p><p id="stat-total" class="text-2xl font-bold gold-text">0</p></div><button onclick="openModal()" class="px-8 py-3 gold-bg text-black font-black rounded-xl text-[11px] shadow-2xl">🔱 NEW PROJECT</button></div>
-            <div class="glass-card overflow-hidden"><div class="overflow-x-auto"><table class="data-table"><thead><tr class="bg-zinc-900/70 text-zinc-500 text-[9px] uppercase font-black tracking-widest border-b border-zinc-800"><th class="p-2 text-center">#</th><th class="p-2 text-center">Order</th><th class="p-2">Project</th><th class="p-2">Shorts</th><th class="p-2">Soundtracks</th><th class="p-2 text-right">Actions</th></tr></thead><tbody id="project-list"></tbody></tr></div></div>
+            <div class="glass-card overflow-hidden"><div class="overflow-x-auto"><table class="data-table"><thead><tr class="bg-zinc-900/70 text-zinc-500 text-[9px] uppercase font-black tracking-widest border-b border-zinc-800"><th class="p-2 text-center">#</th><th class="p-2 text-center">Order</th><th class="p-2">Project</th><th class="p-2">Shorts</th><th class="p-2">Soundtracks</th><th class="p-2 text-right">Actions</th></tr></thead><tbody id="project-list"></tbody></table></div></div>
         </div>
 
-        <!-- Pipeline View -->
-        <div id="view-pipeline" class="hidden"><div class="flex justify-between items-center mb-8 border-l-4 border-gold pl-6"><div><h2 class="text-2xl gold-text cinzel uppercase">PRODUCTION PIPELINE</h2></div><button onclick="openPipelineModal()" class="px-8 py-4 bg-zinc-800 text-gold font-black rounded-xl text-[10px] border border-gold/20">🔨 NEW PRODUCTION</button></div><div id="pipeline-container" class="space-y-10 pb-40"></div></div>
-
-        <!-- Analytics View -->
-        <div id="view-analytics" class="hidden">
-            <div class="flex justify-between items-center mb-6 border-l-4 border-gold pl-6"><div><h2 class="text-2xl gold-text cinzel uppercase">CONTENT PERFORMANCE</h2><p class="text-[10px] text-zinc-500">Sorted by Global Reach</p></div></div>
-            <div class="glass-card overflow-hidden shadow-2xl"><div class="overflow-x-auto"><table class="analytics-table w-full"><thead><tr class="bg-zinc-900/70 border-b border-zinc-800"><th class="text-center w-12">Rank</th><th class="text-left">Content Title</th><th class="text-center w-20">Type</th><th class="text-center w-20">Views</th><th class="text-center w-20">Retention</th><th class="text-center w-24">Impressions</th><th class="text-center w-20">CTR (%)</th></tr></thead><tbody id="analytics-list"></tbody></table></div></div>
+        <!-- Pipeline View (εντελώς ανανεωμένο) -->
+        <div id="view-pipeline" class="hidden">
+            <div class="flex justify-between items-center mb-8 border-l-4 border-gold pl-6"><div><h2 class="text-2xl gold-text cinzel uppercase">PRODUCTION PIPELINE</h2><p class="text-[10px] text-zinc-500">Asset Management</p></div><button onclick="openPipelineModal()" class="px-8 py-4 bg-zinc-800 text-gold font-black rounded-xl text-[10px] border border-gold/20">🔨 NEW PRODUCTION</button></div>
+            <div id="pipeline-container" class="space-y-10 pb-40"></div>
         </div>
     </div>
 
-    <!-- Master Edit Modal -->
+    <!-- Master Edit Modal (ίδιο, για αρχείο) -->
     <div id="modal" class="fixed inset-0 bg-black/98 backdrop-blur-xl hidden flex items-center justify-center p-4 z-50 overflow-y-auto">
         <div class="glass-card w-full max-w-5xl my-4 bg-zinc-900 p-8 border-gold/40 shadow-2xl">
             <div class="flex justify-between items-center mb-8 border-b border-zinc-800 pb-4"><h2 class="text-2xl gold-text cinzel uppercase">ΣΤΟΙΧΕΙΑ PROJECT</h2><button onclick="closeModal()" class="text-zinc-500 text-3xl hover:text-white">✕</button></div>
@@ -136,8 +148,11 @@
         // GLOBAL STATE
         let projects = [], pipelineProjects = [], channelStats = { views: '0', retention: '0%', subscribers: '0', impressions: '0', ctr: '0%', watchTime: '0' };
         let pendingDeleteId = null;
-        const CORE_STEPS = ['scenario', 'narration', 'artworks', 'video', 'subtitles', 'multilanguage', 'descriptions'];
         let saveTimeout = null;
+        // Asset modal state
+        let currentPipelineId = null;
+        let currentCategory = null;
+        let currentAssetItems = [];
 
         const cleanForMatch = (s) => s ? s.toString().toLowerCase().trim().replace(/[^\w\s\u0370-\u03ff]/gi, '').normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
         const parseViews = (v) => { if(!v) return 0; let str = v.toString().toUpperCase().replace(/,/g, '').trim(); let factor = 1; if(str.endsWith('K')) { factor = 1000; str = str.slice(0, -1); } else if(str.endsWith('M')) { factor = 1000000; str = str.slice(0, -1); } return (parseFloat(str) || 0) * factor; };
@@ -151,18 +166,11 @@
             const savedStats = localStorage.getItem('hst_stats');
             if(savedStats) channelStats = JSON.parse(savedStats);
             projects.sort((a,b) => (a.orderIndex||0) - (b.orderIndex||0));
-            for(let p of projects) {
-                if(p.mainVideo) {
-                    if(p.mainVideo.uploaded === undefined) p.mainVideo.uploaded = false;
-                    if(p.mainVideo.live === undefined) p.mainVideo.live = false;
-                }
-                if(p.shorts) for(let s of p.shorts) {
-                    if(s.uploaded === undefined) s.uploaded = false;
-                    if(s.live === undefined) s.live = false;
-                }
-                if(p.soundtracks) for(let st of p.soundtracks) {
-                    if(st.uploaded === undefined) st.uploaded = false;
-                    if(st.live === undefined) st.live = false;
+            // Ensure pipeline projects have the new asset structure
+            const defaultCategories = ['script', 'narration', 'artworks', 'music', 'ostArtwork', 'subtitles', 'thumbnailYT', 'ostYTThumbnail', 'shortsPipeline'];
+            for(let p of pipelineProjects) {
+                for(let cat of defaultCategories) {
+                    if(!p[cat]) p[cat] = [];
                 }
             }
         };
@@ -194,90 +202,139 @@
             return 'title-red';
         }
         
-        // RENDER PROJECTS (με clickable main video links και σωστά χρώματα)
+        // RENDER PROJECTS (με στατιστικά badges)
         window.renderProjects = () => {
             const list = document.getElementById('project-list');
             list.innerHTML = projects.map((p, i) => {
                 const m = (p.mainVideo.link || "").match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?\s*v=|&v=)([^#&?]*).*/);
                 const ytId = m && m[2].length === 11 ? m[2] : null;
                 const mainClass = getTitleClass(p.mainVideo.uploaded, p.mainVideo.live);
-                // Main video title with link
                 const mainTitleHtml = p.mainVideo.link ? 
                     `<a href="${p.mainVideo.link}" target="_blank" class="font-black text-xs uppercase break-words ${mainClass}">${escapeHtml(p.mainVideo.title)}</a>` :
                     `<div class="font-black text-xs uppercase break-words ${mainClass}">${escapeHtml(p.mainVideo.title)}</div>`;
                 return `<tr class="group hover:bg-zinc-800/40 transition-all archive-row">
                     <td class="p-2 text-center text-zinc-600 font-mono text-[10px]">${i+1}</td>
                     <td class="p-2 text-center"><div class="flex flex-col gap-0.5"><button onclick="moveProject('${p.id}', 'up')" class="hover:text-gold text-[10px]">▲</button><button onclick="moveProject('${p.id}', 'down')" class="hover:text-gold text-[10px]">▼</button></div></td>
-                    <td class="p-2"><div class="flex items-center gap-2"><div class="thumbnail-frame shadow-xl">${ytId ? `<img src="https://img.youtube.com/vi/${ytId}/mqdefault.jpg">` : '<span class="text-[7px] text-zinc-700">NO ART</span>'}</div><div><div class="flex items-center gap-1 mb-0.5"><span style="color: var(--gold);">🔱</span>${mainTitleHtml}</div></div></div></div></td>
-                    <td class="p-2"><div class="space-y-1">${(p.shorts || []).map(s => { const titleClass = getTitleClass(s.uploaded, s.live); return `<div><div class="flex items-center gap-1"><span style="color: var(--gold);">🔱</span>${s.link ? `<a href="${s.link}" target="_blank" class="short-title-text hover:gold-text break-words ${titleClass}">${escapeHtml(s.title)}</a>` : `<span class="short-title-text break-words ${titleClass}">${escapeHtml(s.title)}</span>`}</div></div>`}).join('')}</div></td>
-                    <td class="p-2"><div class="space-y-1">${(p.soundtracks || []).map(st => { const titleClass = getTitleClass(st.uploaded, st.live); const spotifyHtml = st.spotifyLink ? `<a href="${st.spotifyLink}" target="_blank" class="spotify-tag ml-1">● Spotify</a>` : ''; return `<div><div class="flex items-center gap-1 flex-wrap"><span style="color: var(--gold);">🔱</span>${st.link ? `<a href="${st.link}" target="_blank" class="soundtrack-title-text hover:gold-text soundtrack-title ${titleClass}">${escapeHtml(st.title)}</a>` : `<span class="soundtrack-title-text soundtrack-title ${titleClass}">${escapeHtml(st.title)}</span>`}${spotifyHtml}</div></div>`}).join('')}</div></td>
+                    <td class="p-2"><div class="flex items-center gap-2"><div class="thumbnail-frame shadow-xl">${ytId ? `<img src="https://img.youtube.com/vi/${ytId}/mqdefault.jpg">` : '<span class="text-[7px] text-zinc-700">NO ART</span>'}</div><div><div class="flex items-center gap-1 mb-0.5"><span style="color: var(--gold);">🔱</span>${mainTitleHtml}</div><div class="flex gap-2"><span class="stat-badge">👁 ${p.mainVideo.analytics?.views || 0} ${getTrendIcon(p.mainVideo.analytics?.views, p.mainVideo.analytics?.previousViews)}</span><span class="stat-badge">⏱ ${p.mainVideo.analytics?.retention || '0%'}</span></div></div></div></div></td>
+                    <td class="p-2"><div class="space-y-1">${(p.shorts || []).map(s => { const titleClass = getTitleClass(s.uploaded, s.live); return `<div><div class="flex items-center gap-1"><span style="color: var(--gold);">🔱</span>${s.link ? `<a href="${s.link}" target="_blank" class="short-title-text hover:gold-text break-words ${titleClass}">${escapeHtml(s.title)}</a>` : `<span class="short-title-text break-words ${titleClass}">${escapeHtml(s.title)}</span>`}</div><div class="flex gap-2 pl-4"><span class="stat-badge">👁 ${s.analytics?.views || 0} ${getTrendIcon(s.analytics?.views, s.analytics?.previousViews)}</span><span class="stat-badge">⏱ ${s.analytics?.retention || '0%'}</span></div></div>`}).join('')}</div></td>
+                    <td class="p-2"><div class="space-y-1">${(p.soundtracks || []).map(st => { const titleClass = getTitleClass(st.uploaded, st.live); const spotifyHtml = st.spotifyLink ? `<a href="${st.spotifyLink}" target="_blank" class="spotify-tag ml-1">● Spotify</a>` : ''; return `<div><div class="flex items-center gap-1 flex-wrap"><span style="color: var(--gold);">🔱</span>${st.link ? `<a href="${st.link}" target="_blank" class="soundtrack-title-text hover:gold-text soundtrack-title ${titleClass}">${escapeHtml(st.title)}</a>` : `<span class="soundtrack-title-text soundtrack-title ${titleClass}">${escapeHtml(st.title)}</span>`}${spotifyHtml}</div><div class="flex gap-2 pl-4"><span class="stat-badge">👁 ${st.analytics?.views || 0} ${getTrendIcon(st.analytics?.views, st.analytics?.previousViews)}</span><span class="stat-badge">⏱ ${st.analytics?.retention || '0%'}</span></div></div>`}).join('')}</div></td>
                     <td class="p-2 text-right actions-cell"><div class="action-buttons"><button onclick="openModal('${p.id}')" class="text-[9px] gold-text hover:underline font-black uppercase tracking-widest">Edit</button><button onclick="deleteProject('${p.id}')" class="text-[9px] delete-btn font-black uppercase tracking-widest">Delete</button></div></div></td>
                 </tr>`;
             }).join('');
         };
         
-        // RENDER ANALYTICS (με Views, Retention, Impressions, CTR)
-        window.renderAnalytics = () => {
-            const list = document.getElementById('analytics-list');
-            let allItems = [];
-            projects.forEach(p => {
-                if(p.mainVideo.title) allItems.push({ 
-                    title: p.mainVideo.title, type: 'Main', 
-                    views: p.mainVideo.analytics?.views || '0', 
-                    prevViews: p.mainVideo.analytics?.previousViews, 
-                    retention: p.mainVideo.analytics?.retention || '0%',
-                    impressions: p.mainVideo.analytics?.impressions || '0',
-                    ctr: p.mainVideo.analytics?.ctr || '0%',
-                    link: p.mainVideo.link 
-                });
-                (p.shorts || []).forEach(s => allItems.push({ 
-                    title: s.title, type: 'Short', 
-                    views: s.analytics?.views || '0', 
-                    prevViews: s.analytics?.previousViews, 
-                    retention: s.analytics?.retention || '0%',
-                    impressions: s.analytics?.impressions || '0',
-                    ctr: s.analytics?.ctr || '0%',
-                    link: s.link || "" 
-                }));
-                (p.soundtracks || []).forEach(st => allItems.push({ 
-                    title: st.title, type: 'Music', 
-                    views: st.analytics?.views || '0', 
-                    prevViews: st.analytics?.previousViews, 
-                    retention: st.analytics?.retention || '0%',
-                    impressions: st.analytics?.impressions || '0',
-                    ctr: st.analytics?.ctr || '0%',
-                    link: st.spotifyLink || st.link || "" 
-                }));
-            });
-            allItems.sort((a,b) => parseViews(b.views) - parseViews(a.views));
-            list.innerHTML = allItems.map((item, idx) => {
-                let typeClass = '';
-                if(item.type === 'Main') typeClass = 'pill-main';
-                else if(item.type === 'Short') typeClass = 'pill-short';
-                else typeClass = 'pill-music';
-                const rankIcon = idx === 0 ? '👑' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : (idx+1).toString()));
-                return `<tr class="border-b border-zinc-800/30 hover:bg-zinc-800/20">
-                    <td class="text-center font-mono text-sm">${rankIcon}</td>
-                    <td class="text-left"><a href="${item.link || '#'}" target="${item.link ? '_blank' : ''}" class="gold-text font-semibold text-sm hover:underline">${escapeHtml(item.title)}</a></td>
-                    <td class="text-center"><span class="${typeClass}">${item.type}</span></td>
-                    <td class="text-center"><span class="stat-badge text-sm">👁 ${item.views} ${getTrendIcon(item.views, item.prevViews)}</span></td>
-                    <td class="text-center"><span class="stat-badge text-sm">⏱ ${item.retention}</span></td>
-                    <td class="text-center"><span class="stat-badge text-sm">📊 ${item.impressions}</span></td>
-                    <td class="text-center"><span class="stat-badge text-sm">🎯 ${item.ctr}</span></td>
-                </tr>`;
-            }).join('');
+        // PIPELINE RENDER (νέο layout)
+        const categoryLabels = {
+            script: 'Script', narration: 'Narration', artworks: 'Artworks', music: 'Music',
+            ostArtwork: 'OST Artwork', subtitles: 'Subtitles', thumbnailYT: 'Thumbnail YT',
+            ostYTThumbnail: 'OST YT Thumbnail', shortsPipeline: 'Shorts'
         };
         
         window.renderPipeline = () => {
             const container = document.getElementById('pipeline-container');
             container.innerHTML = pipelineProjects.map(p => {
-                const sL = p.shorts?.length || 0, stL = p.soundtracks?.length || 0;
-                const bD = CORE_STEPS.reduce((acc, s) => acc + (p[s] ? 1 : 0), 0);
-                const aD = (p.shorts || []).reduce((acc, s) => acc + (s.done ? 1 : 0), 0) + (p.soundtracks || []).reduce((acc, s) => acc + (s.done ? 1 : 0), 0);
-                const target = CORE_STEPS.length + sL + stL;
-                const pct = target > 0 ? Math.round(((bD + aD) / target) * 100) : 0;
-                return `<div class="glass-card overflow-hidden shadow-2xl border-gold/5 bg-zinc-900/40" data-pid="${p.id}"><table class="w-full text-left text-xs"><thead><tr class="bg-zinc-950/80 text-zinc-500 text-[8px] uppercase font-black text-center tracking-[0.2em] border-b border-zinc-800"><th class="p-5 text-left w-72">Project Title</th>${CORE_STEPS.map(s => `<th class="p-2">${s}</th>`).join('')}<th class="p-5 bg-emerald-950/30 text-emerald-400 font-black">FINALIZE</th><th class="p-5 text-right">Actions</th></tr></thead><tbody><tr class="text-center border-b border-zinc-800/50"><td class="p-5 text-left"><input type="text" class="pipeline-input gold-text font-black !text-xs mb-1 uppercase tracking-tighter" value="${escapeHtml(p.title)}" oninput="updatePipelineField('${p.id}', 'title', this.value)"><div class="progress-bar w-full"><div class="progress-fill" style="width: ${pct}%"></div></div><div class="text-[7px] text-zinc-500 mt-1 uppercase font-bold tracking-widest">${pct}% COMPLETE</div></td>${CORE_STEPS.map(s => `<td class="p-2"><input type="checkbox" class="pipeline-checkbox" ${p[s] ? 'checked' : ''} onchange="togglePipelineStep('${p.id}', '${s}')"></td>`).join('')}<td class="p-4 bg-emerald-900/5"><button onclick="showConfirmModal('${p.id}')" class="upload-btn">UPLOAD</button></td><td class="p-5 text-right"><button onclick="deletePipelineProject('${p.id}')" class="text-[9px] text-zinc-600 hover:text-red-500 font-black uppercase tracking-widest">Discard</button></td></tr><tr class="bg-black/40"><td colspan="10" class="p-6"><div class="flex flex-col lg:flex-row gap-16"><div class="flex-1"><div class="flex justify-between items-center mb-4 pb-2 border-b border-zinc-800"><span class="text-[10px] gold-text uppercase font-black tracking-widest">Shorts Pipeline</span><button onclick="addPipelineAsset('${p.id}', 'shorts')" class="text-[8px] bg-zinc-800/50 px-3 py-1 rounded border border-zinc-700 hover:border-gold">+ NEW SHORT</button></div><div class="grid grid-cols-1 sm:grid-cols-2 gap-3">${(p.shorts || []).map((s, idx) => `<div class="flex items-center gap-3 bg-zinc-950/50 p-2 rounded-lg border border-zinc-800"><input type="checkbox" class="pipeline-checkbox scale-90" ${s.done ? 'checked' : ''} onchange="updatePipelineAsset('${p.id}', 'shorts', ${idx}, 'done', this.checked)"><input type="text" class="pipeline-input !text-[10px] flex-1" value="${escapeHtml(s.title)}" oninput="updatePipelineAsset('${p.id}', 'shorts', ${idx}, 'title', this.value)"><button onclick="removePipelineAsset('${p.id}', 'shorts', ${idx})" class="text-zinc-700 hover:text-red-500 text-[10px]">✕</button></div>`).join('')}</div></div><div class="flex-1"><div class="flex justify-between items-center mb-4 pb-2 border-b border-zinc-800"><span class="text-[10px] gold-text uppercase font-black tracking-widest">Music Assets</span><button onclick="addPipelineAsset('${p.id}', 'soundtracks')" class="text-[8px] bg-zinc-800/50 px-3 py-1 rounded border border-zinc-700 hover:border-gold">+ NEW SCORE</button></div><div class="space-y-3">${(p.soundtracks || []).map((st, idx) => `<div class="flex flex-col gap-2 bg-zinc-950/50 p-3 rounded-lg border border-zinc-800"><div class="flex items-center gap-4"><input type="checkbox" class="pipeline-checkbox scale-90" ${st.done ? 'checked' : ''} onchange="updatePipelineAsset('${p.id}', 'soundtracks', ${idx}, 'done', this.checked)"><input type="text" class="pipeline-input !text-[10px] flex-1 font-bold" value="${escapeHtml(st.title)}" oninput="updatePipelineAsset('${p.id}', 'soundtracks', ${idx}, 'title', this.value)"><button onclick="removePipelineAsset('${p.id}', 'soundtracks', ${idx})" class="text-zinc-700 hover:text-red-500 text-[10px]">✕</button></div><div class="flex items-center gap-3 pl-8"><span class="text-[8px] text-emerald-500 font-bold uppercase">Spotify Link:</span><input type="text" class="pipeline-input !text-[9px] flex-1 italic" value="${st.spotifyLink || ''}" oninput="updatePipelineAsset('${p.id}', 'soundtracks', ${idx}, 'spotifyLink', this.value)"></div></div>`).join('')}</div></div></div></td></tr></tbody></table></div>`;
+                // Υπολογισμός προόδου: κάθε κατηγορία που έχει τουλάχιστον 1 στοιχείο μετράει
+                const categories = ['script', 'narration', 'artworks', 'music', 'ostArtwork', 'subtitles', 'thumbnailYT', 'ostYTThumbnail', 'shortsPipeline'];
+                let completed = 0;
+                for(let cat of categories) {
+                    if(p[cat] && p[cat].length > 0) completed++;
+                }
+                const pct = Math.round((completed / categories.length) * 100);
+                return `<div class="glass-card overflow-hidden shadow-2xl border-gold/5 bg-zinc-900/40 p-5 mb-6" data-pid="${p.id}">
+                    <div class="flex justify-between items-start flex-wrap gap-4">
+                        <div class="flex-1">
+                            <input type="text" class="pipeline-input gold-text font-black !text-sm mb-1 uppercase tracking-tighter w-full" value="${escapeHtml(p.title)}" oninput="updatePipelineField('${p.id}', 'title', this.value)">
+                            <div class="progress-bar w-full mt-2"><div class="progress-fill" style="width: ${pct}%"></div></div>
+                            <div class="text-[7px] text-zinc-500 mt-1 uppercase font-bold tracking-widest">${pct}% COMPLETE (${completed}/${categories.length})</div>
+                        </div>
+                        <div class="flex gap-3">
+                            <button onclick="showConfirmModal('${p.id}')" class="upload-btn">FINALIZE</button>
+                            <button onclick="deletePipelineProject('${p.id}')" class="text-[9px] text-zinc-600 hover:text-red-500 font-black uppercase tracking-widest">Discard</button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 mt-6">
+                        ${categories.map(cat => {
+                            const items = p[cat] || [];
+                            const count = items.length;
+                            return `<div class="text-center">
+                                <button onclick="openAssetModal('${p.id}', '${cat}')" class="pipeline-category-btn">${categoryLabels[cat]}</button>
+                                <div class="item-count">${count} element${count !== 1 ? 's' : ''}</div>
+                            </div>`;
+                        }).join('')}
+                    </div>
+                </div>`;
             }).join('');
+        };
+        
+        // Asset Modal functions
+        window.openAssetModal = (pid, category) => {
+            currentPipelineId = pid;
+            currentCategory = category;
+            const project = pipelineProjects.find(p => p.id === pid);
+            if(!project) return;
+            currentAssetItems = project[category] || [];
+            document.getElementById('asset-modal-title').innerText = `Manage ${categoryLabels[category]}`;
+            document.getElementById('asset-title').value = '';
+            document.getElementById('asset-link').value = '';
+            document.getElementById('asset-local').value = '';
+            document.getElementById('asset-text').value = '';
+            renderAssetItemsList();
+            document.getElementById('pipeline-asset-modal').classList.remove('hidden');
+        };
+        
+        function renderAssetItemsList() {
+            const container = document.getElementById('asset-items-list');
+            if(!currentAssetItems.length) {
+                container.innerHTML = '<div class="text-zinc-500 text-center text-sm py-4">No items yet. Add your first asset.</div>';
+                return;
+            }
+            container.innerHTML = currentAssetItems.map((item, idx) => `
+                <div class="modal-item">
+                    <div class="modal-item-info">
+                        <div class="font-bold text-sm">${escapeHtml(item.title || 'Untitled')}</div>
+                        ${item.link ? `<div class="text-xs text-blue-400 truncate max-w-[200px]">${escapeHtml(item.link)}</div>` : ''}
+                        ${item.localAddress ? `<div class="text-xs text-zinc-500">${escapeHtml(item.localAddress)}</div>` : ''}
+                        ${item.text ? `<div class="text-xs text-zinc-400 italic">${escapeHtml(item.text)}</div>` : ''}
+                    </div>
+                    <button onclick="removeAssetItem(${idx})" class="text-red-500 text-xs hover:text-red-400">✕</button>
+                </div>
+            `).join('');
+        }
+        
+        window.removeAssetItem = (idx) => {
+            currentAssetItems.splice(idx, 1);
+            renderAssetItemsList();
+        };
+        
+        document.getElementById('asset-add-btn').onclick = () => {
+            const title = document.getElementById('asset-title').value.trim();
+            if(!title) { showToast('Please enter a title'); return; }
+            const link = document.getElementById('asset-link').value.trim();
+            const localAddress = document.getElementById('asset-local').value.trim();
+            const text = document.getElementById('asset-text').value.trim();
+            currentAssetItems.push({ title, link, localAddress, text });
+            // Clear form
+            document.getElementById('asset-title').value = '';
+            document.getElementById('asset-link').value = '';
+            document.getElementById('asset-local').value = '';
+            document.getElementById('asset-text').value = '';
+            renderAssetItemsList();
+        };
+        
+        window.closeAssetModal = () => {
+            // Save changes to pipeline project
+            if(currentPipelineId && currentCategory) {
+                const project = pipelineProjects.find(p => p.id === currentPipelineId);
+                if(project) {
+                    project[currentCategory] = [...currentAssetItems];
+                    saveToLocal();
+                    renderPipeline();
+                }
+            }
+            document.getElementById('pipeline-asset-modal').classList.add('hidden');
+            currentPipelineId = null;
+            currentCategory = null;
+            currentAssetItems = [];
         };
         
         window.updateStats = () => { 
@@ -290,7 +347,7 @@
             document.getElementById('channel-watchtime').innerText = channelStats.watchTime || '0';
         };
         
-        // MODAL & FORMS
+        // MODAL & FORMS για το αρχείο (ίδια)
         window.openModal = (id=null) => {
             document.getElementById('project-form').reset();
             document.getElementById('shorts-container').innerHTML = '';
@@ -316,13 +373,11 @@
         
         function setupLiveCheckbox(uploadedCheck, liveCheck) {
             if (liveCheck) {
-                liveCheck.addEventListener('change', function() {
-                    if (this.checked) uploadedCheck.checked = true;
-                });
+                liveCheck.addEventListener('change', function() { if (this.checked) uploadedCheck.checked = true; });
             }
         }
         
-        window.addShortRow = (d={title:'', analytics:{views:'0',retention:'0%',impressions:'0',ctr:'0%'}, uploaded:false, live:false, link:''}) => {
+        window.addShortRow = (d={title:'', analytics:{views:'0',retention:'0%'}, uploaded:false, live:false, link:''}) => {
             const div = document.createElement('div'); div.className="dynamic-row bg-zinc-800/10 p-3 rounded-lg border border-zinc-800 space-y-3";
             div.innerHTML = `<div class="grid grid-cols-12 gap-3 items-center">
                 <div class="col-span-10"><input type="text" class="w-full short-title" value="${escapeHtml(d.title)}" placeholder="Short Title"></div>
@@ -343,7 +398,7 @@
             setupLiveCheckbox(uploadedCheck, liveCheck);
         };
         
-        window.addSoundtrackRow = (d={title:'', spotifyLink:'', link:'', analytics:{views:'0',retention:'0%',impressions:'0',ctr:'0%'}, uploaded:false, live:false}) => {
+        window.addSoundtrackRow = (d={title:'', spotifyLink:'', link:'', analytics:{views:'0',retention:'0%'}, uploaded:false, live:false}) => {
             const div = document.createElement('div'); div.className="dynamic-row bg-zinc-800/10 p-4 rounded-lg border border-zinc-800 space-y-3";
             div.innerHTML = `<div class="grid grid-cols-12 gap-3 items-center">
                 <div class="col-span-10"><input type="text" class="w-full st-title font-bold" value="${escapeHtml(d.title)}" placeholder="Soundtrack Name"></div>
@@ -377,8 +432,6 @@
                 analytics: { 
                     views: r.querySelector('.short-views').value||'0', 
                     retention: r.querySelector('.short-retention').value||'0%',
-                    impressions: existingP?.shorts?.find(s=>cleanForMatch(s.title)===cleanForMatch(r.querySelector('.short-title').value))?.analytics?.impressions || '0',
-                    ctr: existingP?.shorts?.find(s=>cleanForMatch(s.title)===cleanForMatch(r.querySelector('.short-title').value))?.analytics?.ctr || '0%',
                     previousViews: existingP?.shorts?.find(s=>cleanForMatch(s.title)===cleanForMatch(r.querySelector('.short-title').value))?.analytics?.views||null 
                 } 
             })).filter(x=>x.title);
@@ -391,8 +444,6 @@
                 analytics: { 
                     views: r.querySelector('.st-views').value||'0', 
                     retention: r.querySelector('.st-retention').value||'0%',
-                    impressions: existingP?.soundtracks?.find(st=>cleanForMatch(st.title)===cleanForMatch(r.querySelector('.st-title').value))?.analytics?.impressions || '0',
-                    ctr: existingP?.soundtracks?.find(st=>cleanForMatch(st.title)===cleanForMatch(r.querySelector('.st-title').value))?.analytics?.ctr || '0%',
                     previousViews: existingP?.soundtracks?.find(st=>cleanForMatch(st.title)===cleanForMatch(r.querySelector('.st-title').value))?.analytics?.views||null 
                 } 
             })).filter(x=>x.title);
@@ -405,8 +456,6 @@
                     analytics: { 
                         views: existingP?.mainVideo?.analytics?.views||'0', 
                         retention: existingP?.mainVideo?.analytics?.retention||'0%',
-                        impressions: existingP?.mainVideo?.analytics?.impressions || '0',
-                        ctr: existingP?.mainVideo?.analytics?.ctr || '0%',
                         previousViews: existingP?.mainVideo?.analytics?.views||null 
                     } 
                 }, 
@@ -418,16 +467,19 @@
             await window.saveProjectToDB(id, data); showToast('DATABASE UPDATED'); closeModal();
         });
         
-        // PIPELINE ACTIONS
         window.updatePipelineField = (id, field, value) => { const p = pipelineProjects.find(item=>item.id===id); if(p) { p[field]=value; clearTimeout(saveTimeout); saveTimeout=setTimeout(()=>window.savePipelineToDB(id,p),800); } };
-        window.togglePipelineStep = async (id, step) => { const p = pipelineProjects.find(item=>item.id===id); if(p) { p[step]=!p[step]; await window.savePipelineToDB(id,p); } };
-        window.addPipelineAsset = async (id, type) => { const p = pipelineProjects.find(item=>item.id===id); if(p) { if(!p[type]) p[type]=[]; p[type].push(type==='shorts' ? {title:`Short ${p.shorts.length+1}`, done:false} : {title:'', done:false, spotifyLink:''}); await window.savePipelineToDB(id,p); } };
-        window.updatePipelineAsset = (pid, type, idx, field, value) => { const p = pipelineProjects.find(item=>item.id===pid); if(p && p[type][idx]) { p[type][idx][field]=value; clearTimeout(saveTimeout); saveTimeout=setTimeout(()=>window.savePipelineToDB(pid,p),800); } };
-        window.removePipelineAsset = async (pid, type, idx) => { const p = pipelineProjects.find(item=>item.id===pid); if(p) { p[type].splice(idx,1); await window.savePipelineToDB(pid,p); } };
         window.openPipelineModal = () => { document.getElementById('pipeline-title-input').value=""; document.getElementById('pipeline-modal').classList.remove('hidden'); };
-        window.addPipelineProject = async () => { const title = document.getElementById('pipeline-title-input').value; if(title) { await window.savePipelineToDB(Date.now().toString(), { title, scenario:false, narration:false, artworks:false, video:false, subtitles:false, multilanguage:false, descriptions:false, shorts:[], soundtracks:[], upload:false, dateCreated:new Date().toISOString() }); document.getElementById('pipeline-modal').classList.add('hidden'); showToast('PRODUCTION INITIATED'); } };
+        window.addPipelineProject = async () => { 
+            const title = document.getElementById('pipeline-title-input').value; 
+            if(title) { 
+                const defaultCategories = { script:[], narration:[], artworks:[], music:[], ostArtwork:[], subtitles:[], thumbnailYT:[], ostYTThumbnail:[], shortsPipeline:[] };
+                await window.savePipelineToDB(Date.now().toString(), { title, ...defaultCategories, dateCreated:new Date().toISOString() }); 
+                document.getElementById('pipeline-modal').classList.add('hidden'); 
+                showToast('PRODUCTION INITIATED'); 
+            } 
+        };
         
-        // MIGRATION
+        // MIGRATION (παραμένει ίδια)
         window.showConfirmModal = (id) => { currentMigrationId = id; document.getElementById('confirm-modal').classList.remove('hidden'); document.getElementById('final-confirm-btn').onclick = () => window.executeMigration(id); };
         window.hideConfirmModal = () => { document.getElementById('confirm-modal').classList.add('hidden'); currentMigrationId = null; };
         window.executeMigration = async (id) => {
@@ -436,9 +488,9 @@
             const newProjectId = Date.now().toString();
             const currentMinOrder = projects.length>0 ? Math.min(...projects.map(pr=>pr.orderIndex||0)) : 1000;
             const archiveData = { 
-                mainVideo: { title: p.title||"Untitled", link:"", uploaded: false, live: false, analytics:{views:"0",retention:"0%",impressions:"0",ctr:"0%"} }, 
-                shorts: (p.shorts||[]).map(s=>({ title:s.title||"Short", uploaded: false, live: false, analytics:{views:"0",retention:"0%",impressions:"0",ctr:"0%"}, link:"" })), 
-                soundtracks: (p.soundtracks||[]).map(st=>({ title:st.title||"Score", uploaded: false, live: false, spotifyLink:st.spotifyLink||"", link:"", analytics:{views:"0",retention:"0%",impressions:"0",ctr:"0%" } })), 
+                mainVideo: { title: p.title||"Untitled", link:"", uploaded: false, live: false, analytics:{views:"0",retention:"0%"} }, 
+                shorts: [], 
+                soundtracks: [], 
                 orderIndex: currentMinOrder-1, 
                 date:new Date().toISOString() 
             };
@@ -452,7 +504,7 @@
         window.deleteProject = (id) => { pendingDeleteId = id; document.getElementById('delete-modal').classList.remove('hidden'); };
         document.getElementById('final-delete-btn').onclick = () => { if(pendingDeleteId) { projects = projects.filter(p => p.id !== pendingDeleteId); saveToLocal(); renderProjects(); updateStats(); hideDeleteModal(); showToast('DELETED'); } };
         
-        // CSV IMPORT (με σωστή αντιστοίχηση και λεπτομερή logging)
+        // CSV IMPORT (μόνο για το αρχείο – ίδιος κώδικας, αλλά δεν χρειάζεται analytics tab)
         window.triggerAnalyticsImport = () => document.getElementById('analytics-input').click();
         window.handleAnalyticsImport = (inputEl) => {
             const file = inputEl.files[0];
@@ -465,48 +517,31 @@
                 const delimiter = (lines[0].match(/;/g) || []).length > (lines[0].match(/,/g) || []).length ? ';' : ',';
                 const splitCSV = (s) => s.split(new RegExp(`${delimiter}(?=(?:(?:[^"]*"){2})*[^"]*$)`)).map(c => c.trim().replace(/^"|"$/g, ''));
                 const headers = splitCSV(lines[0]).map(h => h.toLowerCase());
-                console.log('CSV Headers:', headers);
-                // Εύρεση στηλών
                 const titleIdx = headers.findIndex(h => h === 'video title' || h === 'content' || h.includes('title'));
                 const viewsIdx = headers.findIndex(h => h === 'views');
-                const retentionIdx = headers.findIndex(h => h === 'average percentage viewed (%)' || h === 'average percentage viewed' || h.includes('percentage viewed'));
-                const impressionsIdx = headers.findIndex(h => h === 'impressions');
-                const ctrIdx = headers.findIndex(h => h === 'impressions click-through rate (%)' || h === 'impressions click-through rate' || h === 'ctr');
+                const retentionIdx = headers.findIndex(h => h === 'average percentage viewed (%)' || h.includes('percentage viewed'));
                 const subsIdx = headers.findIndex(h => h === 'subscribers');
+                const impressionsIdx = headers.findIndex(h => h === 'impressions');
+                const ctrIdx = headers.findIndex(h => h === 'impressions click-through rate (%)' || h === 'ctr');
                 const watchTimeIdx = headers.findIndex(h => h === 'watch time' || h === 'watch time (hours)');
-                
                 let totalStats = null;
-                const videoStats = new Map(); // title -> {views, retention, impressions, ctr}
+                const videoStats = new Map();
                 for(let i = 1; i < lines.length; i++) {
                     const row = splitCSV(lines[i]);
                     if(row.length < 2) continue;
                     const firstCell = row[0].toLowerCase();
                     if(firstCell === 'total' || firstCell === 'σύνολο' || firstCell === 'channel') {
-                        totalStats = { 
-                            views: viewsIdx!==-1 ? row[viewsIdx] : undefined, 
-                            retention: retentionIdx!==-1 ? row[retentionIdx] : undefined, 
-                            subscribers: subsIdx!==-1 ? row[subsIdx] : undefined, 
-                            impressions: impressionsIdx!==-1 ? row[impressionsIdx] : undefined, 
-                            ctr: ctrIdx!==-1 ? row[ctrIdx] : undefined, 
-                            watchTime: watchTimeIdx!==-1 ? row[watchTimeIdx] : undefined 
-                        };
+                        totalStats = { views: viewsIdx!==-1 ? row[viewsIdx] : undefined, retention: retentionIdx!==-1 ? row[retentionIdx] : undefined, subscribers: subsIdx!==-1 ? row[subsIdx] : undefined, impressions: impressionsIdx!==-1 ? row[impressionsIdx] : undefined, ctr: ctrIdx!==-1 ? row[ctrIdx] : undefined, watchTime: watchTimeIdx!==-1 ? row[watchTimeIdx] : undefined };
                         continue;
                     }
                     if(titleIdx !== -1 && viewsIdx !== -1) {
                         const rawTitle = row[titleIdx];
                         if(rawTitle && rawTitle.trim() !== '') {
                             const cleanTitle = cleanForMatch(rawTitle);
-                            videoStats.set(cleanTitle, { 
-                                views: row[viewsIdx] || '0', 
-                                retention: retentionIdx!==-1 ? row[retentionIdx] : '0%',
-                                impressions: impressionsIdx!==-1 ? row[impressionsIdx] : '0',
-                                ctr: ctrIdx!==-1 ? row[ctrIdx] : '0%'
-                            });
+                            videoStats.set(cleanTitle, { views: row[viewsIdx] || '0', retention: retentionIdx!==-1 ? row[retentionIdx] : '0%' });
                         }
                     }
                 }
-                console.log('Video stats entries:', videoStats.size);
-                // Update channel stats
                 if(totalStats) {
                     let changed = false;
                     const newStats = { ...channelStats };
@@ -519,12 +554,10 @@
                     if(isNonZero(totalStats.watchTime) && totalStats.watchTime !== channelStats.watchTime) { newStats.watchTime = totalStats.watchTime; changed = true; }
                     if(changed) await window.saveChannelStats(newStats);
                 }
-                // Update video stats
                 let updatedCount = 0;
                 for(let project of projects) {
                     let projectModified = false;
                     const projectCopy = JSON.parse(JSON.stringify(project));
-                    // Main video
                     if(project.mainVideo.title) {
                         const cleanTitle = cleanForMatch(project.mainVideo.title);
                         if(videoStats.has(cleanTitle)) {
@@ -534,12 +567,9 @@
                             const newAnalytics = { ...old };
                             if(stats.views !== old.views) { newAnalytics.previousViews = old.views || null; newAnalytics.views = stats.views; changed = true; }
                             if(stats.retention !== old.retention) { newAnalytics.retention = stats.retention; changed = true; }
-                            if(stats.impressions !== old.impressions) { newAnalytics.impressions = stats.impressions; changed = true; }
-                            if(stats.ctr !== old.ctr) { newAnalytics.ctr = stats.ctr; changed = true; }
                             if(changed) { projectCopy.mainVideo.analytics = newAnalytics; projectModified = true; }
                         }
                     }
-                    // Shorts
                     for(let short of projectCopy.shorts) {
                         const cleanTitle = cleanForMatch(short.title);
                         if(videoStats.has(cleanTitle)) {
@@ -549,12 +579,9 @@
                             const newAnalytics = { ...old };
                             if(stats.views !== old.views) { newAnalytics.previousViews = old.views || null; newAnalytics.views = stats.views; changed = true; }
                             if(stats.retention !== old.retention) { newAnalytics.retention = stats.retention; changed = true; }
-                            if(stats.impressions !== old.impressions) { newAnalytics.impressions = stats.impressions; changed = true; }
-                            if(stats.ctr !== old.ctr) { newAnalytics.ctr = stats.ctr; changed = true; }
                             if(changed) { short.analytics = newAnalytics; projectModified = true; }
                         }
                     }
-                    // Soundtracks
                     for(let st of projectCopy.soundtracks) {
                         const cleanTitle = cleanForMatch(st.title);
                         if(videoStats.has(cleanTitle)) {
@@ -564,20 +591,13 @@
                             const newAnalytics = { ...old };
                             if(stats.views !== old.views) { newAnalytics.previousViews = old.views || null; newAnalytics.views = stats.views; changed = true; }
                             if(stats.retention !== old.retention) { newAnalytics.retention = stats.retention; changed = true; }
-                            if(stats.impressions !== old.impressions) { newAnalytics.impressions = stats.impressions; changed = true; }
-                            if(stats.ctr !== old.ctr) { newAnalytics.ctr = stats.ctr; changed = true; }
                             if(changed) { st.analytics = newAnalytics; projectModified = true; }
                         }
                     }
-                    if(projectModified) { 
-                        await window.saveProjectToDB(project.id, projectCopy); 
-                        updatedCount++; 
-                        showToast(`CSV import: ${updatedCount} projects updated...`); 
-                        await new Promise(r => setTimeout(r, 100)); 
-                    }
+                    if(projectModified) { await window.saveProjectToDB(project.id, projectCopy); updatedCount++; showToast(`CSV import: ${updatedCount} projects updated...`); await new Promise(r => setTimeout(r, 100)); }
                 }
                 showToast(`CSV import complete! ${updatedCount} projects updated.`);
-                renderProjects(); renderAnalytics(); updateStats();
+                renderProjects(); updateStats();
             };
             reader.readAsText(file);
         };
@@ -604,18 +624,15 @@
             const d = JSON.stringify({p:projects, c:channelStats, pipe:pipelineProjects});
             const a = document.createElement('a');
             a.href = "data:text/json;charset=utf-8,"+encodeURIComponent(d);
-            a.download = `hst_backup_V1.5_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`;
+            a.download = `hst_backup_V2_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`;
             a.click();
         };
         
         window.switchTab = (tab) => {
             document.getElementById('tab-archive').classList.toggle('active', tab==='archive');
             document.getElementById('tab-pipeline').classList.toggle('active', tab==='pipeline');
-            document.getElementById('tab-analytics').classList.toggle('active', tab==='analytics');
             document.getElementById('view-archive').classList.toggle('hidden', tab!=='archive');
             document.getElementById('view-pipeline').classList.toggle('hidden', tab!=='pipeline');
-            document.getElementById('view-analytics').classList.toggle('hidden', tab!=='analytics');
-            if(tab==='analytics') renderAnalytics();
         };
         
         const init = () => {
