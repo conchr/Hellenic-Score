@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hellenic Score & Tales | V5.1 – CSV Fixed, Title Width Reduced</title>
+    <title>Hellenic Score & Tales | V5.2 – Production Fixed, CSV Working</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
@@ -45,7 +45,6 @@
         .short-title-text, .soundtrack-title-text { font-size: 0.8rem; line-height: 1.3; font-weight: 500; }
         a.title-red, a.title-green, a.title-white { text-decoration: none; }
         a.title-red:hover, a.title-green:hover, a.title-white:hover { text-decoration: underline; }
-        /* Production cards */
         .prod-card { background: rgba(22,22,24,0.8); border-radius: 16px; padding: 1rem 1.2rem; margin-bottom: 1rem; border: 1px solid rgba(197,160,89,0.2); transition: all 0.2s; cursor: grab; }
         .prod-card:active { cursor: grabbing; }
         .prod-card.dragging { opacity: 0.4; }
@@ -63,7 +62,7 @@
         @media (max-width: 768px) { .step-item { flex-direction: column; } .step-check { align-self: flex-start; } }
         .production-modal { max-width: 90vw; width: 900px; max-height: 85vh; overflow-y: auto; }
         .card-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 0.5rem; }
-        .title-input-wrapper { width: 40%; } /* Μειωμένο πλάτος για τον τίτλο */
+        .title-input-wrapper { width: 35%; }
         .progress-wrapper { flex: 1; min-width: 150px; }
     </style>
 </head>
@@ -90,7 +89,7 @@
         <div class="flex flex-col md:flex-row justify-between items-start mb-6 gap-3 border-b border-zinc-800/50 pb-4">
             <div class="flex flex-col gap-1"><div class="flex gap-2 text-[9px] text-zinc-500"><span>Database Status:</span><span id="db-status" class="text-zinc-400">Local Storage Mode</span></div><div class="flex gap-2 flex-wrap"><button onclick="exportDatabase()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text">💾 Backup</button><button onclick="importDatabase()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text">📂 Restore</button><button onclick="triggerAnalyticsImport()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text">📁 Import CSV</button><input type="file" id="import-input" class="hidden" accept=".json"><input type="file" id="analytics-input" class="hidden" accept=".csv"></div></div>
             <div class="flex gap-4"><button onclick="switchTab('archive')" id="tab-archive" class="nav-btn active cinzel">Αρχείο</button><button onclick="switchTab('pipeline')" id="tab-pipeline" class="nav-btn cinzel">Παραγωγή</button></div>
-            <div class="text-right hidden md:block"><p class="text-[9px] text-zinc-600">Strategic Control</p><p class="text-[10px] gold-text cinzel">V5.1 – CSV Fixed, Title Width Reduced</p></div>
+            <div class="text-right hidden md:block"><p class="text-[9px] text-zinc-600">Strategic Control</p><p class="text-[10px] gold-text cinzel">V5.2 – Production Fixed</p></div>
         </div>
 
         <!-- Archive View -->
@@ -106,7 +105,7 @@
                 </div>
             </header>
             <div class="flex justify-between mb-6"><div class="glass-card px-6 py-2"><p class="text-[9px] text-zinc-500">Live Projects</p><p id="stat-total" class="text-2xl font-bold gold-text">0</p></div><button onclick="openModal()" class="px-8 py-3 gold-bg text-black font-black rounded-xl text-[11px] shadow-2xl">🔱 NEW PROJECT</button></div>
-            <div class="glass-card overflow-hidden"><div class="overflow-x-auto"><table class="data-table"><thead><tr class="bg-zinc-900/70 text-zinc-500 text-[9px] uppercase font-black tracking-widest border-b border-zinc-800"><th class="p-2 text-center">#</th><th class="p-2 text-center">Order</th><th class="p-2">Project</th><th class="p-2">Shorts</th><th class="p-2">Soundtracks</th><th class="p-2 text-right">Actions</th></tr></thead><tbody id="project-list"></tbody></tr></div></div>
+            <div class="glass-card overflow-hidden"><div class="overflow-x-auto"><table class="data-table"><thead><tr class="bg-zinc-900/70 text-zinc-500 text-[9px] uppercase font-black tracking-widest border-b border-zinc-800"><th class="p-2 text-center">#</th><th class="p-2 text-center">Order</th><th class="p-2">Project</th><th class="p-2">Shorts</th><th class="p-2">Soundtracks</th><th class="p-2 text-right">Actions</th><tr></thead><tbody id="project-list"></tbody></table></div></div>
         </div>
 
         <!-- Production View -->
@@ -187,6 +186,7 @@
                 if(!p.main.visuals) p.main.visuals = { done: false, items: [] };
                 if(!p.main.translations) p.main.translations = { en: true, gr: false, fr: false, it: false, es: false, pt: false, de: false, ja: false, zh: false };
             }
+            console.log('Loaded pipelineProjects:', pipelineProjects.length);
         };
         
         window.saveProjectToDB = (id, data) => { 
@@ -253,6 +253,11 @@
         // RENDER CARDS (με μικρότερο πλάτος τίτλου)
         window.renderPipelineCards = () => {
             const container = document.getElementById('pipeline-container');
+            if (!container) return;
+            if (!pipelineProjects.length) {
+                container.innerHTML = '<div class="text-center text-zinc-500 py-10">No production projects. Click "NEW PRODUCTION" to start.</div>';
+                return;
+            }
             container.innerHTML = pipelineProjects.map((p, idx) => {
                 const progress = computeProgress(p);
                 return `<div class="prod-card" data-id="${p.id}" data-index="${idx}">
@@ -660,12 +665,10 @@
                 const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
                 if (lines.length < 2) { showToast('CSV has no data rows'); return; }
                 
-                // Detect delimiter
                 const delimiter = (lines[0].match(/;/g) || []).length > (lines[0].match(/,/g) || []).length ? ';' : ',';
                 const splitCSV = (s) => s.split(new RegExp(`${delimiter}(?=(?:(?:[^"]*"){2})*[^"]*$)`)).map(c => c.trim().replace(/^"|"$/g, ''));
                 const headers = splitCSV(lines[0]).map(h => h.toLowerCase());
                 
-                // Find column indices
                 const titleIdx = headers.findIndex(h => h === 'video title' || h === 'content' || h.includes('title'));
                 const viewsIdx = headers.findIndex(h => h === 'views');
                 const retentionIdx = headers.findIndex(h => h === 'average percentage viewed (%)' || h.includes('percentage viewed'));
@@ -675,9 +678,8 @@
                 const watchTimeIdx = headers.findIndex(h => h === 'watch time' || h === 'watch time (hours)');
                 
                 let totalStats = null;
-                const videoStats = new Map(); // key: cleaned title, value: {views, retention}
+                const videoStats = new Map();
                 
-                // Parse CSV rows
                 for (let i = 1; i < lines.length; i++) {
                     const row = splitCSV(lines[i]);
                     if (row.length < 2) continue;
@@ -705,7 +707,7 @@
                     }
                 }
                 
-                // Update channel stats (total)
+                // Update channel stats
                 if (totalStats) {
                     let changed = false;
                     const newStats = { ...channelStats };
@@ -719,13 +721,12 @@
                     if (changed) await window.saveChannelStats(newStats);
                 }
                 
-                // Update each project's videos
+                // Update video stats
                 let updatedCount = 0;
                 for (let project of projects) {
                     let projectModified = false;
                     const projectCopy = JSON.parse(JSON.stringify(project));
                     
-                    // Main video
                     if (project.mainVideo.title) {
                         const cleanTitle = cleanForMatch(project.mainVideo.title);
                         if (videoStats.has(cleanTitle)) {
@@ -738,7 +739,6 @@
                             if (changed) { projectCopy.mainVideo.analytics = newAnalytics; projectModified = true; }
                         }
                     }
-                    // Shorts
                     for (let short of projectCopy.shorts) {
                         const cleanTitle = cleanForMatch(short.title);
                         if (videoStats.has(cleanTitle)) {
@@ -751,7 +751,6 @@
                             if (changed) { short.analytics = newAnalytics; projectModified = true; }
                         }
                     }
-                    // Soundtracks
                     for (let st of projectCopy.soundtracks) {
                         const cleanTitle = cleanForMatch(st.title);
                         if (videoStats.has(cleanTitle)) {
@@ -800,7 +799,7 @@
             const d = JSON.stringify({p:projects, c:channelStats, pipe:pipelineProjects});
             const a = document.createElement('a');
             a.href = "data:text/json;charset=utf-8,"+encodeURIComponent(d);
-            a.download = `hst_backup_V5.1_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`;
+            a.download = `hst_backup_V5.2_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`;
             a.click();
         };
         
@@ -810,7 +809,7 @@
             document.getElementById('view-archive').classList.toggle('hidden', tab!=='archive');
             document.getElementById('view-pipeline').classList.toggle('hidden', tab!=='pipeline');
             if (tab === 'pipeline') {
-                setTimeout(() => initSortable(), 100);
+                setTimeout(() => { renderPipelineCards(); initSortable(); }, 100);
             }
         };
         
