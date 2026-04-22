@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hellenic Score & Tales | V7.1 – Drag & Drop into Folders</title>
+    <title>Hellenic Score & Tales | V7.4 – Compact Folder Boxes</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
@@ -45,13 +45,27 @@
         .short-title-text, .soundtrack-title-text { font-size: 0.8rem; line-height: 1.3; font-weight: 500; }
         a.title-red, a.title-green, a.title-white { text-decoration: none; }
         a.title-red:hover, a.title-green:hover, a.title-white:hover { text-decoration: underline; }
-        /* Production cards */
-        .prod-card { background: rgba(22,22,24,0.8); border-radius: 16px; padding: 1rem 1.2rem; margin-bottom: 1rem; border: 1px solid rgba(197,160,89,0.2); transition: all 0.2s; cursor: grab; }
+        
+        /* COMPACT FOLDER CARDS */
+        .prod-card { background: rgba(22,22,24,0.8); border-radius: 14px; padding: 0.65rem 1rem; margin-bottom: 1rem; border: 1px solid rgba(197,160,89,0.2); transition: all 0.2s; cursor: grab; }
         .prod-card:active { cursor: grabbing; }
         .prod-card.dragging { opacity: 0.4; }
         .prod-card:hover { border-color: rgba(197,160,89,0.5); }
-        .folder-card { background: rgba(30,30,35,0.9); border: 2px solid var(--gold); cursor: pointer; }
-        .subproject-card { margin-left: 2rem; border-left: 3px solid var(--gold); border-radius: 12px; background: rgba(20,20,25,0.8); }
+        .folder-card { background: rgba(28,28,32,0.95); border: 1.5px solid var(--gold); }
+        .folder-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; width: 100%; }
+        .folder-left { display: flex; align-items: center; gap: 0.4rem; }
+        .folder-right { display: flex; align-items: center; gap: 0.4rem; }
+        .folder-children-boxes { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-left: 0.75rem; margin-top: 0.5rem; }
+        .child-project-box { background: rgba(20,20,25,0.9); border: 1px solid rgba(197,160,89,0.4); border-radius: 10px; padding: 0.3rem 0.7rem; cursor: pointer; transition: 0.2s; min-width: 110px; text-align: center; }
+        .child-project-box:hover { background: rgba(197,160,89,0.2); border-color: var(--gold); transform: translateY(-1px); }
+        .child-project-title { font-size: 0.7rem; font-weight: 700; color: #e5e7eb; margin-bottom: 0.15rem; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .child-project-progress { font-size: 0.65rem; color: #aaa; }
+        
+        /* folder title input compact */
+        .folder-title-input { font-size: 0.8rem !important; font-weight: 800 !important; background: transparent !important; border: 1px solid rgba(197,160,89,0.4) !important; padding: 0.2rem 0.4rem !important; min-width: 140px !important; width: auto; letter-spacing: 0.02em; }
+        .folder-title-input:focus { border-color: var(--gold) !important; outline: none; }
+        
+        /* rest of production styles */
         .step-group { background: rgba(0,0,0,0.3); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; }
         .step-item { display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
         .step-check { margin-top: 0.2rem; }
@@ -62,15 +76,11 @@
         .lang-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
         .lang-check { display: flex; align-items: center; gap: 0.25rem; font-size: 0.7rem; }
         .music-item { background: #1e1e22; border-radius: 8px; padding: 0.75rem; margin-bottom: 0.75rem; }
-        @media (max-width: 768px) { .step-item { flex-direction: column; } .step-check { align-self: flex-start; } }
+        @media (max-width: 768px) { .step-item { flex-direction: column; } .step-check { align-self: flex-start; } .child-project-box { min-width: 90px; } .folder-title-input { min-width: 110px !important; } }
         .production-modal { max-width: 90vw; width: 900px; max-height: 85vh; overflow-y: auto; }
         .card-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem; }
         .title-input-wrapper { width: 28%; }
         .progress-wrapper { flex: 1; min-width: 150px; }
-        .folder-children { margin-top: 0.75rem; }
-        .folder-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; }
-        .collapse-icon { cursor: pointer; font-size: 1.2rem; user-select: none; width: 24px; text-align: center; }
-        .move-dropdown { background: #1f1f24; border: 1px solid #3f3f46; border-radius: 6px; padding: 0.2rem 0.4rem; font-size: 0.7rem; color: white; margin-left: 0.5rem; }
         .sortable-container { min-height: 20px; }
     </style>
 </head>
@@ -97,10 +107,10 @@
         <div class="flex flex-col md:flex-row justify-between items-start mb-6 gap-3 border-b border-zinc-800/50 pb-4">
             <div class="flex flex-col gap-1"><div class="flex gap-2 text-[9px] text-zinc-500"><span>Database Status:</span><span id="db-status" class="text-zinc-400">Local Storage Mode</span></div><div class="flex gap-2 flex-wrap"><button onclick="exportDatabase()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text">💾 Backup</button><button onclick="importDatabase()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text">📂 Restore</button><button onclick="triggerAnalyticsImport()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text">📁 Import CSV</button><input type="file" id="import-input" class="hidden" accept=".json"><input type="file" id="analytics-input" class="hidden" accept=".csv"></div></div>
             <div class="flex gap-4"><button onclick="switchTab('archive')" id="tab-archive" class="nav-btn active cinzel">Αρχείο</button><button onclick="switchTab('pipeline')" id="tab-pipeline" class="nav-btn cinzel">Παραγωγή</button></div>
-            <div class="text-right hidden md:block"><p class="text-[9px] text-zinc-600">Strategic Control</p><p class="text-[10px] gold-text cinzel">V7.1 – Drag & Drop into Folders</p></div>
+            <div class="text-right hidden md:block"><p class="text-[9px] text-zinc-600">Strategic Control</p><p class="text-[10px] gold-text cinzel">V7.4 – Compact Folders</p></div>
         </div>
 
-        <!-- Archive View (χωρίς στατιστικά badges) -->
+        <!-- Archive View -->
         <div id="view-archive">
             <header class="mb-10 text-center"><h1 class="text-4xl font-bold gold-text mb-1 uppercase tracking-[0.2em]">HELLENIC SCORE & TALES</h1>
                 <div class="flex flex-wrap justify-center gap-4 mt-6">
@@ -163,7 +173,7 @@
         </div>
     </div>
 
-    <!-- Move Project Modal (select folder) -->
+    <!-- Move Project Modal -->
     <div id="move-modal" class="fixed inset-0 bg-black/98 backdrop-blur-xl hidden flex items-center justify-center p-4 z-50">
         <div class="glass-card max-w-md bg-zinc-900 p-8 border-gold/50 shadow-2xl">
             <h2 class="text-2xl gold-text cinzel mb-6 text-center">MOVE PROJECT</h2>
@@ -174,7 +184,7 @@
         </div>
     </div>
 
-    <!-- Pipeline Start Modal (project) -->
+    <!-- Pipeline Start Modal -->
     <div id="pipeline-modal" class="fixed inset-0 bg-black/98 backdrop-blur-xl hidden flex items-center justify-center p-4 z-50"><div class="glass-card max-w-md bg-zinc-900 p-10 text-center"><h2 class="text-2xl gold-text cinzel mb-6">START PRODUCTION</h2><input type="text" id="pipeline-title-input" placeholder="Project Name" class="w-full mb-6 text-center"><div class="flex justify-center gap-4"><button onclick="document.getElementById('pipeline-modal').classList.add('hidden')" class="text-zinc-500 text-xs">Cancel</button><button onclick="addPipelineProject()" class="px-8 py-2 gold-bg text-black font-black rounded-xl text-xs">Initiate</button></div></div></div>
 
     <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 gold-bg text-black px-8 py-3 rounded-full hidden z-50 text-xs font-black text-center whitespace-nowrap"></div>
@@ -184,10 +194,8 @@
         let projects = [], pipelineProjects = [], channelStats = { views: '0', retention: '0%', subscribers: '0', impressions: '0', ctr: '0%', watchTime: '0' };
         let pendingDeleteId = null;
         let currentEditProjectId = null;
-        let saveTimeout = null;
-        let sortableInstances = []; // αποθήκευση Sortable instances για καθαρισμό
+        let sortableInstance = null;
         let currentMoveProjectId = null;
-        let expandedFolders = new Set();
 
         const cleanForMatch = (s) => s ? s.toString().toLowerCase().trim().replace(/[^\w\s\u0370-\u03ff]/gi, '').normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
         const parseViews = (v) => { if(!v) return 0; let str = v.toString().toUpperCase().replace(/,/g, '').trim(); let factor = 1; if(str.endsWith('K')) { factor = 1000; str = str.slice(0, -1); } else if(str.endsWith('M')) { factor = 1000000; str = str.slice(0, -1); } return (parseFloat(str) || 0) * factor; };
@@ -228,70 +236,26 @@
             }
         };
         
-        window.saveProjectToDB = (id, data) => { 
-            const idx = projects.findIndex(p => p.id === id); 
-            if(idx > -1) projects[idx] = { ...data, id }; 
-            else projects.push({ ...data, id }); 
-            projects.sort((a,b) => (a.orderIndex||0) - (b.orderIndex||0)); 
-            saveToLocal(); 
-            renderProjects(); 
-        };
-        window.savePipelineToDB = (id, data) => { 
-            const idx = pipelineProjects.findIndex(p => p.id === id); 
-            if(idx > -1) pipelineProjects[idx] = { ...data, id }; 
-            else pipelineProjects.push({ ...data, id }); 
-            saveToLocal(); 
-            renderPipelineCards(); 
-            initAllSortables(); 
-        };
-        window.deletePipelineProject = (id) => { 
-            if(confirm('Discard production?')) { 
-                const toDelete = [id];
-                const folder = pipelineProjects.find(p => p.id === id);
-                if(folder && folder.type === "folder") {
-                    const children = pipelineProjects.filter(p => p.parentId === id);
-                    for(let child of children) toDelete.push(child.id);
-                }
-                pipelineProjects = pipelineProjects.filter(p => !toDelete.includes(p.id));
-                expandedFolders.delete(id);
-                saveToLocal(); 
-                renderPipelineCards(); 
-                initAllSortables(); 
-            } 
-        };
+        window.saveProjectToDB = (id, data) => { const idx = projects.findIndex(p => p.id === id); if(idx > -1) projects[idx] = { ...data, id }; else projects.push({ ...data, id }); projects.sort((a,b) => (a.orderIndex||0) - (b.orderIndex||0)); saveToLocal(); renderProjects(); };
+        window.savePipelineToDB = (id, data) => { const idx = pipelineProjects.findIndex(p => p.id === id); if(idx > -1) pipelineProjects[idx] = { ...data, id }; else pipelineProjects.push({ ...data, id }); saveToLocal(); renderPipelineCards(); initSortable(); };
+        window.deletePipelineProject = (id) => { if(confirm('Discard production?')) { const toDelete = [id]; const folder = pipelineProjects.find(p => p.id === id); if(folder && folder.type === "folder") { const children = pipelineProjects.filter(p => p.parentId === id); for(let child of children) toDelete.push(child.id); } pipelineProjects = pipelineProjects.filter(p => !toDelete.includes(p.id)); saveToLocal(); renderPipelineCards(); initSortable(); } };
         window.saveChannelStats = (data) => { channelStats = data; saveToLocal(); updateStats(); };
         window.moveProject = (id, dir) => { const idx = projects.findIndex(p => p.id === id), tIdx = dir === 'up' ? idx-1 : idx+1; if(tIdx<0 || tIdx>=projects.length) return; const p1=projects[idx], p2=projects[tIdx]; [p1.orderIndex, p2.orderIndex] = [p2.orderIndex, p1.orderIndex]; projects.sort((a,b)=> (a.orderIndex||0)-(b.orderIndex||0)); saveToLocal(); renderProjects(); };
         
         function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => m==='&'?'&amp;':m==='<'?'&lt;':'&gt;'); }
+        function getTitleClass(uploaded, live) { if (live) return 'title-white'; if (uploaded) return 'title-green'; return 'title-red'; }
         
-        function getTitleClass(uploaded, live) {
-            if (live) return 'title-white';
-            if (uploaded) return 'title-green';
-            return 'title-red';
-        }
-        
-        // RENDER PROJECTS (χωρίς στατιστικά badges)
         window.renderProjects = () => {
             const list = document.getElementById('project-list');
             list.innerHTML = projects.map((p, i) => {
                 const m = (p.mainVideo.link || "").match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?\s*v=|&v=)([^#&?]*).*/);
                 const ytId = m && m[2].length === 11 ? m[2] : null;
                 const mainClass = getTitleClass(p.mainVideo.uploaded, p.mainVideo.live);
-                const mainTitleHtml = p.mainVideo.link ? 
-                    `<a href="${p.mainVideo.link}" target="_blank" class="font-black text-xs uppercase break-words ${mainClass}">${escapeHtml(p.mainVideo.title)}</a>` :
-                    `<div class="font-black text-xs uppercase break-words ${mainClass}">${escapeHtml(p.mainVideo.title)}</div>`;
-                return `<tr class="group hover:bg-zinc-800/40 transition-all archive-row">
-                    <td class="p-2 text-center text-zinc-600 font-mono text-[10px]">${i+1}</td>
-                    <td class="p-2 text-center"><div class="flex flex-col gap-0.5"><button onclick="moveProject('${p.id}', 'up')" class="hover:text-gold text-[10px]">▲</button><button onclick="moveProject('${p.id}', 'down')" class="hover:text-gold text-[10px]">▼</button></div></td>
-                    <td class="p-2"><div class="flex items-center gap-2"><div class="thumbnail-frame shadow-xl">${ytId ? `<img src="https://img.youtube.com/vi/${ytId}/mqdefault.jpg">` : '<span class="text-[7px] text-zinc-700">NO ART</span>'}</div><div><div class="flex items-center gap-1 mb-0.5"><span style="color: var(--gold);">🔱</span>${mainTitleHtml}</div></div></div></div></td>
-                    <td class="p-2"><div class="space-y-1">${(p.shorts || []).map(s => { const titleClass = getTitleClass(s.uploaded, s.live); return `<div><div class="flex items-center gap-1"><span style="color: var(--gold);">🔱</span>${s.link ? `<a href="${s.link}" target="_blank" class="short-title-text hover:gold-text break-words ${titleClass}">${escapeHtml(s.title)}</a>` : `<span class="short-title-text break-words ${titleClass}">${escapeHtml(s.title)}</span>`}</div></div>`}).join('')}</div></td>
-                    <td class="p-2"><div class="space-y-1">${(p.soundtracks || []).map(st => { const titleClass = getTitleClass(st.uploaded, st.live); const spotifyHtml = st.spotifyLink ? `<a href="${st.spotifyLink}" target="_blank" class="spotify-tag ml-1">● Spotify</a>` : ''; return `<div><div class="flex items-center gap-1 flex-wrap"><span style="color: var(--gold);">🔱</span>${st.link ? `<a href="${st.link}" target="_blank" class="soundtrack-title-text hover:gold-text soundtrack-title ${titleClass}">${escapeHtml(st.title)}</a>` : `<span class="soundtrack-title-text soundtrack-title ${titleClass}">${escapeHtml(st.title)}</span>`}${spotifyHtml}</div></div>`}).join('')}</div></td>
-                    <td class="p-2 text-right actions-cell"><div class="action-buttons"><button onclick="openModal('${p.id}')" class="text-[9px] gold-text hover:underline font-black uppercase tracking-widest">Edit</button><button onclick="deleteProject('${p.id}')" class="text-[9px] delete-btn font-black uppercase tracking-widest">Delete</button></div></div></td>
-                </tr>`;
+                const mainTitleHtml = p.mainVideo.link ? `<a href="${p.mainVideo.link}" target="_blank" class="font-black text-xs uppercase break-words ${mainClass}">${escapeHtml(p.mainVideo.title)}</a>` : `<div class="font-black text-xs uppercase break-words ${mainClass}">${escapeHtml(p.mainVideo.title)}</div>`;
+                return `<tr class="group hover:bg-zinc-800/40 transition-all archive-row"><td class="p-2 text-center text-zinc-600 font-mono text-[10px]">${i+1}</td><td class="p-2 text-center"><div class="flex flex-col gap-0.5"><button onclick="moveProject('${p.id}', 'up')" class="hover:text-gold text-[10px]">▲</button><button onclick="moveProject('${p.id}', 'down')" class="hover:text-gold text-[10px]">▼</button></div></td><td class="p-2"><div class="flex items-center gap-2"><div class="thumbnail-frame shadow-xl">${ytId ? `<img src="https://img.youtube.com/vi/${ytId}/mqdefault.jpg">` : '<span class="text-[7px] text-zinc-700">NO ART</span>'}</div><div><div class="flex items-center gap-1 mb-0.5"><span style="color: var(--gold);">🔱</span>${mainTitleHtml}</div></div></div></div></td><td class="p-2"><div class="space-y-1">${(p.shorts || []).map(s => { const titleClass = getTitleClass(s.uploaded, s.live); return `<div><div class="flex items-center gap-1"><span style="color: var(--gold);">🔱</span>${s.link ? `<a href="${s.link}" target="_blank" class="short-title-text hover:gold-text break-words ${titleClass}">${escapeHtml(s.title)}</a>` : `<span class="short-title-text break-words ${titleClass}">${escapeHtml(s.title)}</span>`}</div></div>`}).join('')}</div></td><td class="p-2"><div class="space-y-1">${(p.soundtracks || []).map(st => { const titleClass = getTitleClass(st.uploaded, st.live); const spotifyHtml = st.spotifyLink ? `<a href="${st.spotifyLink}" target="_blank" class="spotify-tag ml-1">● Spotify</a>` : ''; return `<div><div class="flex items-center gap-1 flex-wrap"><span style="color: var(--gold);">🔱</span>${st.link ? `<a href="${st.link}" target="_blank" class="soundtrack-title-text hover:gold-text soundtrack-title ${titleClass}">${escapeHtml(st.title)}</a>` : `<span class="soundtrack-title-text soundtrack-title ${titleClass}">${escapeHtml(st.title)}</span>`}${spotifyHtml}</div></div>`}).join('')}</div></td><td class="p-2 text-right actions-cell"><div class="action-buttons"><button onclick="openModal('${p.id}')" class="text-[9px] gold-text hover:underline font-black uppercase tracking-widest">Edit</button><button onclick="deleteProject('${p.id}')" class="text-[9px] delete-btn font-black uppercase tracking-widest">Delete</button></div></div></tr>`;
             }).join('');
         };
         
-        // Υπολογισμός προόδου για project
         function computeProgress(p) {
             if(p.type !== "project") return { total: 0, completed: 0, percent: 0 };
             let total = 0, completed = 0;
@@ -304,45 +268,39 @@
             return { total, completed, percent: total > 0 ? Math.round((completed/total)*100) : 0 };
         }
         
-        // RENDER HIERARCHY (με ξεχωριστά containers για κάθε φάκελο)
-        function renderItems(items, parentId = null, level = 0) {
+        function renderItems(items, parentId = null) {
             let html = '';
             for(let item of items) {
                 if(item.type === "folder") {
-                    const isExpanded = expandedFolders.has(item.id);
                     const children = pipelineProjects.filter(p => p.parentId === item.id).sort((a,b) => (a.orderIndex||0) - (b.orderIndex||0));
                     html += `<div class="prod-card folder-card" data-id="${item.id}" data-type="folder">
                         <div class="folder-header">
-                            <div class="flex items-center gap-2">
-                                <span class="collapse-icon" onclick="toggleFolder('${item.id}')">${isExpanded ? '▼' : '▶'}</span>
-                                <span class="text-gold text-lg">📁</span>
-                                <input type="text" class="pipeline-input gold-text font-black !text-base uppercase tracking-tighter" value="${escapeHtml(item.title)}" onchange="updateFolderTitle('${item.id}', this.value)" style="width: auto; min-width: 200px;">
+                            <div class="folder-left">
+                                <span class="text-gold text-base">📁</span>
+                                <input type="text" class="folder-title-input" value="${escapeHtml(item.title)}" onchange="updateFolderTitle('${item.id}', this.value)" style="min-width: 130px;">
                             </div>
-                            <div class="flex gap-2">
-                                <button onclick="openMoveProjectPrompt('${item.id}')" class="text-[9px] bg-zinc-800 px-2 py-1 rounded">Move</button>
-                                <button onclick="deletePipelineProject('${item.id}')" class="text-[9px] text-zinc-600 hover:text-red-500">Delete</button>
+                            <div class="folder-right">
+                                <button onclick="deletePipelineProject('${item.id}')" class="text-[9px] text-zinc-600 hover:text-red-500 font-bold">Delete</button>
                             </div>
                         </div>
-                        ${item.description ? `<div class="text-xs text-zinc-500 mt-1 ml-8">${escapeHtml(item.description)}</div>` : ''}
-                        ${isExpanded ? `<div class="folder-children sortable-container" data-parent-id="${item.id}" data-level="${level+1}">${renderItems(children, item.id, level+1)}</div>` : ''}
+                        ${item.description ? `<div class="text-[10px] text-zinc-500 mt-0.5 ml-7 mb-1">${escapeHtml(item.description)}</div>` : ''}
+                        <div class="folder-children-boxes">
+                            ${children.map(child => {
+                                const progress = computeProgress(child);
+                                return `<div class="child-project-box" onclick="openProductionEditor('${child.id}')">
+                                    <div class="child-project-title" title="${escapeHtml(child.title)}">${escapeHtml(child.title)}</div>
+                                    <div class="child-project-progress">${progress.completed}/${progress.total}</div>
+                                </div>`;
+                            }).join('')}
+                        </div>
                     </div>`;
                 } else {
                     const progress = computeProgress(item);
-                    const marginLeft = level * 2;
-                    html += `<div class="prod-card subproject-card sortable-item" data-id="${item.id}" data-type="project" data-parent="${parentId || ''}" style="margin-left: ${marginLeft}rem;">
+                    html += `<div class="prod-card subproject-card" data-id="${item.id}" data-type="project" style="margin-left: 0rem;">
                         <div class="card-header">
-                            <div class="title-input-wrapper">
-                                <input type="text" class="pipeline-input gold-text font-black !text-base mb-1 uppercase tracking-tighter w-full" value="${escapeHtml(item.title)}" onchange="updateProjectTitle('${item.id}', this.value)">
-                            </div>
-                            <div class="progress-wrapper">
-                                <div class="progress-bar w-full"><div class="progress-fill" style="width: ${progress.percent}%"></div></div>
-                                <div class="text-[9px] text-zinc-500 text-right mt-1">${progress.completed}/${progress.total} steps</div>
-                            </div>
-                            <div class="flex gap-2">
-                                <button onclick="openProductionEditor('${item.id}')" class="text-[10px] bg-zinc-800 px-3 py-1 rounded border border-zinc-700 hover:border-gold">Edit</button>
-                                <button onclick="showConfirmModal('${item.id}')" class="upload-btn" style="padding: 4px 12px;">FINALIZE</button>
-                                <button onclick="deletePipelineProject('${item.id}')" class="text-[9px] text-zinc-600 hover:text-red-500">Delete</button>
-                            </div>
+                            <div class="title-input-wrapper"><input type="text" class="pipeline-input gold-text font-black !text-sm uppercase tracking-tighter w-full" value="${escapeHtml(item.title)}" onchange="updateProjectTitle('${item.id}', this.value)"></div>
+                            <div class="progress-wrapper"><div class="progress-bar w-full"><div class="progress-fill" style="width: ${progress.percent}%"></div></div><div class="text-[9px] text-zinc-500 text-right mt-1">${progress.completed}/${progress.total} steps</div></div>
+                            <div class="flex gap-2"><button onclick="openProductionEditor('${item.id}')" class="text-[9px] bg-zinc-800 px-2 py-1 rounded border border-zinc-700 hover:border-gold">Edit</button><button onclick="showConfirmModal('${item.id}')" class="upload-btn" style="padding: 3px 10px;">FINALIZE</button><button onclick="openMoveProjectPrompt('${item.id}')" class="text-[9px] bg-zinc-800 px-2 py-1 rounded">📁 Move</button><button onclick="deletePipelineProject('${item.id}')" class="text-[9px] text-zinc-600 hover:text-red-500">Delete</button></div>
                         </div>
                     </div>`;
                 }
@@ -354,694 +312,70 @@
             const container = document.getElementById('pipeline-container');
             if (!container) return;
             const topLevel = pipelineProjects.filter(p => p.parentId === null).sort((a,b) => (a.orderIndex||0) - (b.orderIndex||0));
-            if (!topLevel.length) {
-                container.innerHTML = '<div class="text-center text-zinc-500 py-10">No folders or projects. Click "NEW PRODUCTION" or "NEW FOLDER" to start.</div>';
-                return;
-            }
-            container.innerHTML = `<div class="sortable-container" data-parent-id="__root__">${renderItems(topLevel, null, 0)}</div>`;
+            if (!topLevel.length) { container.innerHTML = '<div class="text-center text-zinc-500 py-10">No folders or projects. Click "NEW PRODUCTION" or "NEW FOLDER" to start.</div>'; return; }
+            container.innerHTML = `<div class="sortable-container" data-parent-id="__root__">${renderItems(topLevel, null)}</div>`;
+            initSortable();
         };
         
-        // Initialize Sortable for all containers (root and each folder)
-        function initAllSortables() {
-            // Destroy existing instances
-            for(let inst of sortableInstances) {
-                if(inst && inst.destroy) inst.destroy();
-            }
-            sortableInstances = [];
-            
-            // Root container
-            const rootContainer = document.querySelector('#pipeline-container .sortable-container');
-            if(rootContainer) {
-                const rootSortable = new Sortable(rootContainer, {
-                    group: { name: 'shared', pull: true, revertClone: false },
-                    animation: 200,
-                    handle: '.prod-card',
-                    draggable: '.prod-card',
-                    onEnd: function(evt) {
-                        updateParentAndOrder(evt);
-                    }
-                });
-                sortableInstances.push(rootSortable);
-            }
-            
-            // Folder containers
-            const folderContainers = document.querySelectorAll('.folder-children.sortable-container');
-            for(let container of folderContainers) {
-                const parentId = container.getAttribute('data-parent-id');
-                const folderSortable = new Sortable(container, {
-                    group: { name: 'shared', pull: true, revertClone: false },
-                    animation: 200,
-                    handle: '.prod-card',
-                    draggable: '.prod-card',
-                    onEnd: function(evt) {
-                        updateParentAndOrder(evt);
-                    }
-                });
-                sortableInstances.push(folderSortable);
-            }
-        }
+        function initSortable() { if (sortableInstance) sortableInstance.destroy(); const rootContainer = document.querySelector('#pipeline-container .sortable-container'); if (!rootContainer) return; sortableInstance = new Sortable(rootContainer, { animation: 200, handle: '.prod-card', draggable: '.prod-card', onEnd: function(evt) { const children = Array.from(rootContainer.querySelectorAll('.prod-card')); for(let i=0; i<children.length; i++) { const id = children[i].getAttribute('data-id'); const item = pipelineProjects.find(p => p.id === id); if(item && item.parentId === null) item.orderIndex = i; } saveToLocal(); renderPipelineCards(); showToast('Order updated'); } }); }
         
-        // Update parentId and orderIndex after drag & drop
-        function updateParentAndOrder(evt) {
-            const draggedEl = evt.item;
-            const newParentContainer = draggedEl.parentNode;
-            const newParentId = newParentContainer.getAttribute('data-parent-id') === '__root__' ? null : newParentContainer.getAttribute('data-parent-id');
-            const draggedId = draggedEl.getAttribute('data-id');
-            const draggedItem = pipelineProjects.find(p => p.id === draggedId);
-            if(!draggedItem) return;
-            
-            // If moved to a different parent
-            if(draggedItem.parentId !== newParentId) {
-                draggedItem.parentId = newParentId;
-            }
-            
-            // Update orderIndex for all children in the new parent container
-            const childrenElements = Array.from(newParentContainer.querySelectorAll('.prod-card'));
-            for(let i=0; i<childrenElements.length; i++) {
-                const childId = childrenElements[i].getAttribute('data-id');
-                const child = pipelineProjects.find(p => p.id === childId);
-                if(child) child.orderIndex = i;
-            }
-            
-            // Also update orderIndex for the old parent container if different
-            const oldParentId = draggedItem.parentId !== newParentId ? draggedItem.parentId : null;
-            if(oldParentId !== null) {
-                const oldContainer = document.querySelector(`.sortable-container[data-parent-id="${oldParentId === null ? '__root__' : oldParentId}"]`);
-                if(oldContainer) {
-                    const oldChildren = Array.from(oldContainer.querySelectorAll('.prod-card'));
-                    for(let i=0; i<oldChildren.length; i++) {
-                        const childId = oldChildren[i].getAttribute('data-id');
-                        const child = pipelineProjects.find(p => p.id === childId);
-                        if(child) child.orderIndex = i;
-                    }
-                }
-            }
-            
-            saveToLocal();
-            renderPipelineCards();
-            initAllSortables();
-            showToast('Order updated');
-        }
-        
-        // Folder functions
-        window.openFolderModal = () => {
-            document.getElementById('folder-title-input').value = '';
-            document.getElementById('folder-desc-input').value = '';
-            document.getElementById('folder-modal').classList.remove('hidden');
-        };
+        window.openFolderModal = () => { document.getElementById('folder-title-input').value = ''; document.getElementById('folder-desc-input').value = ''; document.getElementById('folder-modal').classList.remove('hidden'); };
         window.closeFolderModal = () => document.getElementById('folder-modal').classList.add('hidden');
-        window.addFolder = () => {
-            const title = document.getElementById('folder-title-input').value.trim();
-            if(!title) { showToast('Please enter folder name'); return; }
-            const desc = document.getElementById('folder-desc-input').value.trim();
-            const newFolder = {
-                id: Date.now().toString(),
-                title: title,
-                description: desc,
-                type: "folder",
-                parentId: null,
-                orderIndex: pipelineProjects.filter(p => p.parentId === null).length,
-                dateCreated: new Date().toISOString()
-            };
-            pipelineProjects.push(newFolder);
-            saveToLocal();
-            renderPipelineCards();
-            initAllSortables();
-            closeFolderModal();
-            showToast('Folder created');
-        };
-        window.updateFolderTitle = (id, newTitle) => {
-            const folder = pipelineProjects.find(p => p.id === id);
-            if(folder && folder.type === "folder") {
-                folder.title = newTitle;
-                saveToLocal();
-                renderPipelineCards();
-                initAllSortables();
-            }
-        };
-        window.toggleFolder = (id) => {
-            if(expandedFolders.has(id)) expandedFolders.delete(id);
-            else expandedFolders.add(id);
-            renderPipelineCards();
-            initAllSortables();
-        };
-        
-        // Move project to folder (alternative method)
-        window.openMoveProjectPrompt = (projectId) => {
-            currentMoveProjectId = projectId;
-            const select = document.getElementById('move-folder-select');
-            const folders = pipelineProjects.filter(p => p.type === "folder");
-            select.innerHTML = '<option value="__root__">(No folder / Root)</option>';
-            for(let folder of folders) {
-                select.innerHTML += `<option value="${folder.id}">📁 ${escapeHtml(folder.title)}</option>`;
-            }
-            document.getElementById('move-modal').classList.remove('hidden');
-        };
+        window.addFolder = () => { const title = document.getElementById('folder-title-input').value.trim(); if(!title) { showToast('Please enter folder name'); return; } const desc = document.getElementById('folder-desc-input').value.trim(); const topLevel = pipelineProjects.filter(p => p.parentId === null); for(let item of topLevel) item.orderIndex = (item.orderIndex || 0) + 1; const newFolder = { id: Date.now().toString(), title, description: desc, type: "folder", parentId: null, orderIndex: 0, dateCreated: new Date().toISOString() }; pipelineProjects.push(newFolder); saveToLocal(); renderPipelineCards(); closeFolderModal(); showToast('Folder created'); };
+        window.updateFolderTitle = (id, newTitle) => { const folder = pipelineProjects.find(p => p.id === id); if(folder && folder.type === "folder") { folder.title = newTitle; saveToLocal(); renderPipelineCards(); } };
+        window.openMoveProjectPrompt = (projectId) => { currentMoveProjectId = projectId; const select = document.getElementById('move-folder-select'); const folders = pipelineProjects.filter(p => p.type === "folder"); select.innerHTML = '<option value="__root__">(No folder / Root)</option>'; for(let folder of folders) select.innerHTML += `<option value="${folder.id}">📁 ${escapeHtml(folder.title)}</option>`; document.getElementById('move-modal').classList.remove('hidden'); };
         window.closeMoveModal = () => document.getElementById('move-modal').classList.add('hidden');
-        window.confirmMoveProject = () => {
-            const targetFolderId = document.getElementById('move-folder-select').value;
-            const project = pipelineProjects.find(p => p.id === currentMoveProjectId);
-            if(project && (project.type === "project" || project.type === "folder")) {
-                if(project.type === "folder" && targetFolderId !== "__root__") {
-                    let parent = pipelineProjects.find(p => p.id === targetFolderId);
-                    let temp = parent;
-                    let circular = false;
-                    while(temp) {
-                        if(temp.id === project.id) { circular = true; break; }
-                        temp = pipelineProjects.find(p => p.id === temp.parentId);
-                    }
-                    if(circular) { showToast('Cannot move folder into itself or its subfolder'); closeMoveModal(); return; }
-                }
-                project.parentId = targetFolderId === "__root__" ? null : targetFolderId;
-                saveToLocal();
-                renderPipelineCards();
-                initAllSortables();
-                showToast('Project moved');
-            }
-            closeMoveModal();
-        };
+        window.confirmMoveProject = () => { const targetFolderId = document.getElementById('move-folder-select').value; const project = pipelineProjects.find(p => p.id === currentMoveProjectId); if(project && project.type === "project") { project.parentId = targetFolderId === "__root__" ? null : targetFolderId; const siblings = pipelineProjects.filter(p => p.parentId === project.parentId); for(let i=0; i<siblings.length; i++) siblings[i].orderIndex = i; saveToLocal(); renderPipelineCards(); showToast('Project moved'); } closeMoveModal(); };
+        window.updateProjectTitle = (id, newTitle) => { const p = pipelineProjects.find(x=>x.id===id); if(p && p.type === "project") { p.title = newTitle; saveToLocal(); renderPipelineCards(); } };
         
-        window.updateProjectTitle = (id, newTitle) => {
-            const p = pipelineProjects.find(x=>x.id===id);
-            if(p && p.type === "project") {
-                p.title = newTitle;
-                saveToLocal();
-                renderPipelineCards();
-                initAllSortables();
-            }
-        };
-        
-        // Άνοιγμα modal επεξεργασίας project
-        window.openProductionEditor = (id) => {
-            currentEditProjectId = id;
-            const p = pipelineProjects.find(x => x.id === id);
-            if(!p || p.type !== "project") return;
-            document.getElementById('prod-modal-title').innerText = `Editing: ${escapeHtml(p.title)}`;
-            const content = document.getElementById('production-modal-content');
-            content.innerHTML = renderProductionForm(p);
-            document.getElementById('production-edit-modal').classList.remove('hidden');
-        };
-        
-        function renderProductionForm(p) {
-            return `
-                <div class="step-group">
-                    <div class="text-gold text-sm font-bold mb-3">🎬 Main Video</div>
-                    ${renderMainStep(p, 'script', 'Script', 'textarea')}
-                    ${renderMainStep(p, 'narration', 'Narration (Suno)', 'link')}
-                    ${renderVisualsStep(p)}
-                    ${renderMainStep(p, 'montage', 'Montage', 'link')}
-                    ${renderMainStep(p, 'subtitlesEn', 'Subtitles SRT (English)', 'file')}
-                    ${renderTranslationsStep(p)}
-                    ${renderMainStep(p, 'musicSFX', 'Music & SFX', 'link')}
-                    ${renderMainStep(p, 'exportUpload', 'Export & Upload (Unlisted)', 'link')}
-                    ${renderMetadataStep(p)}
-                </div>
-                <div class="step-group">
-                    <div class="text-gold text-sm font-bold mb-3 flex justify-between">📱 Shorts <button onclick="addShortToProduction('${p.id}')" class="text-[9px] bg-zinc-800 px-3 py-1 rounded border border-zinc-700 hover:border-gold">+ Add Short</button></div>
-                    <div id="shorts-editor-${p.id}">
-                        ${p.shorts.map((short, idx) => renderShortEditor(p.id, idx, short)).join('')}
-                    </div>
-                </div>
-                <div class="step-group">
-                    <div class="text-gold text-sm font-bold mb-3 flex justify-between">🎵 Official Soundtracks <button onclick="addMusicToProduction('${p.id}')" class="text-[9px] bg-zinc-800 px-3 py-1 rounded border border-zinc-700 hover:border-gold">+ Add Music</button></div>
-                    <div id="music-editor-${p.id}">
-                        ${p.soundtracks.map((music, idx) => renderMusicEditor(p.id, idx, music)).join('')}
-                    </div>
-                </div>
-            `;
-        }
-        
-        function renderMainStep(p, key, label, type) {
-            const data = p.main[key] || { done: false, text: '', link: '', file: '' };
-            const inputHtml = type === 'textarea' ? 
-                `<textarea class="inline-input" rows="2" placeholder="Write script here..." onchange="updateMainField('${p.id}', '${key}', 'text', this.value)">${escapeHtml(data.text || '')}</textarea>` :
-                type === 'file' ?
-                `<input type="text" class="inline-input" placeholder="Link to SRT file" value="${escapeHtml(data.file || '')}" onchange="updateMainField('${p.id}', '${key}', 'file', this.value)">` :
-                `<input type="text" class="inline-input" placeholder="Link (YouTube, Drive, etc.)" value="${escapeHtml(data.link || '')}" onchange="updateMainField('${p.id}', '${key}', 'link', this.value)">`;
-            return `<div class="step-item">
-                <input type="checkbox" class="step-check pipeline-checkbox" ${data.done ? 'checked' : ''} onchange="updateMainDone('${p.id}', '${key}', this.checked)">
-                <div class="step-content">
-                    <div class="step-label">${label}</div>
-                    ${inputHtml}
-                </div>
-            </div>`;
-        }
-        
-        function renderVisualsStep(p) {
-            const visuals = p.main.visuals || { done: false, items: [] };
-            return `<div class="step-item">
-                <input type="checkbox" class="step-check pipeline-checkbox" ${visuals.done ? 'checked' : ''} onchange="updateMainDone('${p.id}', 'visuals', this.checked)">
-                <div class="step-content">
-                    <div class="step-label">Visuals (images, video clips)</div>
-                    <div id="visuals-list-${p.id}">
-                        ${visuals.items.map((item, idx) => `<div class="flex gap-2 mb-2 items-center"><input type="text" class="inline-input flex-1" placeholder="Link or description" value="${escapeHtml(item)}" onchange="updateVisualsItem('${p.id}', ${idx}, this.value)"><button onclick="removeVisualsItem('${p.id}', ${idx})" class="text-red-500 text-xs">✕</button></div>`).join('')}
-                    </div>
-                    <button onclick="addVisualsItem('${p.id}')" class="text-[8px] bg-zinc-800 px-2 py-1 rounded mt-1">+ Add visual</button>
-                </div>
-            </div>`;
-        }
-        
-        function renderTranslationsStep(p) {
-            const trans = p.main.translations || { en: true, gr: false, fr: false, it: false, es: false, pt: false, de: false, ja: false, zh: false };
-            const languages = { en:'English', gr:'Greek', fr:'French', it:'Italian', es:'Spanish', pt:'Portuguese', de:'German', ja:'Japanese', zh:'Chinese' };
-            return `<div class="step-item">
-                <div class="step-content">
-                    <div class="step-label">Translations (SRT files)</div>
-                    <div class="lang-grid">
-                        ${Object.keys(languages).map(code => `<label class="lang-check"><input type="checkbox" class="pipeline-checkbox scale-75" ${trans[code] ? 'checked' : ''} onchange="updateTranslation('${p.id}', '${code}', this.checked)"> ${languages[code]}</label>`).join('')}
-                    </div>
-                </div>
-            </div>`;
-        }
-        
-        function renderMetadataStep(p) {
-            const meta = p.main.metadata || { done: false, title: '', description: '', tags: '', socialPosts: '' };
-            return `<div class="step-item">
-                <input type="checkbox" class="step-check pipeline-checkbox" ${meta.done ? 'checked' : ''} onchange="updateMetadataDone('${p.id}', this.checked)">
-                <div class="step-content">
-                    <div class="step-label">Metadata & Social Posts</div>
-                    <input type="text" class="inline-input mb-1" placeholder="Video Title" value="${escapeHtml(meta.title || '')}" onchange="updateMetadataField('${p.id}', 'title', this.value)">
-                    <textarea class="inline-input mb-1" rows="2" placeholder="Description" onchange="updateMetadataField('${p.id}', 'description', this.value)">${escapeHtml(meta.description || '')}</textarea>
-                    <input type="text" class="inline-input mb-1" placeholder="Tags (comma separated)" value="${escapeHtml(meta.tags || '')}" onchange="updateMetadataField('${p.id}', 'tags', this.value)">
-                    <textarea class="inline-input" rows="2" placeholder="Social posts (one per line)" onchange="updateMetadataField('${p.id}', 'socialPosts', this.value)">${escapeHtml(meta.socialPosts || '')}</textarea>
-                </div>
-            </div>`;
-        }
-        
-        function renderShortEditor(pid, idx, short) {
-            return `<div class="short-item" data-idx="${idx}">
-                <div class="flex justify-between items-start gap-2">
-                    <input type="text" class="inline-input flex-1" placeholder="Short title" value="${escapeHtml(short.title || '')}" onchange="updateShortField('${pid}', ${idx}, 'title', this.value)">
-                    <button onclick="removeShortFromProduction('${pid}', ${idx})" class="text-red-500 text-xs">✕</button>
-                </div>
-                <div class="step-item mt-2">
-                    <input type="checkbox" class="step-check pipeline-checkbox" ${short.done ? 'checked' : ''} onchange="updateShortDone('${pid}', ${idx}, this.checked)">
-                    <div class="step-content">
-                        <div class="step-label">Short Video Link (unlisted)</div>
-                        <input type="text" class="inline-input" placeholder="YouTube link" value="${escapeHtml(short.link || '')}" onchange="updateShortField('${pid}', ${idx}, 'link', this.value)">
-                    </div>
-                </div>
-                <div class="step-item mt-2">
-                    <div class="step-content">
-                        <div class="step-label">Metadata (title, description, tags)</div>
-                        <textarea class="inline-input" rows="2" placeholder="Metadata text" onchange="updateShortField('${pid}', ${idx}, 'metadata', this.value)">${escapeHtml(short.metadata || '')}</textarea>
-                    </div>
-                </div>
-            </div>`;
-        }
-        
-        function renderMusicEditor(pid, idx, music) {
-            return `<div class="music-item" data-idx="${idx}">
-                <div class="flex justify-between items-start gap-2">
-                    <input type="text" class="inline-input flex-1" placeholder="Music title" value="${escapeHtml(music.title || '')}" onchange="updateMusicField('${pid}', ${idx}, 'title', this.value)">
-                    <button onclick="removeMusicFromProduction('${pid}', ${idx})" class="text-red-500 text-xs">✕</button>
-                </div>
-                <div class="step-item mt-2">
-                    <input type="checkbox" class="step-check pipeline-checkbox" ${music.done ? 'checked' : ''} onchange="updateMusicDone('${pid}', ${idx}, this.checked)">
-                    <div class="step-content">
-                        <div class="step-label">Music Video Link (unlisted)</div>
-                        <input type="text" class="inline-input" placeholder="YouTube link" value="${escapeHtml(music.link || '')}" onchange="updateMusicField('${pid}', ${idx}, 'link', this.value)">
-                    </div>
-                </div>
-                <div class="step-item mt-2">
-                    <div class="step-content">
-                        <div class="step-label">Spotify Link</div>
-                        <input type="text" class="inline-input" placeholder="Spotify URL" value="${escapeHtml(music.spotifyLink || '')}" onchange="updateMusicField('${pid}', ${idx}, 'spotifyLink', this.value)">
-                    </div>
-                </div>
-            </div>`;
-        }
-        
-        // Helper functions for production editor
-        window.updateMainDone = (id, key, done) => { const p = pipelineProjects.find(x=>x.id===id); if(p && p.type === "project") { p.main[key].done = done; saveToLocal(); renderPipelineCards(); if(currentEditProjectId === id) openProductionEditor(id); initAllSortables(); } };
-        window.updateMainField = (id, key, subkey, val) => { const p = pipelineProjects.find(x=>x.id===id); if(p && p.type === "project") { p.main[key][subkey] = val; saveToLocal(); renderPipelineCards(); initAllSortables(); } };
-        window.updateVisualsItem = (id, idx, val) => { const p = pipelineProjects.find(x=>x.id===id); if(p && p.type === "project" && p.main.visuals.items[idx]) { p.main.visuals.items[idx] = val; saveToLocal(); renderPipelineCards(); initAllSortables(); } };
-        window.addVisualsItem = (id) => { const p = pipelineProjects.find(x=>x.id===id); if(p && p.type === "project") { p.main.visuals.items.push(''); saveToLocal(); renderPipelineCards(); if(currentEditProjectId === id) openProductionEditor(id); initAllSortables(); } };
-        window.removeVisualsItem = (id, idx) => { const p = pipelineProjects.find(x=>x.id===id); if(p && p.type === "project" && p.main.visuals.items) { p.main.visuals.items.splice(idx,1); saveToLocal(); renderPipelineCards(); if(currentEditProjectId === id) openProductionEditor(id); initAllSortables(); } };
-        window.updateTranslation = (id, lang, checked) => { const p = pipelineProjects.find(x=>x.id===id); if(p && p.type === "project") { p.main.translations[lang] = checked; saveToLocal(); renderPipelineCards(); if(currentEditProjectId === id) openProductionEditor(id); initAllSortables(); } };
-        window.updateMetadataDone = (id, done) => { const p = pipelineProjects.find(x=>x.id===id); if(p && p.type === "project") { p.main.metadata.done = done; saveToLocal(); renderPipelineCards(); if(currentEditProjectId === id) openProductionEditor(id); initAllSortables(); } };
-        window.updateMetadataField = (id, field, val) => { const p = pipelineProjects.find(x=>x.id===id); if(p && p.type === "project") { p.main.metadata[field] = val; saveToLocal(); renderPipelineCards(); initAllSortables(); } };
-        window.addShortToProduction = (id) => { const p = pipelineProjects.find(x=>x.id===id); if(p && p.type === "project") { p.shorts.push({ title: 'New Short', done: false, link: '', metadata: '' }); saveToLocal(); renderPipelineCards(); if(currentEditProjectId === id) openProductionEditor(id); initAllSortables(); } };
-        window.updateShortField = (pid, idx, field, val) => { const p = pipelineProjects.find(x=>x.id===pid); if(p && p.type === "project" && p.shorts[idx]) { p.shorts[idx][field] = val; saveToLocal(); renderPipelineCards(); initAllSortables(); } };
-        window.updateShortDone = (pid, idx, done) => { const p = pipelineProjects.find(x=>x.id===pid); if(p && p.type === "project" && p.shorts[idx]) { p.shorts[idx].done = done; saveToLocal(); renderPipelineCards(); if(currentEditProjectId === pid) openProductionEditor(pid); initAllSortables(); } };
-        window.removeShortFromProduction = (pid, idx) => { const p = pipelineProjects.find(x=>x.id===pid); if(p && p.type === "project" && p.shorts) { p.shorts.splice(idx,1); saveToLocal(); renderPipelineCards(); if(currentEditProjectId === pid) openProductionEditor(pid); initAllSortables(); } };
-        window.addMusicToProduction = (id) => { const p = pipelineProjects.find(x=>x.id===id); if(p && p.type === "project") { p.soundtracks.push({ title: 'New Music', done: false, link: '', spotifyLink: '' }); saveToLocal(); renderPipelineCards(); if(currentEditProjectId === id) openProductionEditor(id); initAllSortables(); } };
-        window.updateMusicField = (pid, idx, field, val) => { const p = pipelineProjects.find(x=>x.id===pid); if(p && p.type === "project" && p.soundtracks[idx]) { p.soundtracks[idx][field] = val; saveToLocal(); renderPipelineCards(); initAllSortables(); } };
-        window.updateMusicDone = (pid, idx, done) => { const p = pipelineProjects.find(x=>x.id===pid); if(p && p.type === "project" && p.soundtracks[idx]) { p.soundtracks[idx].done = done; saveToLocal(); renderPipelineCards(); if(currentEditProjectId === pid) openProductionEditor(pid); initAllSortables(); } };
-        window.removeMusicFromProduction = (pid, idx) => { const p = pipelineProjects.find(x=>x.id===pid); if(p && p.type === "project" && p.soundtracks) { p.soundtracks.splice(idx,1); saveToLocal(); renderPipelineCards(); if(currentEditProjectId === pid) openProductionEditor(pid); initAllSortables(); } };
-        
-        window.closeProductionModal = () => {
-            document.getElementById('production-edit-modal').classList.add('hidden');
-            currentEditProjectId = null;
-        };
-        
-        window.updateStats = () => { 
-            document.getElementById('stat-total').innerText = projects.length; 
-            document.getElementById('channel-views').innerText = channelStats.views || '0'; 
-            document.getElementById('channel-retention').innerText = channelStats.retention || '0%';
-            document.getElementById('channel-subs').innerText = channelStats.subscribers || '0';
-            document.getElementById('channel-impressions').innerText = channelStats.impressions || '0';
-            document.getElementById('channel-ctr').innerText = channelStats.ctr || '0%';
-            document.getElementById('channel-watchtime').innerText = channelStats.watchTime || '0';
-        };
-        
-        // MODAL & FORMS για το αρχείο
-        window.openModal = (id=null) => {
-            document.getElementById('project-form').reset();
-            document.getElementById('shorts-container').innerHTML = '';
-            document.getElementById('soundtracks-container').innerHTML = '';
-            document.getElementById('edit-id').value = id || '';
-            if(id) { 
-                const p = projects.find(item => item.id === id); 
-                if(p) { 
-                    document.getElementById('main-title').value = p.mainVideo.title; 
-                    document.getElementById('main-link').value = p.mainVideo.link||''; 
-                    document.getElementById('main-uploaded').checked = p.mainVideo.uploaded === true;
-                    document.getElementById('main-live').checked = p.mainVideo.live === true;
-                    (p.shorts||[]).forEach(s => addShortRow(s)); 
-                    (p.soundtracks||[]).forEach(st => addSoundtrackRow(st)); 
-                } 
-            } else { 
-                addShortRow(); 
-                addSoundtrackRow(); 
-            }
-            document.getElementById('modal').classList.remove('hidden');
-        };
+        // PRODUCTION EDITOR functions (shortened but full functionality kept)
+        window.openProductionEditor = (id) => { currentEditProjectId = id; const p = pipelineProjects.find(x => x.id === id); if(!p || p.type !== "project") return; document.getElementById('prod-modal-title').innerText = `Editing: ${escapeHtml(p.title)}`; document.getElementById('production-modal-content').innerHTML = renderProductionForm(p); document.getElementById('production-edit-modal').classList.remove('hidden'); };
+        function renderProductionForm(p) { return `<div class="step-group"><div class="text-gold text-sm font-bold mb-3">🎬 Main Video</div>${renderMainStep(p,'script','Script','textarea')}${renderMainStep(p,'narration','Narration (Suno)','link')}${renderVisualsStep(p)}${renderMainStep(p,'montage','Montage','link')}${renderMainStep(p,'subtitlesEn','Subtitles SRT','file')}${renderTranslationsStep(p)}${renderMainStep(p,'musicSFX','Music & SFX','link')}${renderMainStep(p,'exportUpload','Export & Upload','link')}${renderMetadataStep(p)}</div><div class="step-group"><div class="text-gold text-sm font-bold mb-3 flex justify-between">📱 Shorts <button onclick="addShortToProduction('${p.id}')" class="text-[9px] bg-zinc-800 px-3 py-1 rounded border border-zinc-700 hover:border-gold">+ Add Short</button></div><div id="shorts-editor-${p.id}">${p.shorts.map((short, idx) => renderShortEditor(p.id, idx, short)).join('')}</div></div><div class="step-group"><div class="text-gold text-sm font-bold mb-3 flex justify-between">🎵 Soundtracks <button onclick="addMusicToProduction('${p.id}')" class="text-[9px] bg-zinc-800 px-3 py-1 rounded border border-zinc-700 hover:border-gold">+ Add Music</button></div><div id="music-editor-${p.id}">${p.soundtracks.map((music, idx) => renderMusicEditor(p.id, idx, music)).join('')}</div></div>`; }
+        function renderMainStep(p,key,label,type) { const data = p.main[key] || { done: false, text: '', link: '', file: '' }; const inputHtml = type === 'textarea' ? `<textarea class="inline-input" rows="2" placeholder="Write script..." onchange="updateMainField('${p.id}', '${key}', 'text', this.value)">${escapeHtml(data.text||'')}</textarea>` : type === 'file' ? `<input type="text" class="inline-input" placeholder="SRT file link" value="${escapeHtml(data.file||'')}" onchange="updateMainField('${p.id}', '${key}', 'file', this.value)">` : `<input type="text" class="inline-input" placeholder="Link" value="${escapeHtml(data.link||'')}" onchange="updateMainField('${p.id}', '${key}', 'link', this.value)">`; return `<div class="step-item"><input type="checkbox" class="step-check pipeline-checkbox" ${data.done ? 'checked' : ''} onchange="updateMainDone('${p.id}', '${key}', this.checked)"><div class="step-content"><div class="step-label">${label}</div>${inputHtml}</div></div>`; }
+        function renderVisualsStep(p) { const visuals = p.main.visuals || { done: false, items: [] }; return `<div class="step-item"><input type="checkbox" class="step-check pipeline-checkbox" ${visuals.done ? 'checked' : ''} onchange="updateMainDone('${p.id}', 'visuals', this.checked)"><div class="step-content"><div class="step-label">Visuals</div><div id="visuals-list-${p.id}">${visuals.items.map((item,idx)=>`<div class="flex gap-2 mb-2 items-center"><input type="text" class="inline-input flex-1" placeholder="Link or description" value="${escapeHtml(item)}" onchange="updateVisualsItem('${p.id}', ${idx}, this.value)"><button onclick="removeVisualsItem('${p.id}', ${idx})" class="text-red-500 text-xs">✕</button></div>`).join('')}</div><button onclick="addVisualsItem('${p.id}')" class="text-[8px] bg-zinc-800 px-2 py-1 rounded mt-1">+ Add visual</button></div></div>`; }
+        function renderTranslationsStep(p) { const trans = p.main.translations || { en: true, gr: false, fr: false, it: false, es: false, pt: false, de: false, ja: false, zh: false }; const languages = { en:'English', gr:'Greek', fr:'French', it:'Italian', es:'Spanish', pt:'Portuguese', de:'German', ja:'Japanese', zh:'Chinese' }; return `<div class="step-item"><div class="step-content"><div class="step-label">Translations (SRT)</div><div class="lang-grid">${Object.keys(languages).map(code=>`<label class="lang-check"><input type="checkbox" class="pipeline-checkbox scale-75" ${trans[code] ? 'checked' : ''} onchange="updateTranslation('${p.id}', '${code}', this.checked)"> ${languages[code]}</label>`).join('')}</div></div></div>`; }
+        function renderMetadataStep(p) { const meta = p.main.metadata || { done: false, title: '', description: '', tags: '', socialPosts: '' }; return `<div class="step-item"><input type="checkbox" class="step-check pipeline-checkbox" ${meta.done ? 'checked' : ''} onchange="updateMetadataDone('${p.id}', this.checked)"><div class="step-content"><div class="step-label">Metadata & Posts</div><input type="text" class="inline-input mb-1" placeholder="Video Title" value="${escapeHtml(meta.title||'')}" onchange="updateMetadataField('${p.id}', 'title', this.value)"><textarea class="inline-input mb-1" rows="2" placeholder="Description" onchange="updateMetadataField('${p.id}', 'description', this.value)">${escapeHtml(meta.description||'')}</textarea><input type="text" class="inline-input mb-1" placeholder="Tags" value="${escapeHtml(meta.tags||'')}" onchange="updateMetadataField('${p.id}', 'tags', this.value)"><textarea class="inline-input" rows="2" placeholder="Social posts" onchange="updateMetadataField('${p.id}', 'socialPosts', this.value)">${escapeHtml(meta.socialPosts||'')}</textarea></div></div>`; }
+        function renderShortEditor(pid, idx, short) { return `<div class="short-item"><div class="flex justify-between items-start gap-2"><input type="text" class="inline-input flex-1" placeholder="Short title" value="${escapeHtml(short.title||'')}" onchange="updateShortField('${pid}', ${idx}, 'title', this.value)"><button onclick="removeShortFromProduction('${pid}', ${idx})" class="text-red-500 text-xs">✕</button></div><div class="step-item mt-2"><input type="checkbox" class="step-check pipeline-checkbox" ${short.done ? 'checked' : ''} onchange="updateShortDone('${pid}', ${idx}, this.checked)"><div class="step-content"><div class="step-label">Video Link</div><input type="text" class="inline-input" placeholder="YouTube link" value="${escapeHtml(short.link||'')}" onchange="updateShortField('${pid}', ${idx}, 'link', this.value)"></div></div><div class="step-item mt-2"><div class="step-content"><div class="step-label">Metadata</div><textarea class="inline-input" rows="2" placeholder="Metadata text" onchange="updateShortField('${pid}', ${idx}, 'metadata', this.value)">${escapeHtml(short.metadata||'')}</textarea></div></div></div>`; }
+        function renderMusicEditor(pid, idx, music) { return `<div class="music-item"><div class="flex justify-between items-start gap-2"><input type="text" class="inline-input flex-1" placeholder="Music title" value="${escapeHtml(music.title||'')}" onchange="updateMusicField('${pid}', ${idx}, 'title', this.value)"><button onclick="removeMusicFromProduction('${pid}', ${idx})" class="text-red-500 text-xs">✕</button></div><div class="step-item mt-2"><input type="checkbox" class="step-check pipeline-checkbox" ${music.done ? 'checked' : ''} onchange="updateMusicDone('${pid}', ${idx}, this.checked)"><div class="step-content"><div class="step-label">Video Link</div><input type="text" class="inline-input" placeholder="YouTube link" value="${escapeHtml(music.link||'')}" onchange="updateMusicField('${pid}', ${idx}, 'link', this.value)"></div></div><div class="step-item mt-2"><div class="step-content"><div class="step-label">Spotify Link</div><input type="text" class="inline-input" placeholder="Spotify URL" value="${escapeHtml(music.spotifyLink||'')}" onchange="updateMusicField('${pid}', ${idx}, 'spotifyLink', this.value)"></div></div></div>`; }
+        window.updateMainDone = (id, key, done) => { const p = pipelineProjects.find(x=>x.id===id); if(p && p.type === "project") { p.main[key].done = done; saveToLocal(); renderPipelineCards(); if(currentEditProjectId === id) openProductionEditor(id); } };
+        window.updateMainField = (id, key, subkey, val) => { const p = pipelineProjects.find(x=>x.id===id); if(p && p.type === "project") { p.main[key][subkey] = val; saveToLocal(); renderPipelineCards(); } };
+        window.updateVisualsItem = (id, idx, val) => { const p = pipelineProjects.find(x=>x.id===id); if(p && p.type === "project" && p.main.visuals.items[idx]) { p.main.visuals.items[idx] = val; saveToLocal(); renderPipelineCards(); } };
+        window.addVisualsItem = (id) => { const p = pipelineProjects.find(x=>x.id===id); if(p && p.type === "project") { p.main.visuals.items.push(''); saveToLocal(); renderPipelineCards(); if(currentEditProjectId === id) openProductionEditor(id); } };
+        window.removeVisualsItem = (id, idx) => { const p = pipelineProjects.find(x=>x.id===id); if(p && p.type === "project" && p.main.visuals.items) { p.main.visuals.items.splice(idx,1); saveToLocal(); renderPipelineCards(); if(currentEditProjectId === id) openProductionEditor(id); } };
+        window.updateTranslation = (id, lang, checked) => { const p = pipelineProjects.find(x=>x.id===id); if(p && p.type === "project") { p.main.translations[lang] = checked; saveToLocal(); renderPipelineCards(); if(currentEditProjectId === id) openProductionEditor(id); } };
+        window.updateMetadataDone = (id, done) => { const p = pipelineProjects.find(x=>x.id===id); if(p && p.type === "project") { p.main.metadata.done = done; saveToLocal(); renderPipelineCards(); if(currentEditProjectId === id) openProductionEditor(id); } };
+        window.updateMetadataField = (id, field, val) => { const p = pipelineProjects.find(x=>x.id===id); if(p && p.type === "project") { p.main.metadata[field] = val; saveToLocal(); renderPipelineCards(); } };
+        window.addShortToProduction = (id) => { const p = pipelineProjects.find(x=>x.id===id); if(p && p.type === "project") { p.shorts.push({ title: 'New Short', done: false, link: '', metadata: '' }); saveToLocal(); renderPipelineCards(); if(currentEditProjectId === id) openProductionEditor(id); } };
+        window.updateShortField = (pid, idx, field, val) => { const p = pipelineProjects.find(x=>x.id===pid); if(p && p.type === "project" && p.shorts[idx]) { p.shorts[idx][field] = val; saveToLocal(); renderPipelineCards(); } };
+        window.updateShortDone = (pid, idx, done) => { const p = pipelineProjects.find(x=>x.id===pid); if(p && p.type === "project" && p.shorts[idx]) { p.shorts[idx].done = done; saveToLocal(); renderPipelineCards(); if(currentEditProjectId === pid) openProductionEditor(pid); } };
+        window.removeShortFromProduction = (pid, idx) => { const p = pipelineProjects.find(x=>x.id===pid); if(p && p.type === "project" && p.shorts) { p.shorts.splice(idx,1); saveToLocal(); renderPipelineCards(); if(currentEditProjectId === pid) openProductionEditor(pid); } };
+        window.addMusicToProduction = (id) => { const p = pipelineProjects.find(x=>x.id===id); if(p && p.type === "project") { p.soundtracks.push({ title: 'New Music', done: false, link: '', spotifyLink: '' }); saveToLocal(); renderPipelineCards(); if(currentEditProjectId === id) openProductionEditor(id); } };
+        window.updateMusicField = (pid, idx, field, val) => { const p = pipelineProjects.find(x=>x.id===pid); if(p && p.type === "project" && p.soundtracks[idx]) { p.soundtracks[idx][field] = val; saveToLocal(); renderPipelineCards(); } };
+        window.updateMusicDone = (pid, idx, done) => { const p = pipelineProjects.find(x=>x.id===pid); if(p && p.type === "project" && p.soundtracks[idx]) { p.soundtracks[idx].done = done; saveToLocal(); renderPipelineCards(); if(currentEditProjectId === pid) openProductionEditor(pid); } };
+        window.removeMusicFromProduction = (pid, idx) => { const p = pipelineProjects.find(x=>x.id===pid); if(p && p.type === "project" && p.soundtracks) { p.soundtracks.splice(idx,1); saveToLocal(); renderPipelineCards(); if(currentEditProjectId === pid) openProductionEditor(pid); } };
+        window.closeProductionModal = () => { document.getElementById('production-edit-modal').classList.add('hidden'); currentEditProjectId = null; };
+        window.updateStats = () => { document.getElementById('stat-total').innerText = projects.length; document.getElementById('channel-views').innerText = channelStats.views || '0'; document.getElementById('channel-retention').innerText = channelStats.retention || '0%'; document.getElementById('channel-subs').innerText = channelStats.subscribers || '0'; document.getElementById('channel-impressions').innerText = channelStats.impressions || '0'; document.getElementById('channel-ctr').innerText = channelStats.ctr || '0%'; document.getElementById('channel-watchtime').innerText = channelStats.watchTime || '0'; };
+        window.openModal = (id=null) => { document.getElementById('project-form').reset(); document.getElementById('shorts-container').innerHTML = ''; document.getElementById('soundtracks-container').innerHTML = ''; document.getElementById('edit-id').value = id || ''; if(id) { const p = projects.find(item => item.id === id); if(p) { document.getElementById('main-title').value = p.mainVideo.title; document.getElementById('main-link').value = p.mainVideo.link||''; document.getElementById('main-uploaded').checked = p.mainVideo.uploaded === true; document.getElementById('main-live').checked = p.mainVideo.live === true; (p.shorts||[]).forEach(s => addShortRow(s)); (p.soundtracks||[]).forEach(st => addSoundtrackRow(st)); } } else { addShortRow(); addSoundtrackRow(); } document.getElementById('modal').classList.remove('hidden'); };
         window.closeModal = () => document.getElementById('modal').classList.add('hidden');
-        
-        function setupLiveCheckbox(uploadedCheck, liveCheck) {
-            if (liveCheck) {
-                liveCheck.addEventListener('change', function() { if (this.checked) uploadedCheck.checked = true; });
-            }
-        }
-        
-        window.addShortRow = (d={title:'', analytics:{views:'0',retention:'0%'}, uploaded:false, live:false, link:''}) => {
-            const div = document.createElement('div'); div.className="dynamic-row bg-zinc-800/10 p-3 rounded-lg border border-zinc-800 space-y-3";
-            div.innerHTML = `<div class="grid grid-cols-12 gap-3 items-center">
-                <div class="col-span-10"><input type="text" class="w-full short-title" value="${escapeHtml(d.title)}" placeholder="Short Title"></div>
-                <div class="col-span-2 text-right"><button type="button" onclick="this.closest('.dynamic-row').remove()" class="text-zinc-600 hover:text-red-500 font-bold">✕</button></div>
-            </div>
-            <div class="grid grid-cols-12 gap-3 items-center pl-10">
-                <div class="col-span-4"><input type="url" class="w-full short-link !text-[10px]" value="${d.link||''}" placeholder="YouTube Link"></div>
-                <div class="col-span-4"><input type="text" class="w-full short-views !text-[10px]" value="${d.analytics?.views||'0'}" placeholder="Views"></div>
-                <div class="col-span-4"><input type="text" class="w-full short-retention !text-[10px]" value="${d.analytics?.retention||'0%'}" placeholder="Ret%"></div>
-            </div>
-            <div class="status-group pl-10">
-                <label><input type="checkbox" class="short-uploaded pipeline-checkbox" ${d.uploaded ? 'checked' : ''}> Uploaded</label>
-                <label><input type="checkbox" class="short-live pipeline-checkbox" ${d.live ? 'checked' : ''}> Live</label>
-            </div>`;
-            document.getElementById('shorts-container').appendChild(div);
-            const uploadedCheck = div.querySelector('.short-uploaded');
-            const liveCheck = div.querySelector('.short-live');
-            setupLiveCheckbox(uploadedCheck, liveCheck);
-        };
-        
-        window.addSoundtrackRow = (d={title:'', spotifyLink:'', link:'', analytics:{views:'0',retention:'0%'}, uploaded:false, live:false}) => {
-            const div = document.createElement('div'); div.className="dynamic-row bg-zinc-800/10 p-4 rounded-lg border border-zinc-800 space-y-3";
-            div.innerHTML = `<div class="grid grid-cols-12 gap-3 items-center">
-                <div class="col-span-10"><input type="text" class="w-full st-title font-bold" value="${escapeHtml(d.title)}" placeholder="Soundtrack Name"></div>
-                <div class="col-span-2 text-right"><button type="button" onclick="this.closest('.dynamic-row').remove()" class="text-zinc-600 hover:text-red-500 font-bold">✕</button></div>
-            </div>
-            <div class="grid grid-cols-12 gap-3 items-center pl-10">
-                <div class="col-span-4"><input type="text" class="w-full st-spotify-link !text-[9px] italic" value="${d.spotifyLink||''}" placeholder="Spotify Link"></div>
-                <div class="col-span-4"><input type="url" class="w-full st-link !text-[10px]" value="${d.link||''}" placeholder="YouTube Link"></div>
-                <div class="col-span-2"><input type="text" class="w-full st-views !text-[10px]" value="${d.analytics?.views||'0'}"></div>
-                <div class="col-span-2"><input type="text" class="w-full st-retention !text-[10px]" value="${d.analytics?.retention||'0%'}"></div>
-            </div>
-            <div class="status-group pl-10">
-                <label><input type="checkbox" class="st-uploaded pipeline-checkbox" ${d.uploaded ? 'checked' : ''}> Uploaded</label>
-                <label><input type="checkbox" class="st-live pipeline-checkbox" ${d.live ? 'checked' : ''}> Live</label>
-            </div>`;
-            document.getElementById('soundtracks-container').appendChild(div);
-            const uploadedCheck = div.querySelector('.st-uploaded');
-            const liveCheck = div.querySelector('.st-live');
-            setupLiveCheckbox(uploadedCheck, liveCheck);
-        };
-        
-        document.getElementById('project-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const id = document.getElementById('edit-id').value || Date.now().toString();
-            const existingP = projects.find(p => p.id === id);
-            const shorts = Array.from(document.querySelectorAll('#shorts-container .dynamic-row')).map(r => ({ 
-                title: r.querySelector('.short-title').value, 
-                link: r.querySelector('.short-link').value, 
-                uploaded: r.querySelector('.short-uploaded').checked,
-                live: r.querySelector('.short-live').checked,
-                analytics: { 
-                    views: r.querySelector('.short-views').value||'0', 
-                    retention: r.querySelector('.short-retention').value||'0%',
-                    previousViews: existingP?.shorts?.find(s=>cleanForMatch(s.title)===cleanForMatch(r.querySelector('.short-title').value))?.analytics?.views||null 
-                } 
-            })).filter(x=>x.title);
-            const soundtracks = Array.from(document.querySelectorAll('#soundtracks-container .dynamic-row')).map(r => ({ 
-                title: r.querySelector('.st-title').value, 
-                spotifyLink: r.querySelector('.st-spotify-link').value, 
-                link: r.querySelector('.st-link').value, 
-                uploaded: r.querySelector('.st-uploaded').checked,
-                live: r.querySelector('.st-live').checked,
-                analytics: { 
-                    views: r.querySelector('.st-views').value||'0', 
-                    retention: r.querySelector('.st-retention').value||'0%',
-                    previousViews: existingP?.soundtracks?.find(st=>cleanForMatch(st.title)===cleanForMatch(r.querySelector('.st-title').value))?.analytics?.views||null 
-                } 
-            })).filter(x=>x.title);
-            const data = { 
-                mainVideo: { 
-                    title: document.getElementById('main-title').value, 
-                    link: document.getElementById('main-link').value, 
-                    uploaded: document.getElementById('main-uploaded').checked,
-                    live: document.getElementById('main-live').checked,
-                    analytics: { 
-                        views: existingP?.mainVideo?.analytics?.views||'0', 
-                        retention: existingP?.mainVideo?.analytics?.retention||'0%',
-                        previousViews: existingP?.mainVideo?.analytics?.views||null 
-                    } 
-                }, 
-                shorts, 
-                soundtracks, 
-                orderIndex: existingP ? existingP.orderIndex : (projects.length>0 ? Math.min(...projects.map(p=>p.orderIndex))-1 : 1000), 
-                date: existingP ? existingP.date : new Date().toISOString() 
-            };
-            await window.saveProjectToDB(id, data); showToast('DATABASE UPDATED'); closeModal();
-        });
-        
+        function setupLiveCheckbox(uploadedCheck, liveCheck) { if (liveCheck) { liveCheck.addEventListener('change', function() { if (this.checked) uploadedCheck.checked = true; }); } }
+        window.addShortRow = (d={title:'', analytics:{views:'0',retention:'0%'}, uploaded:false, live:false, link:''}) => { const div = document.createElement('div'); div.className="dynamic-row bg-zinc-800/10 p-3 rounded-lg border border-zinc-800 space-y-3"; div.innerHTML = `<div class="grid grid-cols-12 gap-3 items-center"><div class="col-span-10"><input type="text" class="w-full short-title" value="${escapeHtml(d.title)}" placeholder="Short Title"></div><div class="col-span-2 text-right"><button type="button" onclick="this.closest('.dynamic-row').remove()" class="text-zinc-600 hover:text-red-500 font-bold">✕</button></div></div><div class="grid grid-cols-12 gap-3 items-center pl-10"><div class="col-span-4"><input type="url" class="w-full short-link !text-[10px]" value="${d.link||''}" placeholder="YouTube Link"></div><div class="col-span-4"><input type="text" class="w-full short-views !text-[10px]" value="${d.analytics?.views||'0'}" placeholder="Views"></div><div class="col-span-4"><input type="text" class="w-full short-retention !text-[10px]" value="${d.analytics?.retention||'0%'}" placeholder="Ret%"></div></div><div class="status-group pl-10"><label><input type="checkbox" class="short-uploaded pipeline-checkbox" ${d.uploaded ? 'checked' : ''}> Uploaded</label><label><input type="checkbox" class="short-live pipeline-checkbox" ${d.live ? 'checked' : ''}> Live</label></div>`; document.getElementById('shorts-container').appendChild(div); const uploadedCheck = div.querySelector('.short-uploaded'); const liveCheck = div.querySelector('.short-live'); setupLiveCheckbox(uploadedCheck, liveCheck); };
+        window.addSoundtrackRow = (d={title:'', spotifyLink:'', link:'', analytics:{views:'0',retention:'0%'}, uploaded:false, live:false}) => { const div = document.createElement('div'); div.className="dynamic-row bg-zinc-800/10 p-4 rounded-lg border border-zinc-800 space-y-3"; div.innerHTML = `<div class="grid grid-cols-12 gap-3 items-center"><div class="col-span-10"><input type="text" class="w-full st-title font-bold" value="${escapeHtml(d.title)}" placeholder="Soundtrack Name"></div><div class="col-span-2 text-right"><button type="button" onclick="this.closest('.dynamic-row').remove()" class="text-zinc-600 hover:text-red-500 font-bold">✕</button></div></div><div class="grid grid-cols-12 gap-3 items-center pl-10"><div class="col-span-4"><input type="text" class="w-full st-spotify-link !text-[9px] italic" value="${d.spotifyLink||''}" placeholder="Spotify Link"></div><div class="col-span-4"><input type="url" class="w-full st-link !text-[10px]" value="${d.link||''}" placeholder="YouTube Link"></div><div class="col-span-2"><input type="text" class="w-full st-views !text-[10px]" value="${d.analytics?.views||'0'}"></div><div class="col-span-2"><input type="text" class="w-full st-retention !text-[10px]" value="${d.analytics?.retention||'0%'}"></div></div><div class="status-group pl-10"><label><input type="checkbox" class="st-uploaded pipeline-checkbox" ${d.uploaded ? 'checked' : ''}> Uploaded</label><label><input type="checkbox" class="st-live pipeline-checkbox" ${d.live ? 'checked' : ''}> Live</label></div>`; document.getElementById('soundtracks-container').appendChild(div); const uploadedCheck = div.querySelector('.st-uploaded'); const liveCheck = div.querySelector('.st-live'); setupLiveCheckbox(uploadedCheck, liveCheck); };
+        document.getElementById('project-form').addEventListener('submit', async (e) => { e.preventDefault(); const id = document.getElementById('edit-id').value || Date.now().toString(); const existingP = projects.find(p => p.id === id); const shorts = Array.from(document.querySelectorAll('#shorts-container .dynamic-row')).map(r => ({ title: r.querySelector('.short-title').value, link: r.querySelector('.short-link').value, uploaded: r.querySelector('.short-uploaded').checked, live: r.querySelector('.short-live').checked, analytics: { views: r.querySelector('.short-views').value||'0', retention: r.querySelector('.short-retention').value||'0%', previousViews: existingP?.shorts?.find(s=>cleanForMatch(s.title)===cleanForMatch(r.querySelector('.short-title').value))?.analytics?.views||null } })).filter(x=>x.title); const soundtracks = Array.from(document.querySelectorAll('#soundtracks-container .dynamic-row')).map(r => ({ title: r.querySelector('.st-title').value, spotifyLink: r.querySelector('.st-spotify-link').value, link: r.querySelector('.st-link').value, uploaded: r.querySelector('.st-uploaded').checked, live: r.querySelector('.st-live').checked, analytics: { views: r.querySelector('.st-views').value||'0', retention: r.querySelector('.st-retention').value||'0%', previousViews: existingP?.soundtracks?.find(st=>cleanForMatch(st.title)===cleanForMatch(r.querySelector('.st-title').value))?.analytics?.views||null } })).filter(x=>x.title); const data = { mainVideo: { title: document.getElementById('main-title').value, link: document.getElementById('main-link').value, uploaded: document.getElementById('main-uploaded').checked, live: document.getElementById('main-live').checked, analytics: { views: existingP?.mainVideo?.analytics?.views||'0', retention: existingP?.mainVideo?.analytics?.retention||'0%', previousViews: existingP?.mainVideo?.analytics?.views||null } }, shorts, soundtracks, orderIndex: existingP ? existingP.orderIndex : (projects.length>0 ? Math.min(...projects.map(p=>p.orderIndex))-1 : 1000), date: existingP ? existingP.date : new Date().toISOString() }; await window.saveProjectToDB(id, data); showToast('DATABASE UPDATED'); closeModal(); });
         window.openPipelineModal = () => { document.getElementById('pipeline-title-input').value=""; document.getElementById('pipeline-modal').classList.remove('hidden'); };
-        window.addPipelineProject = async () => { 
-            const title = document.getElementById('pipeline-title-input').value; 
-            if(title) { 
-                const newProject = {
-                    id: Date.now().toString(),
-                    title: title,
-                    type: "project",
-                    parentId: null,
-                    orderIndex: pipelineProjects.filter(p => p.parentId === null).length,
-                    main: {
-                        script: { done: false, text: '', link: '' },
-                        narration: { done: false, link: '' },
-                        visuals: { done: false, items: [] },
-                        montage: { done: false, link: '' },
-                        subtitlesEn: { done: false, file: '' },
-                        translations: { en: true, gr: false, fr: false, it: false, es: false, pt: false, de: false, ja: false, zh: false },
-                        musicSFX: { done: false, link: '' },
-                        exportUpload: { done: false, link: '' },
-                        metadata: { done: false, title: '', description: '', tags: '', socialPosts: '' }
-                    },
-                    shorts: [],
-                    soundtracks: [],
-                    dateCreated: new Date().toISOString()
-                };
-                await window.savePipelineToDB(newProject.id, newProject);
-                document.getElementById('pipeline-modal').classList.add('hidden'); 
-                showToast('PRODUCTION INITIATED'); 
-            } 
-        };
-        
-        // MIGRATION
+        window.addPipelineProject = async () => { const title = document.getElementById('pipeline-title-input').value; if(title) { const newProject = { id: Date.now().toString(), title, type: "project", parentId: null, orderIndex: pipelineProjects.filter(p => p.parentId === null).length, main: { script: { done: false, text: '', link: '' }, narration: { done: false, link: '' }, visuals: { done: false, items: [] }, montage: { done: false, link: '' }, subtitlesEn: { done: false, file: '' }, translations: { en: true, gr: false, fr: false, it: false, es: false, pt: false, de: false, ja: false, zh: false }, musicSFX: { done: false, link: '' }, exportUpload: { done: false, link: '' }, metadata: { done: false, title: '', description: '', tags: '', socialPosts: '' } }, shorts: [], soundtracks: [], dateCreated: new Date().toISOString() }; await window.savePipelineToDB(newProject.id, newProject); document.getElementById('pipeline-modal').classList.add('hidden'); showToast('PRODUCTION INITIATED'); } };
         window.showConfirmModal = (id) => { currentMigrationId = id; document.getElementById('confirm-modal').classList.remove('hidden'); document.getElementById('final-confirm-btn').onclick = () => window.executeMigration(id); };
         window.hideConfirmModal = () => { document.getElementById('confirm-modal').classList.add('hidden'); currentMigrationId = null; };
-        window.executeMigration = async (id) => {
-            const p = pipelineProjects.find(item=>item.id===id); if(!p) return;
-            window.hideConfirmModal(); showToast('MIGRATING...');
-            const newProjectId = Date.now().toString();
-            const currentMinOrder = projects.length>0 ? Math.min(...projects.map(pr=>pr.orderIndex||0)) : 1000;
-            const archiveData = { 
-                mainVideo: { title: p.title||"Untitled", link:"", uploaded: false, live: false, analytics:{views:"0",retention:"0%"} }, 
-                shorts: [], 
-                soundtracks: [], 
-                orderIndex: currentMinOrder-1, 
-                date:new Date().toISOString() 
-            };
-            projects.unshift({ ...archiveData, id: newProjectId }); pipelineProjects = pipelineProjects.filter(item=>item.id!==id);
-            saveToLocal(); renderProjects(); renderPipelineCards(); updateStats();
-            initAllSortables();
-            showToast('MIGRATION COMPLETE'); switchTab('archive');
-        };
-        
-        // DELETE
+        window.executeMigration = async (id) => { const p = pipelineProjects.find(item=>item.id===id); if(!p) return; window.hideConfirmModal(); showToast('MIGRATING...'); const newProjectId = Date.now().toString(); const currentMinOrder = projects.length>0 ? Math.min(...projects.map(pr=>pr.orderIndex||0)) : 1000; const archiveData = { mainVideo: { title: p.title||"Untitled", link:"", uploaded: false, live: false, analytics:{views:"0",retention:"0%"} }, shorts: [], soundtracks: [], orderIndex: currentMinOrder-1, date:new Date().toISOString() }; projects.unshift({ ...archiveData, id: newProjectId }); pipelineProjects = pipelineProjects.filter(item=>item.id!==id); saveToLocal(); renderProjects(); renderPipelineCards(); updateStats(); showToast('MIGRATION COMPLETE'); switchTab('archive'); };
         window.hideDeleteModal = () => { document.getElementById('delete-modal').classList.add('hidden'); pendingDeleteId = null; };
         window.deleteProject = (id) => { pendingDeleteId = id; document.getElementById('delete-modal').classList.remove('hidden'); };
         document.getElementById('final-delete-btn').onclick = () => { if(pendingDeleteId) { projects = projects.filter(p => p.id !== pendingDeleteId); saveToLocal(); renderProjects(); updateStats(); hideDeleteModal(); showToast('DELETED'); } };
-        
-        // ======================== CSV IMPORT ========================
         window.triggerAnalyticsImport = () => document.getElementById('analytics-input').click();
-        window.handleAnalyticsImport = (inputEl) => {
-            const file = inputEl.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                const text = e.target.result;
-                const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
-                if (lines.length < 2) { showToast('CSV has no data rows'); return; }
-                const delimiter = (lines[0].match(/;/g) || []).length > (lines[0].match(/,/g) || []).length ? ';' : ',';
-                const splitCSV = (s) => s.split(new RegExp(`${delimiter}(?=(?:(?:[^"]*"){2})*[^"]*$)`)).map(c => c.trim().replace(/^"|"$/g, ''));
-                const headers = splitCSV(lines[0]).map(h => h.toLowerCase());
-                const titleIdx = headers.findIndex(h => h === 'video title' || h === 'content' || h.includes('title'));
-                const viewsIdx = headers.findIndex(h => h === 'views');
-                const retentionIdx = headers.findIndex(h => h === 'average percentage viewed (%)' || h.includes('percentage viewed'));
-                const subsIdx = headers.findIndex(h => h === 'subscribers');
-                const impressionsIdx = headers.findIndex(h => h === 'impressions');
-                const ctrIdx = headers.findIndex(h => h === 'impressions click-through rate (%)' || h === 'ctr');
-                const watchTimeIdx = headers.findIndex(h => h === 'watch time' || h === 'watch time (hours)');
-                let totalStats = null;
-                const videoStats = new Map();
-                for (let i = 1; i < lines.length; i++) {
-                    const row = splitCSV(lines[i]);
-                    if (row.length < 2) continue;
-                    const firstCell = row[0].toLowerCase();
-                    if (firstCell === 'total' || firstCell === 'σύνολο' || firstCell === 'channel') {
-                        totalStats = {
-                            views: viewsIdx !== -1 ? row[viewsIdx] : undefined,
-                            retention: retentionIdx !== -1 ? row[retentionIdx] : undefined,
-                            subscribers: subsIdx !== -1 ? row[subsIdx] : undefined,
-                            impressions: impressionsIdx !== -1 ? row[impressionsIdx] : undefined,
-                            ctr: ctrIdx !== -1 ? row[ctrIdx] : undefined,
-                            watchTime: watchTimeIdx !== -1 ? row[watchTimeIdx] : undefined
-                        };
-                        continue;
-                    }
-                    if (titleIdx !== -1 && viewsIdx !== -1) {
-                        const rawTitle = row[titleIdx];
-                        if (rawTitle && rawTitle.trim() !== '') {
-                            const cleanTitle = cleanForMatch(rawTitle);
-                            videoStats.set(cleanTitle, {
-                                views: row[viewsIdx] || '0',
-                                retention: retentionIdx !== -1 ? row[retentionIdx] : '0%'
-                            });
-                        }
-                    }
-                }
-                if (totalStats) {
-                    let changed = false;
-                    const newStats = { ...channelStats };
-                    const isNonZero = (val) => { if (val === undefined || val === null) return false; const s = val.toString().trim(); return !(s === '' || s === '0' || s === '0%' || s === '0.0' || s === '0.0%'); };
-                    if (isNonZero(totalStats.views) && totalStats.views !== channelStats.views) { newStats.previousViews = channelStats.views; newStats.views = totalStats.views; changed = true; }
-                    if (isNonZero(totalStats.retention) && totalStats.retention !== channelStats.retention) { newStats.previousRetention = channelStats.retention; newStats.retention = totalStats.retention; changed = true; }
-                    if (isNonZero(totalStats.subscribers) && totalStats.subscribers !== channelStats.subscribers) { newStats.subscribers = totalStats.subscribers; changed = true; }
-                    if (isNonZero(totalStats.impressions) && totalStats.impressions !== channelStats.impressions) { newStats.impressions = totalStats.impressions; changed = true; }
-                    if (isNonZero(totalStats.ctr) && totalStats.ctr !== channelStats.ctr) { newStats.ctr = totalStats.ctr; changed = true; }
-                    if (isNonZero(totalStats.watchTime) && totalStats.watchTime !== channelStats.watchTime) { newStats.watchTime = totalStats.watchTime; changed = true; }
-                    if (changed) await window.saveChannelStats(newStats);
-                }
-                let updatedCount = 0;
-                for (let project of projects) {
-                    let projectModified = false;
-                    const projectCopy = JSON.parse(JSON.stringify(project));
-                    if (project.mainVideo.title) {
-                        const cleanTitle = cleanForMatch(project.mainVideo.title);
-                        if (videoStats.has(cleanTitle)) {
-                            const stats = videoStats.get(cleanTitle);
-                            const old = project.mainVideo.analytics || {};
-                            let changed = false;
-                            const newAnalytics = { ...old };
-                            if (stats.views !== old.views) { newAnalytics.previousViews = old.views || null; newAnalytics.views = stats.views; changed = true; }
-                            if (stats.retention !== old.retention) { newAnalytics.retention = stats.retention; changed = true; }
-                            if (changed) { projectCopy.mainVideo.analytics = newAnalytics; projectModified = true; }
-                        }
-                    }
-                    for (let short of projectCopy.shorts) {
-                        const cleanTitle = cleanForMatch(short.title);
-                        if (videoStats.has(cleanTitle)) {
-                            const stats = videoStats.get(cleanTitle);
-                            const old = short.analytics || {};
-                            let changed = false;
-                            const newAnalytics = { ...old };
-                            if (stats.views !== old.views) { newAnalytics.previousViews = old.views || null; newAnalytics.views = stats.views; changed = true; }
-                            if (stats.retention !== old.retention) { newAnalytics.retention = stats.retention; changed = true; }
-                            if (changed) { short.analytics = newAnalytics; projectModified = true; }
-                        }
-                    }
-                    for (let st of projectCopy.soundtracks) {
-                        const cleanTitle = cleanForMatch(st.title);
-                        if (videoStats.has(cleanTitle)) {
-                            const stats = videoStats.get(cleanTitle);
-                            const old = st.analytics || {};
-                            let changed = false;
-                            const newAnalytics = { ...old };
-                            if (stats.views !== old.views) { newAnalytics.previousViews = old.views || null; newAnalytics.views = stats.views; changed = true; }
-                            if (stats.retention !== old.retention) { newAnalytics.retention = stats.retention; changed = true; }
-                            if (changed) { st.analytics = newAnalytics; projectModified = true; }
-                        }
-                    }
-                    if (projectModified) {
-                        await window.saveProjectToDB(project.id, projectCopy);
-                        updatedCount++;
-                        showToast(`CSV import: ${updatedCount} projects updated...`);
-                        await new Promise(r => setTimeout(r, 100));
-                    }
-                }
-                showToast(`CSV import complete! ${updatedCount} projects updated.`);
-                renderProjects(); updateStats();
-            };
-            reader.readAsText(file);
-        };
-        
-        // IMPORT / EXPORT
+        window.handleAnalyticsImport = (inputEl) => { const file = inputEl.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = async (e) => { const text = e.target.result; const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0); if (lines.length < 2) { showToast('CSV has no data rows'); return; } const delimiter = (lines[0].match(/;/g) || []).length > (lines[0].match(/,/g) || []).length ? ';' : ','; const splitCSV = (s) => s.split(new RegExp(`${delimiter}(?=(?:(?:[^"]*"){2})*[^"]*$)`)).map(c => c.trim().replace(/^"|"$/g, '')); const headers = splitCSV(lines[0]).map(h => h.toLowerCase()); const titleIdx = headers.findIndex(h => h === 'video title' || h === 'content' || h.includes('title')); const viewsIdx = headers.findIndex(h => h === 'views'); const retentionIdx = headers.findIndex(h => h === 'average percentage viewed (%)' || h.includes('percentage viewed')); const subsIdx = headers.findIndex(h => h === 'subscribers'); const impressionsIdx = headers.findIndex(h => h === 'impressions'); const ctrIdx = headers.findIndex(h => h === 'impressions click-through rate (%)' || h === 'ctr'); const watchTimeIdx = headers.findIndex(h => h === 'watch time' || h === 'watch time (hours)'); let totalStats = null; const videoStats = new Map(); for (let i = 1; i < lines.length; i++) { const row = splitCSV(lines[i]); if (row.length < 2) continue; const firstCell = row[0].toLowerCase(); if (firstCell === 'total' || firstCell === 'σύνολο' || firstCell === 'channel') { totalStats = { views: viewsIdx !== -1 ? row[viewsIdx] : undefined, retention: retentionIdx !== -1 ? row[retentionIdx] : undefined, subscribers: subsIdx !== -1 ? row[subsIdx] : undefined, impressions: impressionsIdx !== -1 ? row[impressionsIdx] : undefined, ctr: ctrIdx !== -1 ? row[ctrIdx] : undefined, watchTime: watchTimeIdx !== -1 ? row[watchTimeIdx] : undefined }; continue; } if (titleIdx !== -1 && viewsIdx !== -1) { const rawTitle = row[titleIdx]; if (rawTitle && rawTitle.trim() !== '') { const cleanTitle = cleanForMatch(rawTitle); videoStats.set(cleanTitle, { views: row[viewsIdx] || '0', retention: retentionIdx !== -1 ? row[retentionIdx] : '0%' }); } } } if (totalStats) { let changed = false; const newStats = { ...channelStats }; const isNonZero = (val) => { if (val === undefined || val === null) return false; const s = val.toString().trim(); return !(s === '' || s === '0' || s === '0%' || s === '0.0' || s === '0.0%'); }; if (isNonZero(totalStats.views) && totalStats.views !== channelStats.views) { newStats.previousViews = channelStats.views; newStats.views = totalStats.views; changed = true; } if (isNonZero(totalStats.retention) && totalStats.retention !== channelStats.retention) { newStats.previousRetention = channelStats.retention; newStats.retention = totalStats.retention; changed = true; } if (isNonZero(totalStats.subscribers) && totalStats.subscribers !== channelStats.subscribers) { newStats.subscribers = totalStats.subscribers; changed = true; } if (isNonZero(totalStats.impressions) && totalStats.impressions !== channelStats.impressions) { newStats.impressions = totalStats.impressions; changed = true; } if (isNonZero(totalStats.ctr) && totalStats.ctr !== channelStats.ctr) { newStats.ctr = totalStats.ctr; changed = true; } if (isNonZero(totalStats.watchTime) && totalStats.watchTime !== channelStats.watchTime) { newStats.watchTime = totalStats.watchTime; changed = true; } if (changed) await window.saveChannelStats(newStats); } let updatedCount = 0; for (let project of projects) { let projectModified = false; const projectCopy = JSON.parse(JSON.stringify(project)); if (project.mainVideo.title) { const cleanTitle = cleanForMatch(project.mainVideo.title); if (videoStats.has(cleanTitle)) { const stats = videoStats.get(cleanTitle); const old = project.mainVideo.analytics || {}; let changed = false; const newAnalytics = { ...old }; if (stats.views !== old.views) { newAnalytics.previousViews = old.views || null; newAnalytics.views = stats.views; changed = true; } if (stats.retention !== old.retention) { newAnalytics.retention = stats.retention; changed = true; } if (changed) { projectCopy.mainVideo.analytics = newAnalytics; projectModified = true; } } } for (let short of projectCopy.shorts) { const cleanTitle = cleanForMatch(short.title); if (videoStats.has(cleanTitle)) { const stats = videoStats.get(cleanTitle); const old = short.analytics || {}; let changed = false; const newAnalytics = { ...old }; if (stats.views !== old.views) { newAnalytics.previousViews = old.views || null; newAnalytics.views = stats.views; changed = true; } if (stats.retention !== old.retention) { newAnalytics.retention = stats.retention; changed = true; } if (changed) { short.analytics = newAnalytics; projectModified = true; } } } for (let st of projectCopy.soundtracks) { const cleanTitle = cleanForMatch(st.title); if (videoStats.has(cleanTitle)) { const stats = videoStats.get(cleanTitle); const old = st.analytics || {}; let changed = false; const newAnalytics = { ...old }; if (stats.views !== old.views) { newAnalytics.previousViews = old.views || null; newAnalytics.views = stats.views; changed = true; } if (stats.retention !== old.retention) { newAnalytics.retention = stats.retention; changed = true; } if (changed) { st.analytics = newAnalytics; projectModified = true; } } } if (projectModified) { await window.saveProjectToDB(project.id, projectCopy); updatedCount++; showToast(`CSV import: ${updatedCount} projects updated...`); await new Promise(r => setTimeout(r, 100)); } } showToast(`CSV import complete! ${updatedCount} projects updated.`); renderProjects(); updateStats(); }; reader.readAsText(file); };
         window.importDatabase = () => document.getElementById('import-input').click();
-        window.handleImport = (inputEl) => {
-            const file = inputEl.files[0];
-            if(!file) return;
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    if(data.p && Array.isArray(data.p)) for(const p of data.p) await window.saveProjectToDB(p.id || Date.now()+Math.random(), p);
-                    if(data.c) await window.saveChannelStats(data.c);
-                    if(data.pipe && Array.isArray(data.pipe)) for(const pipe of data.pipe) await window.savePipelineToDB(pipe.id || Date.now()+Math.random(), pipe);
-                    showToast('Restore successful');
-                    renderProjects(); renderPipelineCards(); updateStats();
-                    initAllSortables();
-                } catch(err) { alert('Restore failed: '+err.message); }
-            };
-            reader.readAsText(file);
-        };
-        window.exportDatabase = () => {
-            const d = JSON.stringify({p:projects, c:channelStats, pipe:pipelineProjects});
-            const a = document.createElement('a');
-            a.href = "data:text/json;charset=utf-8,"+encodeURIComponent(d);
-            a.download = `hst_backup_V7.1_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`;
-            a.click();
-        };
-        
-        window.switchTab = (tab) => {
-            document.getElementById('tab-archive').classList.toggle('active', tab==='archive');
-            document.getElementById('tab-pipeline').classList.toggle('active', tab==='pipeline');
-            document.getElementById('view-archive').classList.toggle('hidden', tab!=='archive');
-            document.getElementById('view-pipeline').classList.toggle('hidden', tab!=='pipeline');
-            if (tab === 'pipeline') {
-                setTimeout(() => { renderPipelineCards(); initAllSortables(); }, 100);
-            }
-        };
-        
-        const init = () => {
-            loadFromLocal();
-            renderProjects(); renderPipelineCards(); updateStats();
-            document.getElementById('loader').style.opacity = '0';
-            setTimeout(() => document.getElementById('loader').classList.add('hidden'), 500);
-            document.getElementById('analytics-input').addEventListener('change', (e) => window.handleAnalyticsImport(e.target));
-            document.getElementById('import-input').addEventListener('change', (e) => window.handleImport(e.target));
-            document.getElementById('db-status').innerText = 'Local Storage Mode';
-            initAllSortables();
-        };
+        window.handleImport = (inputEl) => { const file = inputEl.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = async (e) => { try { const data = JSON.parse(e.target.result); if(data.p && Array.isArray(data.p)) for(const p of data.p) await window.saveProjectToDB(p.id || Date.now()+Math.random(), p); if(data.c) await window.saveChannelStats(data.c); if(data.pipe && Array.isArray(data.pipe)) for(const pipe of data.pipe) await window.savePipelineToDB(pipe.id || Date.now()+Math.random(), pipe); showToast('Restore successful'); renderProjects(); renderPipelineCards(); updateStats(); } catch(err) { alert('Restore failed: '+err.message); } }; reader.readAsText(file); };
+        window.exportDatabase = () => { const d = JSON.stringify({p:projects, c:channelStats, pipe:pipelineProjects}); const a = document.createElement('a'); a.href = "data:text/json;charset=utf-8,"+encodeURIComponent(d); a.download = `hst_backup_V7.4_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`; a.click(); };
+        window.switchTab = (tab) => { document.getElementById('tab-archive').classList.toggle('active', tab==='archive'); document.getElementById('tab-pipeline').classList.toggle('active', tab==='pipeline'); document.getElementById('view-archive').classList.toggle('hidden', tab!=='archive'); document.getElementById('view-pipeline').classList.toggle('hidden', tab!=='pipeline'); if (tab === 'pipeline') setTimeout(() => renderPipelineCards(), 100); };
+        const init = () => { loadFromLocal(); renderProjects(); renderPipelineCards(); updateStats(); document.getElementById('loader').style.opacity = '0'; setTimeout(() => document.getElementById('loader').classList.add('hidden'), 500); document.getElementById('analytics-input').addEventListener('change', (e) => window.handleAnalyticsImport(e.target)); document.getElementById('import-input').addEventListener('change', (e) => window.handleImport(e.target)); document.getElementById('db-status').innerText = 'Local Storage Mode'; };
         init();
     </script>
 </body>
