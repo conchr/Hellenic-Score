@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hellenic Score & Tales | V5.2 – Production Fixed, CSV Working</title>
+    <title>Hellenic Score & Tales | V6 – Clean Archive, Compact Production</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
@@ -29,12 +29,12 @@
         .delete-btn:hover { color: var(--red); }
         .data-table { width: 100%; table-layout: fixed; border-collapse: collapse; }
         .data-table th, .data-table td { padding: 0.5rem 0.4rem; vertical-align: middle; word-break: break-word; }
-        .data-table th:first-child { width: 4%; text-align: center; }
-        .data-table th:nth-child(2) { width: 4%; text-align: center; }
+        .data-table th:first-child { width: 5%; text-align: center; }
+        .data-table th:nth-child(2) { width: 5%; text-align: center; }
         .data-table th:nth-child(3) { width: 30%; }
         .data-table th:nth-child(4) { width: 30%; }
-        .data-table th:nth-child(5) { width: 30%; }
-        .data-table th:last-child { width: 6%; text-align: right; }
+        .data-table th:nth-child(5) { width: 25%; }
+        .data-table th:last-child { width: 5%; text-align: right; }
         .soundtrack-title { word-break: break-word; max-width: 220px; display: inline-block; }
         .actions-cell { white-space: nowrap; text-align: right; }
         .action-buttons { display: inline-flex; gap: 0.75rem; justify-content: flex-end; flex-wrap: nowrap; }
@@ -45,6 +45,7 @@
         .short-title-text, .soundtrack-title-text { font-size: 0.8rem; line-height: 1.3; font-weight: 500; }
         a.title-red, a.title-green, a.title-white { text-decoration: none; }
         a.title-red:hover, a.title-green:hover, a.title-white:hover { text-decoration: underline; }
+        /* Production cards */
         .prod-card { background: rgba(22,22,24,0.8); border-radius: 16px; padding: 1rem 1.2rem; margin-bottom: 1rem; border: 1px solid rgba(197,160,89,0.2); transition: all 0.2s; cursor: grab; }
         .prod-card:active { cursor: grabbing; }
         .prod-card.dragging { opacity: 0.4; }
@@ -62,7 +63,7 @@
         @media (max-width: 768px) { .step-item { flex-direction: column; } .step-check { align-self: flex-start; } }
         .production-modal { max-width: 90vw; width: 900px; max-height: 85vh; overflow-y: auto; }
         .card-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 0.5rem; }
-        .title-input-wrapper { width: 35%; }
+        .title-input-wrapper { width: 28%; } /* Μειωμένο πλάτος */
         .progress-wrapper { flex: 1; min-width: 150px; }
     </style>
 </head>
@@ -89,10 +90,10 @@
         <div class="flex flex-col md:flex-row justify-between items-start mb-6 gap-3 border-b border-zinc-800/50 pb-4">
             <div class="flex flex-col gap-1"><div class="flex gap-2 text-[9px] text-zinc-500"><span>Database Status:</span><span id="db-status" class="text-zinc-400">Local Storage Mode</span></div><div class="flex gap-2 flex-wrap"><button onclick="exportDatabase()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text">💾 Backup</button><button onclick="importDatabase()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text">📂 Restore</button><button onclick="triggerAnalyticsImport()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text">📁 Import CSV</button><input type="file" id="import-input" class="hidden" accept=".json"><input type="file" id="analytics-input" class="hidden" accept=".csv"></div></div>
             <div class="flex gap-4"><button onclick="switchTab('archive')" id="tab-archive" class="nav-btn active cinzel">Αρχείο</button><button onclick="switchTab('pipeline')" id="tab-pipeline" class="nav-btn cinzel">Παραγωγή</button></div>
-            <div class="text-right hidden md:block"><p class="text-[9px] text-zinc-600">Strategic Control</p><p class="text-[10px] gold-text cinzel">V5.2 – Production Fixed</p></div>
+            <div class="text-right hidden md:block"><p class="text-[9px] text-zinc-600">Strategic Control</p><p class="text-[10px] gold-text cinzel">V6 – Clean Archive</p></div>
         </div>
 
-        <!-- Archive View -->
+        <!-- Archive View (χωρίς στατιστικά badges) -->
         <div id="view-archive">
             <header class="mb-10 text-center"><h1 class="text-4xl font-bold gold-text mb-1 uppercase tracking-[0.2em]">HELLENIC SCORE & TALES</h1>
                 <div class="flex flex-wrap justify-center gap-4 mt-6">
@@ -186,7 +187,6 @@
                 if(!p.main.visuals) p.main.visuals = { done: false, items: [] };
                 if(!p.main.translations) p.main.translations = { en: true, gr: false, fr: false, it: false, es: false, pt: false, de: false, ja: false, zh: false };
             }
-            console.log('Loaded pipelineProjects:', pipelineProjects.length);
         };
         
         window.saveProjectToDB = (id, data) => { 
@@ -217,7 +217,7 @@
             return 'title-red';
         }
         
-        // RENDER PROJECTS
+        // RENDER PROJECTS (χωρίς στατιστικά badges)
         window.renderProjects = () => {
             const list = document.getElementById('project-list');
             list.innerHTML = projects.map((p, i) => {
@@ -230,9 +230,9 @@
                 return `<tr class="group hover:bg-zinc-800/40 transition-all archive-row">
                     <td class="p-2 text-center text-zinc-600 font-mono text-[10px]">${i+1}</td>
                     <td class="p-2 text-center"><div class="flex flex-col gap-0.5"><button onclick="moveProject('${p.id}', 'up')" class="hover:text-gold text-[10px]">▲</button><button onclick="moveProject('${p.id}', 'down')" class="hover:text-gold text-[10px]">▼</button></div></td>
-                    <td class="p-2"><div class="flex items-center gap-2"><div class="thumbnail-frame shadow-xl">${ytId ? `<img src="https://img.youtube.com/vi/${ytId}/mqdefault.jpg">` : '<span class="text-[7px] text-zinc-700">NO ART</span>'}</div><div><div class="flex items-center gap-1 mb-0.5"><span style="color: var(--gold);">🔱</span>${mainTitleHtml}</div><div class="flex gap-2"><span class="stat-badge">👁 ${p.mainVideo.analytics?.views || 0} ${getTrendIcon(p.mainVideo.analytics?.views, p.mainVideo.analytics?.previousViews)}</span><span class="stat-badge">⏱ ${p.mainVideo.analytics?.retention || '0%'}</span></div></div></div></div></td>
-                    <td class="p-2"><div class="space-y-1">${(p.shorts || []).map(s => { const titleClass = getTitleClass(s.uploaded, s.live); return `<div><div class="flex items-center gap-1"><span style="color: var(--gold);">🔱</span>${s.link ? `<a href="${s.link}" target="_blank" class="short-title-text hover:gold-text break-words ${titleClass}">${escapeHtml(s.title)}</a>` : `<span class="short-title-text break-words ${titleClass}">${escapeHtml(s.title)}</span>`}</div><div class="flex gap-2 pl-4"><span class="stat-badge">👁 ${s.analytics?.views || 0} ${getTrendIcon(s.analytics?.views, s.analytics?.previousViews)}</span><span class="stat-badge">⏱ ${s.analytics?.retention || '0%'}</span></div></div>`}).join('')}</div></td>
-                    <td class="p-2"><div class="space-y-1">${(p.soundtracks || []).map(st => { const titleClass = getTitleClass(st.uploaded, st.live); const spotifyHtml = st.spotifyLink ? `<a href="${st.spotifyLink}" target="_blank" class="spotify-tag ml-1">● Spotify</a>` : ''; return `<div><div class="flex items-center gap-1 flex-wrap"><span style="color: var(--gold);">🔱</span>${st.link ? `<a href="${st.link}" target="_blank" class="soundtrack-title-text hover:gold-text soundtrack-title ${titleClass}">${escapeHtml(st.title)}</a>` : `<span class="soundtrack-title-text soundtrack-title ${titleClass}">${escapeHtml(st.title)}</span>`}${spotifyHtml}</div><div class="flex gap-2 pl-4"><span class="stat-badge">👁 ${st.analytics?.views || 0} ${getTrendIcon(st.analytics?.views, st.analytics?.previousViews)}</span><span class="stat-badge">⏱ ${st.analytics?.retention || '0%'}</span></div></div>`}).join('')}</div></td>
+                    <td class="p-2"><div class="flex items-center gap-2"><div class="thumbnail-frame shadow-xl">${ytId ? `<img src="https://img.youtube.com/vi/${ytId}/mqdefault.jpg">` : '<span class="text-[7px] text-zinc-700">NO ART</span>'}</div><div><div class="flex items-center gap-1 mb-0.5"><span style="color: var(--gold);">🔱</span>${mainTitleHtml}</div></div></div></div></td>
+                    <td class="p-2"><div class="space-y-1">${(p.shorts || []).map(s => { const titleClass = getTitleClass(s.uploaded, s.live); return `<div><div class="flex items-center gap-1"><span style="color: var(--gold);">🔱</span>${s.link ? `<a href="${s.link}" target="_blank" class="short-title-text hover:gold-text break-words ${titleClass}">${escapeHtml(s.title)}</a>` : `<span class="short-title-text break-words ${titleClass}">${escapeHtml(s.title)}</span>`}</div></div>`}).join('')}</div></td>
+                    <td class="p-2"><div class="space-y-1">${(p.soundtracks || []).map(st => { const titleClass = getTitleClass(st.uploaded, st.live); const spotifyHtml = st.spotifyLink ? `<a href="${st.spotifyLink}" target="_blank" class="spotify-tag ml-1">● Spotify</a>` : ''; return `<div><div class="flex items-center gap-1 flex-wrap"><span style="color: var(--gold);">🔱</span>${st.link ? `<a href="${st.link}" target="_blank" class="soundtrack-title-text hover:gold-text soundtrack-title ${titleClass}">${escapeHtml(st.title)}</a>` : `<span class="soundtrack-title-text soundtrack-title ${titleClass}">${escapeHtml(st.title)}</span>`}${spotifyHtml}</div></div>`}).join('')}</div></td>
                     <td class="p-2 text-right actions-cell"><div class="action-buttons"><button onclick="openModal('${p.id}')" class="text-[9px] gold-text hover:underline font-black uppercase tracking-widest">Edit</button><button onclick="deleteProject('${p.id}')" class="text-[9px] delete-btn font-black uppercase tracking-widest">Delete</button></div></div></td>
                 </tr>`;
             }).join('');
@@ -250,7 +250,7 @@
             return { total, completed, percent: total > 0 ? Math.round((completed/total)*100) : 0 };
         }
         
-        // RENDER CARDS (με μικρότερο πλάτος τίτλου)
+        // RENDER CARDS (μειωμένο πλάτος τίτλου)
         window.renderPipelineCards = () => {
             const container = document.getElementById('pipeline-container');
             if (!container) return;
@@ -707,7 +707,6 @@
                     }
                 }
                 
-                // Update channel stats
                 if (totalStats) {
                     let changed = false;
                     const newStats = { ...channelStats };
@@ -721,7 +720,6 @@
                     if (changed) await window.saveChannelStats(newStats);
                 }
                 
-                // Update video stats
                 let updatedCount = 0;
                 for (let project of projects) {
                     let projectModified = false;
@@ -799,7 +797,7 @@
             const d = JSON.stringify({p:projects, c:channelStats, pipe:pipelineProjects});
             const a = document.createElement('a');
             a.href = "data:text/json;charset=utf-8,"+encodeURIComponent(d);
-            a.download = `hst_backup_V5.2_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`;
+            a.download = `hst_backup_V6_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`;
             a.click();
         };
         
