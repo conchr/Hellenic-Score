@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hellenic Score & Tales | V8.1 – Checkboxes Fixed, Production Shorts/Soundtracks</title>
+    <title>Hellenic Score & Tales | V8.2 – Folder Children with Finalize & Move Out</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
@@ -52,11 +52,16 @@
         .folder-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; width: 100%; }
         .folder-left { display: flex; align-items: center; gap: 0.4rem; }
         .folder-right { display: flex; align-items: center; gap: 0.4rem; }
-        .folder-children-boxes { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-left: 0.75rem; margin-top: 0.5rem; }
-        .child-project-box { background: rgba(20,20,25,0.9); border: 1px solid rgba(197,160,89,0.4); border-radius: 10px; padding: 0.3rem 0.7rem; cursor: pointer; transition: 0.2s; min-width: 110px; text-align: center; }
-        .child-project-box:hover { background: rgba(197,160,89,0.2); border-color: var(--gold); transform: translateY(-1px); }
-        .child-project-title { font-size: 0.7rem; font-weight: 700; color: #e5e7eb; margin-bottom: 0.15rem; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .child-project-progress { font-size: 0.65rem; color: #aaa; }
+        .folder-children-boxes { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-left: 0.75rem; margin-top: 0.5rem; }
+        .child-project-wrapper { background: rgba(20,20,25,0.9); border: 1px solid rgba(197,160,89,0.4); border-radius: 12px; padding: 0.5rem; min-width: 150px; transition: 0.2s; }
+        .child-project-wrapper:hover { background: rgba(197,160,89,0.15); border-color: var(--gold); }
+        .child-project-title { font-size: 0.75rem; font-weight: 700; color: #e5e7eb; margin-bottom: 0.2rem; text-align: center; cursor: pointer; }
+        .child-project-progress { font-size: 0.65rem; color: #aaa; text-align: center; margin-bottom: 0.3rem; }
+        .child-actions { display: flex; justify-content: center; gap: 0.3rem; margin-top: 0.3rem; }
+        .child-btn { background: #2c2c30; border: none; border-radius: 4px; padding: 0.15rem 0.4rem; font-size: 0.65rem; cursor: pointer; color: #ccc; transition: 0.1s; }
+        .child-btn.finalize { background: #10b981; color: black; }
+        .child-btn.moveout { background: #3f3f46; color: white; }
+        .child-btn:hover { filter: brightness(1.2); }
         .folder-title-input { font-size: 0.8rem !important; font-weight: 800 !important; background: transparent !important; border: 1px solid rgba(197,160,89,0.4) !important; padding: 0.2rem 0.4rem !important; min-width: 140px !important; width: auto; letter-spacing: 0.02em; }
         .folder-title-input:focus { border-color: var(--gold) !important; outline: none; }
         
@@ -74,7 +79,7 @@
         .inline-input { width: 100%; font-size: 0.75rem !important; padding: 0.25rem 0.4rem !important; }
         .short-item { background: #1e1e22; border-radius: 8px; padding: 0.75rem; margin-bottom: 0.75rem; }
         .music-item { background: #1e1e22; border-radius: 8px; padding: 0.75rem; margin-bottom: 0.75rem; }
-        @media (max-width: 768px) { .step-item { flex-direction: column; } .step-check { align-self: flex-start; } .child-project-box { min-width: 90px; } .folder-title-input { min-width: 110px !important; } }
+        @media (max-width: 768px) { .step-item { flex-direction: column; } .step-check { align-self: flex-start; } .child-project-wrapper { min-width: 120px; } .folder-title-input { min-width: 110px !important; } }
         .production-modal { max-width: 90vw; width: 900px; max-height: 85vh; overflow-y: auto; }
         .card-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem; }
         .title-input-wrapper { width: 28%; }
@@ -103,13 +108,13 @@
         <div class="flex flex-col md:flex-row justify-between items-start mb-6 gap-3 border-b border-zinc-800/50 pb-4">
             <div class="flex flex-col gap-1"><div class="flex gap-2 text-[9px] text-zinc-500"><span>Database Status:</span><span id="db-status" class="text-zinc-400">Local Storage Mode</span></div><div class="flex gap-2 flex-wrap"><button onclick="exportDatabase()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text">💾 Backup</button><button onclick="importDatabase()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text">📂 Restore</button></div></div>
             <div class="flex gap-4"><button onclick="switchTab('archive')" id="tab-archive" class="nav-btn active cinzel">Αρχείο</button><button onclick="switchTab('pipeline')" id="tab-pipeline" class="nav-btn cinzel">Παραγωγή</button></div>
-            <div class="text-right hidden md:block"><p class="text-[9px] text-zinc-600">Hellenic Score & Tales</p><p class="text-[10px] gold-text cinzel">V8.1 – Full Checkbox Support</p></div>
+            <div class="text-right hidden md:block"><p class="text-[9px] text-zinc-600">Hellenic Score & Tales</p><p class="text-[10px] gold-text cinzel">V8.2 – Folder Actions</p></div>
         </div>
 
         <div id="view-archive">
             <header class="mb-10 text-center"><h1 class="text-4xl font-bold gold-text mb-1 uppercase tracking-[0.2em]">HELLENIC SCORE & TALES</h1></header>
             <div class="flex justify-between mb-6"><div class="glass-card px-6 py-2"><p class="text-[9px] text-zinc-500">Live Projects</p><p id="stat-total" class="text-2xl font-bold gold-text">0</p></div><button onclick="openModal()" class="px-8 py-3 gold-bg text-black font-black rounded-xl text-[11px] shadow-2xl">🔱 NEW PROJECT</button></div>
-            <div class="glass-card overflow-hidden"><div class="overflow-x-auto"><table class="data-table"><thead><tr class="bg-zinc-900/70 text-zinc-500 text-[9px] uppercase font-black tracking-widest border-b border-zinc-800"><th class="p-2 text-center">#</th><th class="p-2 text-center">Order</th><th class="p-2">Project</th><th class="p-2">Shorts</th><th class="p-2">Soundtracks</th><th class="p-2 text-right">Actions</th></tr></thead><tbody id="project-list"></tbody></table></div></div>
+            <div class="glass-card overflow-hidden"><div class="overflow-x-auto"><table class="data-table"><thead><tr class="bg-zinc-900/70 text-zinc-500 text-[9px] uppercase font-black tracking-widest border-b border-zinc-800"><th class="p-2 text-center">#</th><th class="p-2 text-center">Order</th><th class="p-2">Project</th><th class="p-2">Shorts</th><th class="p-2">Soundtracks</th><th class="p-2 text-right">Actions</th><tr></thead><tbody id="project-list"></tbody></table></div></div>
         </div>
 
         <div id="view-pipeline" class="hidden">
@@ -135,8 +140,8 @@
                         <div class="md:col-span-6"><label class="text-[9px] text-zinc-500">Τίτλος</label><input type="text" id="main-title" required class="w-full"></div>
                         <div class="md:col-span-6"><label class="text-[9px] text-zinc-500">YouTube Link</label><div class="field-with-copy"><input type="url" id="main-link" class="w-full"><button type="button" class="copy-btn-small" onclick="copyToClipboard(document.getElementById('main-link').value, 'Main Video Link')">📋 Copy</button></div></div>
                     </div>
-                    <div class="mt-3"><label class="text-[9px] text-zinc-500">Script (6 rows)</label><textarea id="main-script" rows="6" class="w-full script-textarea" placeholder="Κείμενο script..."></textarea><div class="mt-1"><button type="button" class="copy-btn-small" onclick="copyToClipboard(document.getElementById('main-script').value, 'Main Script')">📋 Copy Script</button></div></div>
-                    <div class="mt-3"><label class="text-[9px] text-zinc-500">Περιγραφή (6 rows)</label><textarea id="main-description" rows="6" class="w-full desc-textarea" placeholder="Περιγραφή για το κύριο βίντεο..."></textarea><div class="mt-1"><button type="button" class="copy-btn-small" onclick="copyToClipboard(document.getElementById('main-description').value, 'Main Description')">📋 Copy Description</button></div></div>
+                    <div class="mt-3"><label class="text-[9px] text-zinc-500">Script (6 rows)</label><textarea id="main-script" rows="6" class="w-full script-textarea" placeholder="Κείμενο script..."></textarea><div><button type="button" class="copy-btn-small" onclick="copyToClipboard(document.getElementById('main-script').value, 'Main Script')">📋 Copy Script</button></div></div>
+                    <div class="mt-3"><label class="text-[9px] text-zinc-500">Περιγραφή (6 rows)</label><textarea id="main-description" rows="6" class="w-full desc-textarea" placeholder="Περιγραφή για το κύριο βίντεο..."></textarea><div><button type="button" class="copy-btn-small" onclick="copyToClipboard(document.getElementById('main-description').value, 'Main Description')">📋 Copy Description</button></div></div>
                     <div class="status-group mt-3">
                         <label><input type="checkbox" id="main-uploaded" class="pipeline-checkbox"> Uploaded</label>
                         <label><input type="checkbox" id="main-live" class="pipeline-checkbox"> Live</label>
@@ -243,7 +248,17 @@
             for(let item of items) {
                 if(item.type === "folder") {
                     const children = pipelineProjects.filter(p => p.parentId === item.id).sort((a,b) => (a.orderIndex||0) - (b.orderIndex||0));
-                    html += `<div class="prod-card folder-card" data-id="${item.id}"><div class="folder-header"><div class="folder-left"><span>📁</span><input type="text" class="folder-title-input" value="${escapeHtml(item.title)}" onchange="updateFolderTitle('${item.id}', this.value)"></div><div class="folder-right"><button onclick="deletePipelineProject('${item.id}')" class="text-[9px] text-zinc-600 hover:text-red-500">Delete</button></div></div>${item.description ? `<div class="text-[10px] text-zinc-500 mt-0.5 ml-7">${escapeHtml(item.description)}</div>` : ''}<div class="folder-children-boxes">${children.map(child => { const prog = computeProgress(child); return `<div class="child-project-box" onclick="openProductionEditor('${child.id}')"><div class="child-project-title">${escapeHtml(child.title)}</div><div class="child-project-progress">${prog.completed}/${prog.total}</div></div>`; }).join('')}</div></div>`;
+                    html += `<div class="prod-card folder-card" data-id="${item.id}"><div class="folder-header"><div class="folder-left"><span>📁</span><input type="text" class="folder-title-input" value="${escapeHtml(item.title)}" onchange="updateFolderTitle('${item.id}', this.value)"></div><div class="folder-right"><button onclick="deletePipelineProject('${item.id}')" class="text-[9px] text-zinc-600 hover:text-red-500">Delete</button></div></div>${item.description ? `<div class="text-[10px] text-zinc-500 mt-0.5 ml-7">${escapeHtml(item.description)}</div>` : ''}<div class="folder-children-boxes">${children.map(child => {
+                        const prog = computeProgress(child);
+                        return `<div class="child-project-wrapper">
+                                    <div class="child-project-title" onclick="openProductionEditor('${child.id}')">${escapeHtml(child.title)}</div>
+                                    <div class="child-project-progress">${prog.completed}/${prog.total}</div>
+                                    <div class="child-actions">
+                                        <button class="child-btn finalize" onclick="event.stopPropagation(); showConfirmModal('${child.id}')">Finalize</button>
+                                        <button class="child-btn moveout" onclick="event.stopPropagation(); moveOutOfFolder('${child.id}')">Move Out</button>
+                                    </div>
+                                </div>`;
+                    }).join('')}</div></div>`;
                 } else {
                     const prog = computeProgress(item);
                     html += `<div class="prod-card subproject-card" data-id="${item.id}"><div class="card-header"><div class="title-input-wrapper"><input type="text" class="pipeline-input gold-text font-black !text-sm uppercase w-full" value="${escapeHtml(item.title)}" onchange="updateProjectTitle('${item.id}', this.value)"></div><div class="progress-wrapper"><div class="progress-bar"><div class="progress-fill" style="width: ${prog.percent}%"></div></div><div class="text-[9px] text-zinc-500 text-right mt-1">${prog.completed}/${prog.total} steps</div></div><div class="flex gap-2"><button onclick="openProductionEditor('${item.id}')" class="text-[9px] bg-zinc-800 px-2 py-1 rounded">Edit</button><button onclick="showConfirmModal('${item.id}')" class="upload-btn" style="padding: 3px 10px;">FINALIZE</button><button onclick="openMoveProjectPrompt('${item.id}')" class="text-[9px] bg-zinc-800 px-2 py-1 rounded">📁 Move</button><button onclick="deletePipelineProject('${item.id}')" class="text-[9px] text-zinc-600 hover:text-red-500">Delete</button></div></div></div>`;
@@ -251,6 +266,19 @@
             }
             return html;
         }
+        
+        window.moveOutOfFolder = (projectId) => {
+            const project = pipelineProjects.find(p => p.id === projectId);
+            if(project && project.type === "project") {
+                project.parentId = null;
+                // reorder top-level items
+                const topLevel = pipelineProjects.filter(p => p.parentId === null);
+                for(let i=0; i<topLevel.length; i++) topLevel[i].orderIndex = i;
+                saveToLocal();
+                renderPipelineCards();
+                showToast('Project moved out of folder');
+            }
+        };
         
         window.renderPipelineCards = () => { const container = document.getElementById('pipeline-container'); if (!container) return; const topLevel = pipelineProjects.filter(p => p.parentId === null).sort((a,b) => (a.orderIndex||0) - (b.orderIndex||0)); if (!topLevel.length) { container.innerHTML = '<div class="text-center text-zinc-500 py-10">No folders or projects. Click "NEW PRODUCTION" or "NEW FOLDER" to start.</div>'; return; } container.innerHTML = `<div class="sortable-container">${renderItems(topLevel)}</div>`; initSortable(); };
         function initSortable() { if (sortableInstance) sortableInstance.destroy(); const root = document.querySelector('#pipeline-container .sortable-container'); if (!root) return; sortableInstance = new Sortable(root, { animation: 200, handle: '.prod-card', draggable: '.prod-card', onEnd: function() { const children = Array.from(root.querySelectorAll('.prod-card')); for(let i=0; i<children.length; i++) { const id = children[i].getAttribute('data-id'); const item = pipelineProjects.find(p => p.id === id); if(item && item.parentId === null) item.orderIndex = i; } saveToLocal(); renderPipelineCards(); showToast('Order updated'); } }); }
@@ -415,7 +443,7 @@
         document.getElementById('final-delete-btn').onclick = () => { if(pendingDeleteId) { projects = projects.filter(p => p.id !== pendingDeleteId); saveToLocal(); renderProjects(); updateStats(); hideDeleteModal(); showToast('DELETED'); } };
         window.importDatabase = () => document.getElementById('import-input').click();
         window.handleImport = (inputEl) => { const file = inputEl.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = async (e) => { try { const data = JSON.parse(e.target.result); if(data.p && Array.isArray(data.p)) for(const p of data.p) await window.saveProjectToDB(p.id || Date.now()+Math.random(), p); if(data.pipe && Array.isArray(data.pipe)) for(const pipe of data.pipe) await window.savePipelineToDB(pipe.id || Date.now()+Math.random(), pipe); showToast('Restore successful'); renderProjects(); renderPipelineCards(); updateStats(); } catch(err) { alert('Restore failed: '+err.message); } }; reader.readAsText(file); };
-        window.exportDatabase = () => { const d = JSON.stringify({p:projects, pipe:pipelineProjects}); const a = document.createElement('a'); a.href = "data:text/json;charset=utf-8,"+encodeURIComponent(d); a.download = `hst_backup_V8.1_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`; a.click(); };
+        window.exportDatabase = () => { const d = JSON.stringify({p:projects, pipe:pipelineProjects}); const a = document.createElement('a'); a.href = "data:text/json;charset=utf-8,"+encodeURIComponent(d); a.download = `hst_backup_V8.2_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`; a.click(); };
         window.switchTab = (tab) => { document.getElementById('tab-archive').classList.toggle('active', tab==='archive'); document.getElementById('tab-pipeline').classList.toggle('active', tab==='pipeline'); document.getElementById('view-archive').classList.toggle('hidden', tab!=='archive'); document.getElementById('view-pipeline').classList.toggle('hidden', tab!=='pipeline'); if (tab === 'pipeline') setTimeout(() => renderPipelineCards(), 100); };
         
         const init = () => { loadFromLocal(); renderProjects(); renderPipelineCards(); updateStats(); document.getElementById('loader').style.opacity = '0'; setTimeout(() => document.getElementById('loader').classList.add('hidden'), 500); document.getElementById('import-input').addEventListener('change', (e) => window.handleImport(e.target)); document.getElementById('db-status').innerText = 'Local Storage Mode'; };
