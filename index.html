@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hellenic Score & Tales | V8 – Production Finalize with Scripts & Descriptions</title>
+    <title>Hellenic Score & Tales | V8.1 – Checkboxes Fixed, Production Shorts/Soundtracks</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
@@ -44,7 +44,6 @@
         a.title-red, a.title-green, a.title-white { text-decoration: none; }
         a.title-red:hover, a.title-green:hover, a.title-white:hover { text-decoration: underline; }
         
-        /* COMPACT FOLDER CARDS */
         .prod-card { background: rgba(22,22,24,0.8); border-radius: 14px; padding: 0.65rem 1rem; margin-bottom: 1rem; border: 1px solid rgba(197,160,89,0.2); transition: all 0.2s; cursor: grab; }
         .prod-card:active { cursor: grabbing; }
         .prod-card.dragging { opacity: 0.4; }
@@ -61,7 +60,6 @@
         .folder-title-input { font-size: 0.8rem !important; font-weight: 800 !important; background: transparent !important; border: 1px solid rgba(197,160,89,0.4) !important; padding: 0.2rem 0.4rem !important; min-width: 140px !important; width: auto; letter-spacing: 0.02em; }
         .folder-title-input:focus { border-color: var(--gold) !important; outline: none; }
         
-        /* Edit modal copy button style */
         .copy-btn-small { background: #2c2c30; border: 1px solid #3f3f46; border-radius: 4px; padding: 0.2rem 0.5rem; font-size: 0.65rem; cursor: pointer; transition: 0.15s; color: #ccc; white-space: nowrap; margin-left: 0.5rem; display: inline-flex; align-items: center; gap: 0.2rem; }
         .copy-btn-small:hover { background: var(--gold); color: black; border-color: var(--gold); }
         .field-with-copy { display: flex; align-items: flex-start; gap: 0.3rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
@@ -90,11 +88,9 @@
         <div class="text-center"><div class="inline-block animate-spin text-3xl mb-3">🔱</div><p class="cinzel gold-text text-[10px] uppercase font-bold">ΠΡΟΕΤΟΙΜΑΣΙΑ ΠΥΛΗΣ...</p></div>
     </div>
 
-    <!-- Modals -->
     <div id="confirm-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-4 z-50"><div class="glass-card max-w-sm w-full p-8 text-center"><h3 class="cinzel gold-text text-xl mb-4">ΕΠΙΒΕΒΑΙΩΣΗ UPLOAD</h3><p class="text-zinc-400 text-xs mb-8">Θέλετε να μεταφέρετε το project στο Αρχείο;</p><div class="flex justify-center gap-4"><button onclick="hideConfirmModal()" class="text-zinc-500 text-[10px] uppercase font-bold">ΑΚΥΡΟ</button><button id="final-confirm-btn" class="bg-emerald-500 text-black font-black text-[10px] px-8 py-3 rounded">ΜΕΤΑΦΟΡΑ</button></div></div></div>
     <div id="delete-modal" class="fixed inset-0 bg-black/95 backdrop-blur-xl hidden flex items-center justify-center p-4 z-50"><div class="glass-card max-w-sm w-full p-10 text-center"><div class="text-red-500 text-4xl mb-6">⚠️</div><h3 class="cinzel text-red-500 text-xl mb-4">ΔΙΑΓΡΑΦΗ PROJECT</h3><p class="text-zinc-500 text-xs mb-10">Μόνιμη ενέργεια. Είστε σίγουροι;</p><button id="final-delete-btn" class="bg-red-600 text-white font-black text-[11px] py-4 rounded w-full">ΝΑΙ, ΔΙΑΓΡΑΦΗ</button><button onclick="hideDeleteModal()" class="text-zinc-500 text-[10px] py-3 mt-2 w-full">ΑΚΥΡΩΣΗ</button></div></div>
 
-    <!-- Production Edit Modal (simplified) -->
     <div id="production-edit-modal" class="fixed inset-0 bg-black/98 backdrop-blur-xl hidden flex items-center justify-center p-4 z-50 overflow-y-auto">
         <div class="glass-card production-modal bg-zinc-900 p-6 border-gold/40 shadow-2xl">
             <div class="flex justify-between items-center mb-4 border-b border-zinc-800 pb-3"><h3 id="prod-modal-title" class="text-2xl gold-text cinzel">Edit Production</h3><button onclick="closeProductionModal()" class="text-zinc-500 text-3xl hover:text-white">✕</button></div>
@@ -107,17 +103,15 @@
         <div class="flex flex-col md:flex-row justify-between items-start mb-6 gap-3 border-b border-zinc-800/50 pb-4">
             <div class="flex flex-col gap-1"><div class="flex gap-2 text-[9px] text-zinc-500"><span>Database Status:</span><span id="db-status" class="text-zinc-400">Local Storage Mode</span></div><div class="flex gap-2 flex-wrap"><button onclick="exportDatabase()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text">💾 Backup</button><button onclick="importDatabase()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text">📂 Restore</button></div></div>
             <div class="flex gap-4"><button onclick="switchTab('archive')" id="tab-archive" class="nav-btn active cinzel">Αρχείο</button><button onclick="switchTab('pipeline')" id="tab-pipeline" class="nav-btn cinzel">Παραγωγή</button></div>
-            <div class="text-right hidden md:block"><p class="text-[9px] text-zinc-600">Strategic Control</p><p class="text-[10px] gold-text cinzel">V8 – Finalize with Scripts</p></div>
+            <div class="text-right hidden md:block"><p class="text-[9px] text-zinc-600">Hellenic Score & Tales</p><p class="text-[10px] gold-text cinzel">V8.1 – Full Checkbox Support</p></div>
         </div>
 
-        <!-- Archive View (stats removed) -->
         <div id="view-archive">
             <header class="mb-10 text-center"><h1 class="text-4xl font-bold gold-text mb-1 uppercase tracking-[0.2em]">HELLENIC SCORE & TALES</h1></header>
             <div class="flex justify-between mb-6"><div class="glass-card px-6 py-2"><p class="text-[9px] text-zinc-500">Live Projects</p><p id="stat-total" class="text-2xl font-bold gold-text">0</p></div><button onclick="openModal()" class="px-8 py-3 gold-bg text-black font-black rounded-xl text-[11px] shadow-2xl">🔱 NEW PROJECT</button></div>
-            <div class="glass-card overflow-hidden"><div class="overflow-x-auto"><table class="data-table"><thead><tr class="bg-zinc-900/70 text-zinc-500 text-[9px] uppercase font-black tracking-widest border-b border-zinc-800"><th class="p-2 text-center">#</th><th class="p-2 text-center">Order</th><th class="p-2">Project</th><th class="p-2">Shorts</th><th class="p-2">Soundtracks</th><th class="p-2 text-right">Actions</th><tr></thead><tbody id="project-list"></tbody></table></div></div>
+            <div class="glass-card overflow-hidden"><div class="overflow-x-auto"><table class="data-table"><thead><tr class="bg-zinc-900/70 text-zinc-500 text-[9px] uppercase font-black tracking-widest border-b border-zinc-800"><th class="p-2 text-center">#</th><th class="p-2 text-center">Order</th><th class="p-2">Project</th><th class="p-2">Shorts</th><th class="p-2">Soundtracks</th><th class="p-2 text-right">Actions</th></tr></thead><tbody id="project-list"></tbody></table></div></div>
         </div>
 
-        <!-- Production View -->
         <div id="view-pipeline" class="hidden">
             <div class="flex justify-between items-center mb-8 border-l-4 border-gold pl-6">
                 <div><h2 class="text-2xl gold-text cinzel uppercase">PRODUCTION WORKFLOW</h2><p class="text-[10px] text-zinc-500">Drag & drop to reorder | Click Edit to manage details</p></div>
@@ -130,7 +124,6 @@
         </div>
     </div>
 
-    <!-- Master Edit Modal (Archive Project) -->
     <div id="modal" class="fixed inset-0 bg-black/98 backdrop-blur-xl hidden flex items-center justify-center p-4 z-50 overflow-y-auto">
         <div class="glass-card w-full max-w-5xl my-4 bg-zinc-900 p-8 border-gold/40 shadow-2xl">
             <div class="flex justify-between items-center mb-8 border-b border-zinc-800 pb-4"><h2 class="text-2xl gold-text cinzel uppercase">ΣΤΟΙΧΕΙΑ PROJECT</h2><button onclick="closeModal()" class="text-zinc-500 text-3xl hover:text-white">✕</button></div>
@@ -156,7 +149,6 @@
         </div>
     </div>
 
-    <!-- Folder Modal -->
     <div id="folder-modal" class="fixed inset-0 bg-black/98 backdrop-blur-xl hidden flex items-center justify-center p-4 z-50">
         <div class="glass-card max-w-md bg-zinc-900 p-8 border-gold/50 shadow-2xl">
             <h2 class="text-2xl gold-text cinzel mb-6 text-center">CREATE FOLDER</h2>
@@ -166,29 +158,21 @@
         </div>
     </div>
 
-    <!-- Move Project Modal -->
     <div id="move-modal" class="fixed inset-0 bg-black/98 backdrop-blur-xl hidden flex items-center justify-center p-4 z-50">
         <div class="glass-card max-w-md bg-zinc-900 p-8 border-gold/50 shadow-2xl">
             <h2 class="text-2xl gold-text cinzel mb-6 text-center">MOVE PROJECT</h2>
-            <select id="move-folder-select" class="w-full mb-6">
-                <option value="__root__">(No folder / Root)</option>
-            </select>
+            <select id="move-folder-select" class="w-full mb-6"><option value="__root__">(No folder / Root)</option></select>
             <div class="flex justify-center gap-4"><button onclick="closeMoveModal()" class="text-zinc-500 text-xs uppercase font-bold">Cancel</button><button onclick="confirmMoveProject()" class="px-6 py-2 gold-bg text-black font-black rounded-xl text-xs">Move</button></div>
         </div>
     </div>
 
-    <!-- Pipeline Start Modal -->
     <div id="pipeline-modal" class="fixed inset-0 bg-black/98 backdrop-blur-xl hidden flex items-center justify-center p-4 z-50"><div class="glass-card max-w-md bg-zinc-900 p-10 text-center"><h2 class="text-2xl gold-text cinzel mb-6">START PRODUCTION</h2><input type="text" id="pipeline-title-input" placeholder="Project Name" class="w-full mb-6 text-center"><div class="flex justify-center gap-4"><button onclick="document.getElementById('pipeline-modal').classList.add('hidden')" class="text-zinc-500 text-xs">Cancel</button><button onclick="addPipelineProject()" class="px-8 py-2 gold-bg text-black font-black rounded-xl text-xs">Initiate</button></div></div></div>
 
     <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 gold-bg text-black px-8 py-3 rounded-full hidden z-50 text-xs font-black text-center whitespace-nowrap"></div>
 
     <script>
-        // GLOBAL STATE
         let projects = [], pipelineProjects = [];
-        let pendingDeleteId = null;
-        let currentEditProjectId = null;
-        let sortableInstance = null;
-        let currentMoveProjectId = null;
+        let pendingDeleteId = null, currentEditProjectId = null, sortableInstance = null, currentMoveProjectId = null;
 
         const showToast = (m) => { const t = document.getElementById('toast'); t.innerText = m; t.classList.remove('hidden'); setTimeout(() => t.classList.add('hidden'), 4000); };
         const copyToClipboard = (text, fieldName) => { navigator.clipboard.writeText(text).then(() => showToast(`📋 Αντιγράφηκε: ${fieldName}`)).catch(() => showToast('Αποτυχία αντιγραφής')); };
@@ -198,24 +182,14 @@
             projects = JSON.parse(localStorage.getItem('hst_projects') || '[]'); 
             pipelineProjects = JSON.parse(localStorage.getItem('hst_pipeline') || '[]'); 
             projects.sort((a,b) => (a.orderIndex||0) - (b.orderIndex||0));
-            // Ensure new fields exist for backward compatibility
             for(let p of projects) {
                 if(!p.mainVideo) p.mainVideo = { title: '', link: '', uploaded: false, live: false, script: '', description: '' };
                 if(p.mainVideo.script === undefined) p.mainVideo.script = '';
                 if(p.mainVideo.description === undefined) p.mainVideo.description = '';
-                for(let s of (p.shorts || [])) {
-                    if(s.script === undefined) s.script = '';
-                    if(s.description === undefined) s.description = '';
-                }
+                for(let s of (p.shorts || [])) { if(s.script === undefined) s.script = ''; if(s.description === undefined) s.description = ''; }
                 for(let st of (p.soundtracks || [])) if(st.description === undefined) st.description = '';
             }
-            const defaultMain = () => ({
-                script: { done: false, text: '', link: '' },
-                folder: { done: false, link: '' },   // renamed from narration
-                youtubeLink: { done: false, link: '' }, // renamed from montage
-                // no visuals, subtitles, musicSFX, exportUpload, metadata
-                translations: { en: true, gr: false, fr: false, it: false, es: false, pt: false, de: false, ja: false, zh: false }
-            });
+            const defaultMain = () => ({ script: { done: false, link: '' }, folder: { done: false, link: '' }, youtubeLink: { done: false, link: '' }, translations: { en: true, gr: false, fr: false, it: false, es: false, pt: false, de: false, ja: false, zh: false }, scriptText: '', description: '', tags: '' });
             for(let p of pipelineProjects) {
                 if(p.type === undefined) p.type = "project";
                 if(p.parentId === undefined) p.parentId = null;
@@ -225,17 +199,11 @@
                     if(!p.shorts) p.shorts = [];
                     if(!p.soundtracks) p.soundtracks = [];
                     if(!p.main.translations) p.main.translations = { en: true, gr: false, fr: false, it: false, es: false, pt: false, de: false, ja: false, zh: false };
-                    // Add script, description, tags for main
                     if(p.main.scriptText === undefined) p.main.scriptText = '';
                     if(p.main.description === undefined) p.main.description = '';
                     if(p.main.tags === undefined) p.main.tags = '';
-                    for(let s of p.shorts) {
-                        if(s.script === undefined) s.script = '';
-                        if(s.description === undefined) s.description = '';
-                    }
-                } else {
-                    if(p.description === undefined) p.description = "";
-                }
+                    for(let s of p.shorts) { if(s.script === undefined) s.script = ''; if(s.description === undefined) s.description = ''; }
+                } else { if(p.description === undefined) p.description = ""; }
             }
         };
         
@@ -254,7 +222,7 @@
                 const ytId = m && m[2].length === 11 ? m[2] : null;
                 const mainClass = getTitleClass(p.mainVideo.uploaded, p.mainVideo.live);
                 const mainTitleHtml = p.mainVideo.link ? `<a href="${p.mainVideo.link}" target="_blank" class="font-black text-xs uppercase break-words ${mainClass}">${escapeHtml(p.mainVideo.title)}</a>` : `<div class="font-black text-xs uppercase break-words ${mainClass}">${escapeHtml(p.mainVideo.title)}</div>`;
-                return `<tr class="group hover:bg-zinc-800/40 transition-all archive-row"><td class="p-2 text-center text-zinc-600 font-mono text-[10px]">${i+1}</td><td class="p-2 text-center"><div class="flex flex-col gap-0.5"><button onclick="moveProject('${p.id}', 'up')" class="hover:text-gold text-[10px]">▲</button><button onclick="moveProject('${p.id}', 'down')" class="hover:text-gold text-[10px]">▼</button></div></td><td class="p-2"><div class="flex items-center gap-2"><div class="thumbnail-frame shadow-xl">${ytId ? `<img src="https://img.youtube.com/vi/${ytId}/mqdefault.jpg">` : '<span class="text-[7px] text-zinc-700">NO ART</span>'}</div><div><div class="flex items-center gap-1 mb-0.5"><span style="color: var(--gold);">🔱</span>${mainTitleHtml}</div></div></div></div></td><td class="p-2"><div class="space-y-1">${(p.shorts || []).map(s => { const titleClass = getTitleClass(s.uploaded, s.live); return `<div><div class="flex items-center gap-1"><span style="color: var(--gold);">🔱</span>${s.link ? `<a href="${s.link}" target="_blank" class="short-title-text hover:gold-text break-words ${titleClass}">${escapeHtml(s.title)}</a>` : `<span class="short-title-text break-words ${titleClass}">${escapeHtml(s.title)}</span>`}</div></div>`}).join('')}</div></td><td class="p-2"><div class="space-y-1">${(p.soundtracks || []).map(st => { const titleClass = getTitleClass(st.uploaded, st.live); const spotifyHtml = st.spotifyLink ? `<a href="${st.spotifyLink}" target="_blank" class="spotify-tag ml-1">● Spotify</a>` : ''; return `<div><div class="flex items-center gap-1 flex-wrap"><span style="color: var(--gold);">🔱</span>${st.link ? `<a href="${st.link}" target="_blank" class="soundtrack-title-text hover:gold-text soundtrack-title ${titleClass}">${escapeHtml(st.title)}</a>` : `<span class="soundtrack-title-text soundtrack-title ${titleClass}">${escapeHtml(st.title)}</span>`}${spotifyHtml}</div></div>`}).join('')}</div></td><td class="p-2 text-right actions-cell"><div class="action-buttons"><button onclick="openModal('${p.id}')" class="text-[9px] gold-text hover:underline font-black uppercase tracking-widest">Edit</button><button onclick="deleteProject('${p.id}')" class="text-[9px] delete-btn font-black uppercase tracking-widest">Delete</button></div></div></tr>`;
+                return `<tr><td class="p-2 text-center">${i+1}</td><td class="p-2 text-center"><div class="flex flex-col gap-0.5"><button onclick="moveProject('${p.id}', 'up')" class="hover:text-gold text-[10px]">▲</button><button onclick="moveProject('${p.id}', 'down')" class="hover:text-gold text-[10px]">▼</button></div></td><td class="p-2"><div class="flex items-center gap-2"><div class="thumbnail-frame">${ytId ? `<img src="https://img.youtube.com/vi/${ytId}/mqdefault.jpg">` : '<span class="text-[7px] text-zinc-700">NO ART</span>'}</div><div>${mainTitleHtml}</div></div></td><td class="p-2">${(p.shorts || []).map(s => `<div>🔱 ${s.link ? `<a href="${s.link}" target="_blank" class="short-title-text ${getTitleClass(s.uploaded, s.live)}">${escapeHtml(s.title)}</a>` : `<span class="short-title-text ${getTitleClass(s.uploaded, s.live)}">${escapeHtml(s.title)}</span>`}</div>`).join('')}</td><td class="p-2">${(p.soundtracks || []).map(st => `<div>🔱 ${st.link ? `<a href="${st.link}" target="_blank" class="soundtrack-title-text ${getTitleClass(st.uploaded, st.live)}">${escapeHtml(st.title)}</a>` : `<span class="soundtrack-title-text ${getTitleClass(st.uploaded, st.live)}">${escapeHtml(st.title)}</span>`} ${st.spotifyLink ? `<a href="${st.spotifyLink}" target="_blank" class="spotify-tag">● Spotify</a>` : ''}</div>`).join('')}</td><td class="p-2 text-right"><div class="flex gap-2 justify-end"><button onclick="openModal('${p.id}')" class="text-[9px] gold-text hover:underline">Edit</button><button onclick="deleteProject('${p.id}')" class="text-[9px] delete-btn">Delete</button></div></td></tr>`;
             }).join('');
         };
         
@@ -275,83 +243,64 @@
             for(let item of items) {
                 if(item.type === "folder") {
                     const children = pipelineProjects.filter(p => p.parentId === item.id).sort((a,b) => (a.orderIndex||0) - (b.orderIndex||0));
-                    html += `<div class="prod-card folder-card" data-id="${item.id}" data-type="folder">
-                        <div class="folder-header"><div class="folder-left"><span class="text-gold text-base">📁</span><input type="text" class="folder-title-input" value="${escapeHtml(item.title)}" onchange="updateFolderTitle('${item.id}', this.value)" style="min-width: 130px;"></div>
-                        <div class="folder-right"><button onclick="deletePipelineProject('${item.id}')" class="text-[9px] text-zinc-600 hover:text-red-500 font-bold">Delete</button></div></div>
-                        ${item.description ? `<div class="text-[10px] text-zinc-500 mt-0.5 ml-7 mb-1">${escapeHtml(item.description)}</div>` : ''}
-                        <div class="folder-children-boxes">${children.map(child => { const progress = computeProgress(child); return `<div class="child-project-box" onclick="openProductionEditor('${child.id}')"><div class="child-project-title" title="${escapeHtml(child.title)}">${escapeHtml(child.title)}</div><div class="child-project-progress">${progress.completed}/${progress.total}</div></div>`; }).join('')}</div>
-                    </div>`;
+                    html += `<div class="prod-card folder-card" data-id="${item.id}"><div class="folder-header"><div class="folder-left"><span>📁</span><input type="text" class="folder-title-input" value="${escapeHtml(item.title)}" onchange="updateFolderTitle('${item.id}', this.value)"></div><div class="folder-right"><button onclick="deletePipelineProject('${item.id}')" class="text-[9px] text-zinc-600 hover:text-red-500">Delete</button></div></div>${item.description ? `<div class="text-[10px] text-zinc-500 mt-0.5 ml-7">${escapeHtml(item.description)}</div>` : ''}<div class="folder-children-boxes">${children.map(child => { const prog = computeProgress(child); return `<div class="child-project-box" onclick="openProductionEditor('${child.id}')"><div class="child-project-title">${escapeHtml(child.title)}</div><div class="child-project-progress">${prog.completed}/${prog.total}</div></div>`; }).join('')}</div></div>`;
                 } else {
-                    const progress = computeProgress(item);
-                    html += `<div class="prod-card subproject-card" data-id="${item.id}" data-type="project">
-                        <div class="card-header"><div class="title-input-wrapper"><input type="text" class="pipeline-input gold-text font-black !text-sm uppercase tracking-tighter w-full" value="${escapeHtml(item.title)}" onchange="updateProjectTitle('${item.id}', this.value)"></div>
-                        <div class="progress-wrapper"><div class="progress-bar w-full"><div class="progress-fill" style="width: ${progress.percent}%"></div></div><div class="text-[9px] text-zinc-500 text-right mt-1">${progress.completed}/${progress.total} steps</div></div>
-                        <div class="flex gap-2"><button onclick="openProductionEditor('${item.id}')" class="text-[9px] bg-zinc-800 px-2 py-1 rounded border border-zinc-700 hover:border-gold">Edit</button><button onclick="showConfirmModal('${item.id}')" class="upload-btn" style="padding: 3px 10px;">FINALIZE</button><button onclick="openMoveProjectPrompt('${item.id}')" class="text-[9px] bg-zinc-800 px-2 py-1 rounded">📁 Move</button><button onclick="deletePipelineProject('${item.id}')" class="text-[9px] text-zinc-600 hover:text-red-500">Delete</button></div></div>
-                    </div>`;
+                    const prog = computeProgress(item);
+                    html += `<div class="prod-card subproject-card" data-id="${item.id}"><div class="card-header"><div class="title-input-wrapper"><input type="text" class="pipeline-input gold-text font-black !text-sm uppercase w-full" value="${escapeHtml(item.title)}" onchange="updateProjectTitle('${item.id}', this.value)"></div><div class="progress-wrapper"><div class="progress-bar"><div class="progress-fill" style="width: ${prog.percent}%"></div></div><div class="text-[9px] text-zinc-500 text-right mt-1">${prog.completed}/${prog.total} steps</div></div><div class="flex gap-2"><button onclick="openProductionEditor('${item.id}')" class="text-[9px] bg-zinc-800 px-2 py-1 rounded">Edit</button><button onclick="showConfirmModal('${item.id}')" class="upload-btn" style="padding: 3px 10px;">FINALIZE</button><button onclick="openMoveProjectPrompt('${item.id}')" class="text-[9px] bg-zinc-800 px-2 py-1 rounded">📁 Move</button><button onclick="deletePipelineProject('${item.id}')" class="text-[9px] text-zinc-600 hover:text-red-500">Delete</button></div></div></div>`;
                 }
             }
             return html;
         }
         
-        window.renderPipelineCards = () => { const container = document.getElementById('pipeline-container'); if (!container) return; const topLevel = pipelineProjects.filter(p => p.parentId === null).sort((a,b) => (a.orderIndex||0) - (b.orderIndex||0)); if (!topLevel.length) { container.innerHTML = '<div class="text-center text-zinc-500 py-10">No folders or projects. Click "NEW PRODUCTION" or "NEW FOLDER" to start.</div>'; return; } container.innerHTML = `<div class="sortable-container" data-parent-id="__root__">${renderItems(topLevel)}</div>`; initSortable(); };
-        function initSortable() { if (sortableInstance) sortableInstance.destroy(); const rootContainer = document.querySelector('#pipeline-container .sortable-container'); if (!rootContainer) return; sortableInstance = new Sortable(rootContainer, { animation: 200, handle: '.prod-card', draggable: '.prod-card', onEnd: function() { const children = Array.from(rootContainer.querySelectorAll('.prod-card')); for(let i=0; i<children.length; i++) { const id = children[i].getAttribute('data-id'); const item = pipelineProjects.find(p => p.id === id); if(item && item.parentId === null) item.orderIndex = i; } saveToLocal(); renderPipelineCards(); showToast('Order updated'); } }); }
+        window.renderPipelineCards = () => { const container = document.getElementById('pipeline-container'); if (!container) return; const topLevel = pipelineProjects.filter(p => p.parentId === null).sort((a,b) => (a.orderIndex||0) - (b.orderIndex||0)); if (!topLevel.length) { container.innerHTML = '<div class="text-center text-zinc-500 py-10">No folders or projects. Click "NEW PRODUCTION" or "NEW FOLDER" to start.</div>'; return; } container.innerHTML = `<div class="sortable-container">${renderItems(topLevel)}</div>`; initSortable(); };
+        function initSortable() { if (sortableInstance) sortableInstance.destroy(); const root = document.querySelector('#pipeline-container .sortable-container'); if (!root) return; sortableInstance = new Sortable(root, { animation: 200, handle: '.prod-card', draggable: '.prod-card', onEnd: function() { const children = Array.from(root.querySelectorAll('.prod-card')); for(let i=0; i<children.length; i++) { const id = children[i].getAttribute('data-id'); const item = pipelineProjects.find(p => p.id === id); if(item && item.parentId === null) item.orderIndex = i; } saveToLocal(); renderPipelineCards(); showToast('Order updated'); } }); }
         window.openFolderModal = () => { document.getElementById('folder-title-input').value = ''; document.getElementById('folder-desc-input').value = ''; document.getElementById('folder-modal').classList.remove('hidden'); };
         window.closeFolderModal = () => document.getElementById('folder-modal').classList.add('hidden');
         window.addFolder = () => { const title = document.getElementById('folder-title-input').value.trim(); if(!title) { showToast('Please enter folder name'); return; } const desc = document.getElementById('folder-desc-input').value.trim(); const topLevel = pipelineProjects.filter(p => p.parentId === null); for(let item of topLevel) item.orderIndex = (item.orderIndex || 0) + 1; const newFolder = { id: Date.now().toString(), title, description: desc, type: "folder", parentId: null, orderIndex: 0, dateCreated: new Date().toISOString() }; pipelineProjects.push(newFolder); saveToLocal(); renderPipelineCards(); closeFolderModal(); showToast('Folder created'); };
         window.updateFolderTitle = (id, newTitle) => { const folder = pipelineProjects.find(p => p.id === id); if(folder && folder.type === "folder") { folder.title = newTitle; saveToLocal(); renderPipelineCards(); } };
-        window.openMoveProjectPrompt = (projectId) => { currentMoveProjectId = projectId; const select = document.getElementById('move-folder-select'); const folders = pipelineProjects.filter(p => p.type === "folder"); select.innerHTML = '<option value="__root__">(No folder / Root)</option>'; for(let folder of folders) select.innerHTML += `<option value="${folder.id}">📁 ${escapeHtml(folder.title)}</option>`; document.getElementById('move-modal').classList.remove('hidden'); };
+        window.openMoveProjectPrompt = (projectId) => { currentMoveProjectId = projectId; const select = document.getElementById('move-folder-select'); const folders = pipelineProjects.filter(p => p.type === "folder"); select.innerHTML = '<option value="__root__">(No folder / Root)</option>' + folders.map(f => `<option value="${f.id}">📁 ${escapeHtml(f.title)}</option>`).join(''); document.getElementById('move-modal').classList.remove('hidden'); };
         window.closeMoveModal = () => document.getElementById('move-modal').classList.add('hidden');
-        window.confirmMoveProject = () => { const targetFolderId = document.getElementById('move-folder-select').value; const project = pipelineProjects.find(p => p.id === currentMoveProjectId); if(project && project.type === "project") { project.parentId = targetFolderId === "__root__" ? null : targetFolderId; const siblings = pipelineProjects.filter(p => p.parentId === project.parentId); for(let i=0; i<siblings.length; i++) siblings[i].orderIndex = i; saveToLocal(); renderPipelineCards(); showToast('Project moved'); } closeMoveModal(); };
+        window.confirmMoveProject = () => { const target = document.getElementById('move-folder-select').value; const project = pipelineProjects.find(p => p.id === currentMoveProjectId); if(project && project.type === "project") { project.parentId = target === "__root__" ? null : target; const siblings = pipelineProjects.filter(p => p.parentId === project.parentId); for(let i=0; i<siblings.length; i++) siblings[i].orderIndex = i; saveToLocal(); renderPipelineCards(); showToast('Project moved'); } closeMoveModal(); };
         window.updateProjectTitle = (id, newTitle) => { const p = pipelineProjects.find(x=>x.id===id); if(p && p.type === "project") { p.title = newTitle; saveToLocal(); renderPipelineCards(); } };
         
-        // NEW SIMPLIFIED PRODUCTION EDITOR
         window.openProductionEditor = (id) => { currentEditProjectId = id; const p = pipelineProjects.find(x => x.id === id); if(!p || p.type !== "project") return; document.getElementById('prod-modal-title').innerText = `Editing: ${escapeHtml(p.title)}`; document.getElementById('production-modal-content').innerHTML = renderProductionForm(p); document.getElementById('production-edit-modal').classList.remove('hidden'); };
         function renderProductionForm(p) {
-            return `<div class="step-group">
-                <div class="text-gold text-sm font-bold mb-3">🎬 Main Video</div>
-                ${renderMainStep(p,'script','Script','textarea',6)}
-                ${renderMainStep(p,'description','Description','textarea',6)}
-                ${renderMainStep(p,'tags','Tags','textarea',3)}
+            return `<div class="step-group"><div class="text-gold text-sm font-bold mb-3">🎬 Main Video</div>
+                ${renderMainStep(p,'script','Script','textarea',6,'scriptText')}
+                ${renderMainStep(p,'description','Description','textarea',6,'description')}
+                ${renderMainStep(p,'tags','Tags','textarea',3,'tags')}
                 ${renderMainStep(p,'folder','Folder','link')}
                 ${renderMainStep(p,'youtubeLink','YouTube Link','link')}
                 ${renderTranslationsStep(p)}
             </div>
-            <div class="step-group">
-                <div class="text-gold text-sm font-bold mb-3 flex justify-between">📱 Shorts <button onclick="addShortToProduction('${p.id}')" class="text-[9px] bg-zinc-800 px-3 py-1 rounded border border-zinc-700 hover:border-gold">+ Add Short</button></div>
-                <div id="shorts-editor-${p.id}">${p.shorts.map((short, idx) => renderShortEditor(p.id, idx, short)).join('')}</div>
-            </div>
-            <div class="step-group">
-                <div class="text-gold text-sm font-bold mb-3 flex justify-between">🎵 Soundtracks <button onclick="addMusicToProduction('${p.id}')" class="text-[9px] bg-zinc-800 px-3 py-1 rounded border border-zinc-700 hover:border-gold">+ Add Music</button></div>
-                <div id="music-editor-${p.id}">${p.soundtracks.map((music, idx) => renderMusicEditor(p.id, idx, music)).join('')}</div>
-            </div>`;
+            <div class="step-group"><div class="text-gold text-sm font-bold mb-3 flex justify-between">📱 Shorts <button onclick="addShortToProduction('${p.id}')" class="text-[9px] bg-zinc-800 px-3 py-1 rounded border border-zinc-700 hover:border-gold">+ Add Short</button></div>
+            <div id="shorts-editor-${p.id}">${p.shorts.map((short, idx) => renderShortEditor(p.id, idx, short)).join('')}</div></div>
+            <div class="step-group"><div class="text-gold text-sm font-bold mb-3 flex justify-between">🎵 Soundtracks <button onclick="addMusicToProduction('${p.id}')" class="text-[9px] bg-zinc-800 px-3 py-1 rounded border border-zinc-700 hover:border-gold">+ Add Music</button></div>
+            <div id="music-editor-${p.id}">${p.soundtracks.map((music, idx) => renderMusicEditor(p.id, idx, music)).join('')}</div></div>`;
         }
-        function renderMainStep(p,key,label,type,rows=1) { 
-            const data = p.main[key] || (type==='textarea' ? '' : { done: false, link: '' });
-            let inputHtml;
-            if (type === 'textarea') {
-                const value = (key==='script'?p.main.scriptText: (key==='description'?p.main.description: (key==='tags'?p.main.tags:''))) || '';
-                inputHtml = `<div class="field-with-copy"><textarea class="inline-input" rows="${rows}" placeholder="${label}" onchange="updateMainTextField('${p.id}', '${key}', this.value)">${escapeHtml(value)}</textarea><button class="copy-btn-small" onclick="copyToClipboard(this.previousElementSibling.value, '${label}')" type="button">📋 Copy</button></div>`;
+        function renderMainStep(p,key,label,type,rows,textProp) {
+            if(type === 'textarea') {
+                const val = p.main[textProp] || '';
+                return `<div class="step-item"><div class="step-content"><div class="step-label">${label}</div><div class="field-with-copy"><textarea class="inline-input" rows="${rows}" placeholder="${label}" onchange="updateMainTextField('${p.id}', '${textProp}', this.value)">${escapeHtml(val)}</textarea><button class="copy-btn-small" onclick="copyToClipboard(this.previousElementSibling.value, '${label}')">📋 Copy</button></div></div></div>`;
             } else {
-                inputHtml = `<div class="field-with-copy"><input type="text" class="inline-input" placeholder="${label} Link" value="${escapeHtml(data.link||'')}" onchange="updateMainField('${p.id}', '${key}', 'link', this.value)" id="input_${p.id}_${key}"><button class="copy-btn-small" onclick="copyToClipboard(document.getElementById('input_${p.id}_${key}').value, '${label} Link')" type="button">📋 Copy</button></div>`;
+                const data = p.main[key] || { done: false, link: '' };
+                return `<div class="step-item"><input type="checkbox" class="step-check pipeline-checkbox" ${data.done ? 'checked' : ''} onchange="updateMainDone('${p.id}', '${key}', this.checked)"><div class="step-content"><div class="step-label">${label}</div><div class="field-with-copy"><input type="text" class="inline-input" placeholder="${label} Link" value="${escapeHtml(data.link||'')}" onchange="updateMainField('${p.id}', '${key}', 'link', this.value)" id="input_${p.id}_${key}"><button class="copy-btn-small" onclick="copyToClipboard(document.getElementById('input_${p.id}_${key}').value, '${label} Link')">📋 Copy</button></div></div></div>`;
             }
-            const done = (type==='textarea') ? false : (data.done || false);
-            return `<div class="step-item"><input type="checkbox" class="step-check pipeline-checkbox" ${done ? 'checked' : ''} onchange="updateMainDone('${p.id}', '${key}', this.checked)"><div class="step-content"><div class="step-label">${label}</div>${inputHtml}</div></div>`;
         }
-        function renderTranslationsStep(p) { const trans = p.main.translations || { en: true, gr: false, fr: false, it: false, es: false, pt: false, de: false, ja: false, zh: false }; const languages = { en:'English', gr:'Greek', fr:'French', it:'Italian', es:'Spanish', pt:'Portuguese', de:'German', ja:'Japanese', zh:'Chinese' }; return `<div class="step-item"><div class="step-content"><div class="step-label">Translations (SRT)</div><div class="lang-grid">${Object.keys(languages).map(code=>`<label class="lang-check"><input type="checkbox" class="pipeline-checkbox scale-75" ${trans[code] ? 'checked' : ''} onchange="updateTranslation('${p.id}', '${code}', this.checked)"> ${languages[code]}</label>`).join('')}</div></div></div>`; }
+        function renderTranslationsStep(p) { const trans = p.main.translations; const langs = { en:'English', gr:'Greek', fr:'French', it:'Italian', es:'Spanish', pt:'Portuguese', de:'German', ja:'Japanese', zh:'Chinese' }; return `<div class="step-item"><div class="step-content"><div class="step-label">Translations (SRT)</div><div class="lang-grid">${Object.keys(langs).map(code=>`<label class="lang-check"><input type="checkbox" class="pipeline-checkbox" ${trans[code] ? 'checked' : ''} onchange="updateTranslation('${p.id}', '${code}', this.checked)"> ${langs[code]}</label>`).join('')}</div></div></div>`; }
         function renderShortEditor(pid, idx, short) {
-            return `<div class="short-item"><div class="flex justify-between items-start gap-2"><div class="field-with-copy flex-1"><input type="text" class="inline-input flex-1" placeholder="Short title" value="${escapeHtml(short.title||'')}" onchange="updateShortField('${pid}', ${idx}, 'title', this.value)"><button class="copy-btn-small" onclick="copyToClipboard(this.previousElementSibling.value, 'Short Title')">📋 Copy</button></div><button onclick="removeShortFromProduction('${pid}', ${idx})" class="text-red-500 text-xs">✕</button></div>
+            return `<div class="short-item"><div class="flex justify-between items-start gap-2"><div class="field-with-copy flex-1"><input type="text" class="inline-input" placeholder="Short title" value="${escapeHtml(short.title||'')}" onchange="updateShortField('${pid}', ${idx}, 'title', this.value)"><button class="copy-btn-small" onclick="copyToClipboard(this.previousElementSibling.value, 'Short Title')">📋 Copy</button></div><button onclick="removeShortFromProduction('${pid}', ${idx})" class="text-red-500 text-xs">✕</button></div>
             <div class="step-item mt-2"><input type="checkbox" class="step-check pipeline-checkbox" ${short.done ? 'checked' : ''} onchange="updateShortDone('${pid}', ${idx}, this.checked)"><div class="step-content"><div class="step-label">Video Link</div><div class="field-with-copy"><input type="text" class="inline-input" placeholder="YouTube link" value="${escapeHtml(short.link||'')}" onchange="updateShortField('${pid}', ${idx}, 'link', this.value)"><button class="copy-btn-small" onclick="copyToClipboard(this.previousElementSibling.value, 'Short Link')">📋 Copy</button></div></div></div>
-            <div class="step-item mt-2"><div class="step-content"><div class="step-label">Script (6 rows)</div><div class="field-with-copy"><textarea rows="6" class="inline-input" placeholder="Script for this short" onchange="updateShortField('${pid}', ${idx}, 'script', this.value)">${escapeHtml(short.script||'')}</textarea><button class="copy-btn-small" onclick="copyToClipboard(this.previousElementSibling.value, 'Short Script')">📋 Copy</button></div></div></div>
-            <div class="step-item mt-2"><div class="step-content"><div class="step-label">Description (6 rows)</div><div class="field-with-copy"><textarea rows="6" class="inline-input" placeholder="Description for this short" onchange="updateShortField('${pid}', ${idx}, 'description', this.value)">${escapeHtml(short.description||'')}</textarea><button class="copy-btn-small" onclick="copyToClipboard(this.previousElementSibling.value, 'Short Description')">📋 Copy</button></div></div></div></div>`;
+            <div class="mt-2"><div class="step-label">Script (6 rows)</div><div class="field-with-copy"><textarea rows="6" class="inline-input" placeholder="Script for this short" onchange="updateShortField('${pid}', ${idx}, 'script', this.value)">${escapeHtml(short.script||'')}</textarea><button class="copy-btn-small" onclick="copyToClipboard(this.previousElementSibling.value, 'Short Script')">📋 Copy</button></div></div>
+            <div class="mt-2"><div class="step-label">Description (6 rows)</div><div class="field-with-copy"><textarea rows="6" class="inline-input" placeholder="Description for this short" onchange="updateShortField('${pid}', ${idx}, 'description', this.value)">${escapeHtml(short.description||'')}</textarea><button class="copy-btn-small" onclick="copyToClipboard(this.previousElementSibling.value, 'Short Description')">📋 Copy</button></div></div></div>`;
         }
         function renderMusicEditor(pid, idx, music) {
-            return `<div class="music-item"><div class="flex justify-between items-start gap-2"><div class="field-with-copy flex-1"><input type="text" class="inline-input flex-1" placeholder="Music title" value="${escapeHtml(music.title||'')}" onchange="updateMusicField('${pid}', ${idx}, 'title', this.value)"><button class="copy-btn-small" onclick="copyToClipboard(this.previousElementSibling.value, 'Music Title')">📋 Copy</button></div><button onclick="removeMusicFromProduction('${pid}', ${idx})" class="text-red-500 text-xs">✕</button></div>
+            return `<div class="music-item"><div class="flex justify-between items-start gap-2"><div class="field-with-copy flex-1"><input type="text" class="inline-input" placeholder="Music title" value="${escapeHtml(music.title||'')}" onchange="updateMusicField('${pid}', ${idx}, 'title', this.value)"><button class="copy-btn-small" onclick="copyToClipboard(this.previousElementSibling.value, 'Music Title')">📋 Copy</button></div><button onclick="removeMusicFromProduction('${pid}', ${idx})" class="text-red-500 text-xs">✕</button></div>
             <div class="step-item mt-2"><input type="checkbox" class="step-check pipeline-checkbox" ${music.done ? 'checked' : ''} onchange="updateMusicDone('${pid}', ${idx}, this.checked)"><div class="step-content"><div class="step-label">Video Link</div><div class="field-with-copy"><input type="text" class="inline-input" placeholder="YouTube link" value="${escapeHtml(music.link||'')}" onchange="updateMusicField('${pid}', ${idx}, 'link', this.value)"><button class="copy-btn-small" onclick="copyToClipboard(this.previousElementSibling.value, 'Music Link')">📋 Copy</button></div></div></div>
             <div class="step-item mt-2"><div class="step-content"><div class="step-label">Spotify Link</div><div class="field-with-copy"><input type="text" class="inline-input" placeholder="Spotify URL" value="${escapeHtml(music.spotifyLink||'')}" onchange="updateMusicField('${pid}', ${idx}, 'spotifyLink', this.value)"><button class="copy-btn-small" onclick="copyToClipboard(this.previousElementSibling.value, 'Spotify Link')">📋 Copy</button></div></div></div>
-            <div class="step-item mt-2"><div class="step-content"><div class="step-label">Description (6 rows)</div><div class="field-with-copy"><textarea rows="6" class="inline-input" placeholder="Description for this soundtrack" onchange="updateMusicField('${pid}', ${idx}, 'description', this.value)">${escapeHtml(music.description||'')}</textarea><button class="copy-btn-small" onclick="copyToClipboard(this.previousElementSibling.value, 'Music Description')">📋 Copy</button></div></div></div></div>`;
+            <div class="mt-2"><div class="step-label">Description (6 rows)</div><div class="field-with-copy"><textarea rows="6" class="inline-input" placeholder="Description for this soundtrack" onchange="updateMusicField('${pid}', ${idx}, 'description', this.value)">${escapeHtml(music.description||'')}</textarea><button class="copy-btn-small" onclick="copyToClipboard(this.previousElementSibling.value, 'Music Description')">📋 Copy</button></div></div></div>`;
         }
-        // Updater functions for new fields
-        window.updateMainTextField = (id, field, val) => { const p = pipelineProjects.find(x=>x.id===id); if(p && p.type === "project") { if(field==='script') p.main.scriptText = val; else if(field==='description') p.main.description = val; else if(field==='tags') p.main.tags = val; saveToLocal(); renderPipelineCards(); if(currentEditProjectId === id) openProductionEditor(id); } };
+        window.updateMainTextField = (id, field, val) => { const p = pipelineProjects.find(x=>x.id===id); if(p && p.type === "project") { p.main[field] = val; saveToLocal(); renderPipelineCards(); if(currentEditProjectId === id) openProductionEditor(id); } };
         window.updateMainDone = (id, key, done) => { const p = pipelineProjects.find(x=>x.id===id); if(p && p.type === "project") { p.main[key].done = done; saveToLocal(); renderPipelineCards(); if(currentEditProjectId === id) openProductionEditor(id); } };
         window.updateMainField = (id, key, subkey, val) => { const p = pipelineProjects.find(x=>x.id===id); if(p && p.type === "project") { p.main[key][subkey] = val; saveToLocal(); renderPipelineCards(); } };
         window.updateTranslation = (id, lang, checked) => { const p = pipelineProjects.find(x=>x.id===id); if(p && p.type === "project") { p.main.translations[lang] = checked; saveToLocal(); renderPipelineCards(); if(currentEditProjectId === id) openProductionEditor(id); } };
@@ -367,7 +316,6 @@
         
         window.updateStats = () => { document.getElementById('stat-total').innerText = projects.length; };
         
-        // Archive modal open/close with new fields
         window.openModal = (id=null) => {
             document.getElementById('project-form').reset();
             document.getElementById('shorts-container').innerHTML = '';
@@ -385,10 +333,7 @@
                     (p.shorts||[]).forEach(s => addShortRow(s)); 
                     (p.soundtracks||[]).forEach(st => addSoundtrackRow(st)); 
                 } 
-            } else { 
-                addShortRow(); 
-                addSoundtrackRow(); 
-            }
+            } else { addShortRow(); addSoundtrackRow(); }
             document.getElementById('modal').classList.remove('hidden');
         };
         window.closeModal = () => document.getElementById('modal').classList.add('hidden');
@@ -399,13 +344,11 @@
             const div = document.createElement('div'); div.className="dynamic-row bg-zinc-800/10 p-3 rounded-lg border border-zinc-800 space-y-3";
             div.innerHTML = `<div class="flex justify-between items-start gap-2"><div class="field-with-copy flex-1"><input type="text" class="w-full short-title" value="${escapeHtml(d.title)}" placeholder="Short Title"><button type="button" class="copy-btn-small" onclick="copyToClipboard(this.previousElementSibling.value, 'Short Title')">📋 Copy</button></div><button type="button" onclick="this.closest('.dynamic-row').remove()" class="text-zinc-600 hover:text-red-500 font-bold">✕</button></div>
             <div class="field-with-copy"><input type="url" class="w-full short-link" value="${d.link||''}" placeholder="YouTube Link"><button type="button" class="copy-btn-small" onclick="copyToClipboard(this.previousElementSibling.value, 'Short Link')">📋 Copy</button></div>
-            <div><label class="text-[9px] text-zinc-500">Script (6 rows)</label><textarea rows="6" class="w-full short-script text-xs" placeholder="Script...">${escapeHtml(d.script||'')}</textarea><div class="mt-1"><button type="button" class="copy-btn-small" onclick="copyToClipboard(this.previousElementSibling.previousElementSibling.value, 'Short Script')">📋 Copy Script</button></div></div>
-            <div><label class="text-[9px] text-zinc-500">Περιγραφή (6 rows)</label><textarea rows="6" class="w-full short-desc text-xs" placeholder="Περιγραφή...">${escapeHtml(d.description||'')}</textarea><div class="mt-1"><button type="button" class="copy-btn-small" onclick="copyToClipboard(this.previousElementSibling.previousElementSibling.value, 'Short Description')">📋 Copy Description</button></div></div>
+            <div><label class="text-[9px] text-zinc-500">Script (6 rows)</label><textarea rows="6" class="w-full short-script text-xs" placeholder="Script...">${escapeHtml(d.script||'')}</textarea><div><button type="button" class="copy-btn-small" onclick="copyToClipboard(this.previousElementSibling.previousElementSibling.value, 'Short Script')">📋 Copy Script</button></div></div>
+            <div><label class="text-[9px] text-zinc-500">Περιγραφή (6 rows)</label><textarea rows="6" class="w-full short-desc text-xs" placeholder="Περιγραφή...">${escapeHtml(d.description||'')}</textarea><div><button type="button" class="copy-btn-small" onclick="copyToClipboard(this.previousElementSibling.previousElementSibling.value, 'Short Description')">📋 Copy Description</button></div></div>
             <div class="status-group"><label><input type="checkbox" class="short-uploaded pipeline-checkbox" ${d.uploaded ? 'checked' : ''}> Uploaded</label><label><input type="checkbox" class="short-live pipeline-checkbox" ${d.live ? 'checked' : ''}> Live</label></div>`;
             document.getElementById('shorts-container').appendChild(div);
-            const uploadedCheck = div.querySelector('.short-uploaded');
-            const liveCheck = div.querySelector('.short-live');
-            setupLiveCheckbox(uploadedCheck, liveCheck);
+            setupLiveCheckbox(div.querySelector('.short-uploaded'), div.querySelector('.short-live'));
         };
         
         window.addSoundtrackRow = (d={title:'', spotifyLink:'', link:'', uploaded:false, live:false, description:''}) => {
@@ -413,12 +356,10 @@
             div.innerHTML = `<div class="flex justify-between items-start gap-2"><div class="field-with-copy flex-1"><input type="text" class="w-full st-title font-bold" value="${escapeHtml(d.title)}" placeholder="Soundtrack Name"><button type="button" class="copy-btn-small" onclick="copyToClipboard(this.previousElementSibling.value, 'Soundtrack Title')">📋 Copy</button></div><button type="button" onclick="this.closest('.dynamic-row').remove()" class="text-zinc-600 hover:text-red-500 font-bold">✕</button></div>
             <div class="field-with-copy"><input type="text" class="w-full st-spotify-link" value="${d.spotifyLink||''}" placeholder="Spotify Link"><button type="button" class="copy-btn-small" onclick="copyToClipboard(this.previousElementSibling.value, 'Spotify Link')">📋 Copy</button></div>
             <div class="field-with-copy"><input type="url" class="w-full st-link" value="${d.link||''}" placeholder="YouTube Link"><button type="button" class="copy-btn-small" onclick="copyToClipboard(this.previousElementSibling.value, 'YouTube Link')">📋 Copy</button></div>
-            <div><label class="text-[9px] text-zinc-500">Περιγραφή (6 rows)</label><textarea rows="6" class="w-full st-desc text-xs" placeholder="Περιγραφή...">${escapeHtml(d.description||'')}</textarea><div class="mt-1"><button type="button" class="copy-btn-small" onclick="copyToClipboard(this.previousElementSibling.previousElementSibling.value, 'Soundtrack Description')">📋 Copy Description</button></div></div>
+            <div><label class="text-[9px] text-zinc-500">Περιγραφή (6 rows)</label><textarea rows="6" class="w-full st-desc text-xs" placeholder="Περιγραφή...">${escapeHtml(d.description||'')}</textarea><div><button type="button" class="copy-btn-small" onclick="copyToClipboard(this.previousElementSibling.previousElementSibling.value, 'Soundtrack Description')">📋 Copy Description</button></div></div>
             <div class="status-group"><label><input type="checkbox" class="st-uploaded pipeline-checkbox" ${d.uploaded ? 'checked' : ''}> Uploaded</label><label><input type="checkbox" class="st-live pipeline-checkbox" ${d.live ? 'checked' : ''}> Live</label></div>`;
             document.getElementById('soundtracks-container').appendChild(div);
-            const uploadedCheck = div.querySelector('.st-uploaded');
-            const liveCheck = div.querySelector('.st-live');
-            setupLiveCheckbox(uploadedCheck, liveCheck);
+            setupLiveCheckbox(div.querySelector('.st-uploaded'), div.querySelector('.st-live'));
         };
         
         document.getElementById('project-form').addEventListener('submit', async (e) => {
@@ -426,32 +367,20 @@
             const id = document.getElementById('edit-id').value || Date.now().toString();
             const existingP = projects.find(p => p.id === id);
             const shorts = Array.from(document.querySelectorAll('#shorts-container .dynamic-row')).map(r => ({ 
-                title: r.querySelector('.short-title').value, 
-                link: r.querySelector('.short-link').value, 
-                uploaded: r.querySelector('.short-uploaded').checked,
-                live: r.querySelector('.short-live').checked,
-                script: r.querySelector('.short-script').value,
-                description: r.querySelector('.short-desc').value
+                title: r.querySelector('.short-title').value, link: r.querySelector('.short-link').value, 
+                uploaded: r.querySelector('.short-uploaded').checked, live: r.querySelector('.short-live').checked,
+                script: r.querySelector('.short-script').value, description: r.querySelector('.short-desc').value
             })).filter(x=>x.title);
             const soundtracks = Array.from(document.querySelectorAll('#soundtracks-container .dynamic-row')).map(r => ({ 
-                title: r.querySelector('.st-title').value, 
-                spotifyLink: r.querySelector('.st-spotify-link').value, 
-                link: r.querySelector('.st-link').value, 
-                uploaded: r.querySelector('.st-uploaded').checked,
-                live: r.querySelector('.st-live').checked,
-                description: r.querySelector('.st-desc').value
+                title: r.querySelector('.st-title').value, spotifyLink: r.querySelector('.st-spotify-link').value, 
+                link: r.querySelector('.st-link').value, uploaded: r.querySelector('.st-uploaded').checked, 
+                live: r.querySelector('.st-live').checked, description: r.querySelector('.st-desc').value
             })).filter(x=>x.title);
             const data = { 
-                mainVideo: { 
-                    title: document.getElementById('main-title').value, 
-                    link: document.getElementById('main-link').value, 
-                    uploaded: document.getElementById('main-uploaded').checked,
-                    live: document.getElementById('main-live').checked,
-                    script: document.getElementById('main-script').value,
-                    description: document.getElementById('main-description').value
-                }, 
-                shorts, 
-                soundtracks, 
+                mainVideo: { title: document.getElementById('main-title').value, link: document.getElementById('main-link').value, 
+                            uploaded: document.getElementById('main-uploaded').checked, live: document.getElementById('main-live').checked,
+                            script: document.getElementById('main-script').value, description: document.getElementById('main-description').value }, 
+                shorts, soundtracks, 
                 orderIndex: existingP ? existingP.orderIndex : (projects.length>0 ? Math.min(...projects.map(p=>p.orderIndex))-1 : 1000), 
                 date: existingP ? existingP.date : new Date().toISOString() 
             };
@@ -461,7 +390,6 @@
         window.openPipelineModal = () => { document.getElementById('pipeline-title-input').value=""; document.getElementById('pipeline-modal').classList.remove('hidden'); };
         window.addPipelineProject = async () => { const title = document.getElementById('pipeline-title-input').value; if(title) { const newProject = { id: Date.now().toString(), title, type: "project", parentId: null, orderIndex: pipelineProjects.filter(p => p.parentId === null).length, main: { script: { done: false, link: '' }, folder: { done: false, link: '' }, youtubeLink: { done: false, link: '' }, translations: { en: true, gr: false, fr: false, it: false, es: false, pt: false, de: false, ja: false, zh: false }, scriptText: '', description: '', tags: '' }, shorts: [], soundtracks: [], dateCreated: new Date().toISOString() }; await window.savePipelineToDB(newProject.id, newProject); document.getElementById('pipeline-modal').classList.add('hidden'); showToast('PRODUCTION INITIATED'); } };
         
-        // FINALIZE: copy all data from production to archive
         window.showConfirmModal = (id) => { currentMigrationId = id; document.getElementById('confirm-modal').classList.remove('hidden'); document.getElementById('final-confirm-btn').onclick = () => window.executeMigration(id); };
         window.hideConfirmModal = () => { document.getElementById('confirm-modal').classList.add('hidden'); currentMigrationId = null; };
         window.executeMigration = async (id) => {
@@ -469,34 +397,12 @@
             window.hideConfirmModal(); showToast('MIGRATING...');
             const newProjectId = Date.now().toString();
             const currentMinOrder = projects.length>0 ? Math.min(...projects.map(pr=>pr.orderIndex||0)) : 1000;
-            // Transfer all fields
             const archiveData = { 
-                mainVideo: { 
-                    title: p.title||"Untitled", 
-                    link: p.main.youtubeLink?.link || "", 
-                    uploaded: false, 
-                    live: false,
-                    script: p.main.scriptText || "",
-                    description: p.main.description || ""
-                }, 
-                shorts: p.shorts.map(s => ({
-                    title: s.title || "",
-                    link: s.link || "",
-                    uploaded: false,
-                    live: false,
-                    script: s.script || "",
-                    description: s.description || ""
-                })),
-                soundtracks: p.soundtracks.map(st => ({
-                    title: st.title || "",
-                    spotifyLink: st.spotifyLink || "",
-                    link: st.link || "",
-                    uploaded: false,
-                    live: false,
-                    description: st.description || ""
-                })),
-                orderIndex: currentMinOrder-1, 
-                date: new Date().toISOString() 
+                mainVideo: { title: p.title, link: p.main.youtubeLink?.link || "", uploaded: false, live: false,
+                             script: p.main.scriptText || "", description: p.main.description || "" }, 
+                shorts: p.shorts.map(s => ({ title: s.title, link: s.link, uploaded: false, live: false, script: s.script, description: s.description })),
+                soundtracks: p.soundtracks.map(st => ({ title: st.title, spotifyLink: st.spotifyLink, link: st.link, uploaded: false, live: false, description: st.description })),
+                orderIndex: currentMinOrder-1, date: new Date().toISOString() 
             };
             projects.unshift({ ...archiveData, id: newProjectId });
             pipelineProjects = pipelineProjects.filter(item=>item.id!==id);
@@ -509,7 +415,7 @@
         document.getElementById('final-delete-btn').onclick = () => { if(pendingDeleteId) { projects = projects.filter(p => p.id !== pendingDeleteId); saveToLocal(); renderProjects(); updateStats(); hideDeleteModal(); showToast('DELETED'); } };
         window.importDatabase = () => document.getElementById('import-input').click();
         window.handleImport = (inputEl) => { const file = inputEl.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = async (e) => { try { const data = JSON.parse(e.target.result); if(data.p && Array.isArray(data.p)) for(const p of data.p) await window.saveProjectToDB(p.id || Date.now()+Math.random(), p); if(data.pipe && Array.isArray(data.pipe)) for(const pipe of data.pipe) await window.savePipelineToDB(pipe.id || Date.now()+Math.random(), pipe); showToast('Restore successful'); renderProjects(); renderPipelineCards(); updateStats(); } catch(err) { alert('Restore failed: '+err.message); } }; reader.readAsText(file); };
-        window.exportDatabase = () => { const d = JSON.stringify({p:projects, pipe:pipelineProjects}); const a = document.createElement('a'); a.href = "data:text/json;charset=utf-8,"+encodeURIComponent(d); a.download = `hst_backup_V8_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`; a.click(); };
+        window.exportDatabase = () => { const d = JSON.stringify({p:projects, pipe:pipelineProjects}); const a = document.createElement('a'); a.href = "data:text/json;charset=utf-8,"+encodeURIComponent(d); a.download = `hst_backup_V8.1_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`; a.click(); };
         window.switchTab = (tab) => { document.getElementById('tab-archive').classList.toggle('active', tab==='archive'); document.getElementById('tab-pipeline').classList.toggle('active', tab==='pipeline'); document.getElementById('view-archive').classList.toggle('hidden', tab!=='archive'); document.getElementById('view-pipeline').classList.toggle('hidden', tab!=='pipeline'); if (tab === 'pipeline') setTimeout(() => renderPipelineCards(), 100); };
         
         const init = () => { loadFromLocal(); renderProjects(); renderPipelineCards(); updateStats(); document.getElementById('loader').style.opacity = '0'; setTimeout(() => document.getElementById('loader').classList.add('hidden'), 500); document.getElementById('import-input').addEventListener('change', (e) => window.handleImport(e.target)); document.getElementById('db-status').innerText = 'Local Storage Mode'; };
