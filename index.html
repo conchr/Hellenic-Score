@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hellenic Score & Tales | V8.3 – Production Title Fix & Folder/Link Save</title>
+    <title>Hellenic Score & Tales | V8.4 – Reorder Projects Inside Folders</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
@@ -52,8 +52,10 @@
         .folder-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; width: 100%; }
         .folder-left { display: flex; align-items: center; gap: 0.4rem; }
         .folder-right { display: flex; align-items: center; gap: 0.4rem; }
-        .folder-children-boxes { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-left: 0.75rem; margin-top: 0.5rem; }
-        .child-project-wrapper { background: rgba(20,20,25,0.9); border: 1px solid rgba(197,160,89,0.4); border-radius: 12px; padding: 0.5rem; min-width: 150px; transition: 0.2s; }
+        .folder-children-sortable { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-left: 0.75rem; margin-top: 0.5rem; min-height: 60px; }
+        .child-project-wrapper { background: rgba(20,20,25,0.9); border: 1px solid rgba(197,160,89,0.4); border-radius: 12px; padding: 0.5rem; min-width: 150px; transition: 0.2s; cursor: grab; }
+        .child-project-wrapper:active { cursor: grabbing; }
+        .child-project-wrapper.dragging { opacity: 0.4; }
         .child-project-wrapper:hover { background: rgba(197,160,89,0.15); border-color: var(--gold); }
         .child-project-title { font-size: 0.75rem; font-weight: 700; color: #e5e7eb; margin-bottom: 0.2rem; text-align: center; cursor: pointer; }
         .child-project-progress { font-size: 0.65rem; color: #aaa; text-align: center; margin-bottom: 0.3rem; }
@@ -108,7 +110,7 @@
         <div class="flex flex-col md:flex-row justify-between items-start mb-6 gap-3 border-b border-zinc-800/50 pb-4">
             <div class="flex flex-col gap-1"><div class="flex gap-2 text-[9px] text-zinc-500"><span>Database Status:</span><span id="db-status" class="text-zinc-400">Local Storage Mode</span></div><div class="flex gap-2 flex-wrap"><button onclick="exportDatabase()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text">💾 Backup</button><button onclick="importDatabase()" class="text-[9px] py-1 px-3 border border-zinc-800 rounded hover:gold-text">📂 Restore</button></div></div>
             <div class="flex gap-4"><button onclick="switchTab('archive')" id="tab-archive" class="nav-btn active cinzel">Αρχείο</button><button onclick="switchTab('pipeline')" id="tab-pipeline" class="nav-btn cinzel">Παραγωγή</button></div>
-            <div class="text-right hidden md:block"><p class="text-[9px] text-zinc-600">Hellenic Score & Tales</p><p class="text-[10px] gold-text cinzel">V8.3 – Production Title Fixed</p></div>
+            <div class="text-right hidden md:block"><p class="text-[9px] text-zinc-600">Hellenic Score & Tales</p><p class="text-[10px] gold-text cinzel">V8.4 – Folder Sorting Handle</p></div>
         </div>
 
         <div id="view-archive">
@@ -119,7 +121,7 @@
 
         <div id="view-pipeline" class="hidden">
             <div class="flex justify-between items-center mb-8 border-l-4 border-gold pl-6">
-                <div><h2 class="text-2xl gold-text cinzel uppercase">PRODUCTION WORKFLOW</h2><p class="text-[10px] text-zinc-500">Drag & drop to reorder | Click Edit to manage details</p></div>
+                <div><h2 class="text-2xl gold-text cinzel uppercase">PRODUCTION WORKFLOW</h2><p class="text-[10px] text-zinc-500">Drag & drop to reorder | Inside folders, drag to reorder projects</p></div>
                 <div class="flex gap-2">
                     <button onclick="openPipelineModal()" class="px-8 py-4 bg-zinc-800 text-gold font-black rounded-xl text-[10px] border border-gold/20">🔨 NEW PRODUCTION</button>
                     <button onclick="openFolderModal()" class="px-8 py-4 bg-zinc-800 text-gold font-black rounded-xl text-[10px] border border-gold/20">📁 NEW FOLDER</button>
@@ -178,6 +180,7 @@
     <script>
         let projects = [], pipelineProjects = [];
         let pendingDeleteId = null, currentEditProjectId = null, sortableInstance = null, currentMoveProjectId = null;
+        let folderSortableInstances = [];
 
         const showToast = (m) => { const t = document.getElementById('toast'); t.innerText = m; t.classList.remove('hidden'); setTimeout(() => t.classList.add('hidden'), 4000); };
         const copyToClipboard = (text, fieldName) => { navigator.clipboard.writeText(text).then(() => showToast(`📋 Αντιγράφηκε: ${fieldName}`)).catch(() => showToast('Αποτυχία αντιγραφής')); };
@@ -194,7 +197,6 @@
                 for(let s of (p.shorts || [])) { if(s.script === undefined) s.script = ''; if(s.description === undefined) s.description = ''; }
                 for(let st of (p.soundtracks || [])) if(st.description === undefined) st.description = '';
             }
-            // Ensure each production project has all required fields
             const defaultMain = () => ({ 
                 script: { done: false, link: '' }, 
                 folder: { done: false, link: '' }, 
@@ -224,8 +226,8 @@
         };
         
         window.saveProjectToDB = (id, data) => { const idx = projects.findIndex(p => p.id === id); if(idx > -1) projects[idx] = { ...data, id }; else projects.push({ ...data, id }); projects.sort((a,b) => (a.orderIndex||0) - (b.orderIndex||0)); saveToLocal(); renderProjects(); };
-        window.savePipelineToDB = (id, data) => { const idx = pipelineProjects.findIndex(p => p.id === id); if(idx > -1) pipelineProjects[idx] = { ...data, id }; else pipelineProjects.push({ ...data, id }); saveToLocal(); renderPipelineCards(); initSortable(); };
-        window.deletePipelineProject = (id) => { if(confirm('Discard production?')) { const toDelete = [id]; const folder = pipelineProjects.find(p => p.id === id); if(folder && folder.type === "folder") { const children = pipelineProjects.filter(p => p.parentId === id); for(let child of children) toDelete.push(child.id); } pipelineProjects = pipelineProjects.filter(p => !toDelete.includes(p.id)); saveToLocal(); renderPipelineCards(); initSortable(); } };
+        window.savePipelineToDB = (id, data) => { const idx = pipelineProjects.findIndex(p => p.id === id); if(idx > -1) pipelineProjects[idx] = { ...data, id }; else pipelineProjects.push({ ...data, id }); saveToLocal(); renderPipelineCards(); initAllSortables(); };
+        window.deletePipelineProject = (id) => { if(confirm('Discard production?')) { const toDelete = [id]; const folder = pipelineProjects.find(p => p.id === id); if(folder && folder.type === "folder") { const children = pipelineProjects.filter(p => p.parentId === id); for(let child of children) toDelete.push(child.id); } pipelineProjects = pipelineProjects.filter(p => !toDelete.includes(p.id)); saveToLocal(); renderPipelineCards(); initAllSortables(); } };
         window.moveProject = (id, dir) => { const idx = projects.findIndex(p => p.id === id), tIdx = dir === 'up' ? idx-1 : idx+1; if(tIdx<0 || tIdx>=projects.length) return; const p1=projects[idx], p2=projects[tIdx]; [p1.orderIndex, p2.orderIndex] = [p2.orderIndex, p1.orderIndex]; projects.sort((a,b)=> (a.orderIndex||0)-(b.orderIndex||0)); saveToLocal(); renderProjects(); };
         
         function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => m==='&'?'&amp;':m==='<'?'&lt;':'&gt;'); }
@@ -259,9 +261,9 @@
             for(let item of items) {
                 if(item.type === "folder") {
                     const children = pipelineProjects.filter(p => p.parentId === item.id).sort((a,b) => (a.orderIndex||0) - (b.orderIndex||0));
-                    html += `<div class="prod-card folder-card" data-id="${item.id}"><div class="folder-header"><div class="folder-left"><span>📁</span><input type="text" class="folder-title-input" value="${escapeHtml(item.title)}" onchange="updateFolderTitle('${item.id}', this.value)"></div><div class="folder-right"><button onclick="deletePipelineProject('${item.id}')" class="text-[9px] text-zinc-600 hover:text-red-500">Delete</button></div></div>${item.description ? `<div class="text-[10px] text-zinc-500 mt-0.5 ml-7">${escapeHtml(item.description)}</div>` : ''}<div class="folder-children-boxes">${children.map(child => {
+                    html += `<div class="prod-card folder-card" data-id="${item.id}"><div class="folder-header"><div class="folder-left"><span>📁</span><input type="text" class="folder-title-input" value="${escapeHtml(item.title)}" onchange="updateFolderTitle('${item.id}', this.value)"></div><div class="folder-right"><button onclick="deletePipelineProject('${item.id}')" class="text-[9px] text-zinc-600 hover:text-red-500">Delete</button></div></div>${item.description ? `<div class="text-[10px] text-zinc-500 mt-0.5 ml-7">${escapeHtml(item.description)}</div>` : ''}<div class="folder-children-sortable" data-folder-id="${item.id}">${children.map(child => {
                         const prog = computeProgress(child);
-                        return `<div class="child-project-wrapper">
+                        return `<div class="child-project-wrapper" data-id="${child.id}">
                                     <div class="child-project-title" onclick="openProductionEditor('${child.id}')">${escapeHtml(child.title)}</div>
                                     <div class="child-project-progress">${prog.completed}/${prog.total}</div>
                                     <div class="child-actions">
@@ -278,6 +280,63 @@
             return html;
         }
         
+        function initFolderSortables() {
+            // destroy existing folder sortable instances
+            for(let inst of folderSortableInstances) if(inst) inst.destroy();
+            folderSortableInstances = [];
+            const folderContainers = document.querySelectorAll('.folder-children-sortable');
+            folderContainers.forEach(container => {
+                const folderId = container.getAttribute('data-folder-id');
+                const sortable = new Sortable(container, {
+                    animation: 200,
+                    handle: '.child-project-wrapper',
+                    draggable: '.child-project-wrapper',
+                    onEnd: function() {
+                        const children = Array.from(container.querySelectorAll('.child-project-wrapper'));
+                        for(let i=0; i<children.length; i++) {
+                            const childId = children[i].getAttribute('data-id');
+                            const project = pipelineProjects.find(p => p.id === childId);
+                            if(project && project.parentId === folderId) {
+                                project.orderIndex = i;
+                            }
+                        }
+                        saveToLocal();
+                        showToast('Folder order updated');
+                        // No need to re-render whole pipeline, just update indices
+                        renderPipelineCards(); // re-render to keep handles fresh
+                    }
+                });
+                folderSortableInstances.push(sortable);
+            });
+        }
+        
+        function initRootSortable() {
+            if(sortableInstance) sortableInstance.destroy();
+            const rootContainer = document.querySelector('#pipeline-container .sortable-container');
+            if(!rootContainer) return;
+            sortableInstance = new Sortable(rootContainer, {
+                animation: 200,
+                handle: '.prod-card',
+                draggable: '.prod-card',
+                onEnd: function() {
+                    const children = Array.from(rootContainer.querySelectorAll('.prod-card'));
+                    for(let i=0; i<children.length; i++) {
+                        const id = children[i].getAttribute('data-id');
+                        const item = pipelineProjects.find(p => p.id === id);
+                        if(item && item.parentId === null) item.orderIndex = i;
+                    }
+                    saveToLocal();
+                    renderPipelineCards();
+                    showToast('Root order updated');
+                }
+            });
+        }
+        
+        function initAllSortables() {
+            initRootSortable();
+            initFolderSortables();
+        }
+        
         window.moveOutOfFolder = (projectId) => {
             const project = pipelineProjects.find(p => p.id === projectId);
             if(project && project.type === "project") {
@@ -290,8 +349,18 @@
             }
         };
         
-        window.renderPipelineCards = () => { const container = document.getElementById('pipeline-container'); if (!container) return; const topLevel = pipelineProjects.filter(p => p.parentId === null).sort((a,b) => (a.orderIndex||0) - (b.orderIndex||0)); if (!topLevel.length) { container.innerHTML = '<div class="text-center text-zinc-500 py-10">No folders or projects. Click "NEW PRODUCTION" or "NEW FOLDER" to start.</div>'; return; } container.innerHTML = `<div class="sortable-container">${renderItems(topLevel)}</div>`; initSortable(); };
-        function initSortable() { if (sortableInstance) sortableInstance.destroy(); const root = document.querySelector('#pipeline-container .sortable-container'); if (!root) return; sortableInstance = new Sortable(root, { animation: 200, handle: '.prod-card', draggable: '.prod-card', onEnd: function() { const children = Array.from(root.querySelectorAll('.prod-card')); for(let i=0; i<children.length; i++) { const id = children[i].getAttribute('data-id'); const item = pipelineProjects.find(p => p.id === id); if(item && item.parentId === null) item.orderIndex = i; } saveToLocal(); renderPipelineCards(); showToast('Order updated'); } }); }
+        window.renderPipelineCards = () => { 
+            const container = document.getElementById('pipeline-container'); 
+            if (!container) return; 
+            const topLevel = pipelineProjects.filter(p => p.parentId === null).sort((a,b) => (a.orderIndex||0) - (b.orderIndex||0)); 
+            if (!topLevel.length) { 
+                container.innerHTML = '<div class="text-center text-zinc-500 py-10">No folders or projects. Click "NEW PRODUCTION" or "NEW FOLDER" to start.</div>'; 
+                return; 
+            } 
+            container.innerHTML = `<div class="sortable-container">${renderItems(topLevel)}</div>`; 
+            initAllSortables(); 
+        };
+        
         window.openFolderModal = () => { document.getElementById('folder-title-input').value = ''; document.getElementById('folder-desc-input').value = ''; document.getElementById('folder-modal').classList.remove('hidden'); };
         window.closeFolderModal = () => document.getElementById('folder-modal').classList.add('hidden');
         window.addFolder = () => { const title = document.getElementById('folder-title-input').value.trim(); if(!title) { showToast('Please enter folder name'); return; } const desc = document.getElementById('folder-desc-input').value.trim(); const topLevel = pipelineProjects.filter(p => p.parentId === null); for(let item of topLevel) item.orderIndex = (item.orderIndex || 0) + 1; const newFolder = { id: Date.now().toString(), title, description: desc, type: "folder", parentId: null, orderIndex: 0, dateCreated: new Date().toISOString() }; pipelineProjects.push(newFolder); saveToLocal(); renderPipelineCards(); closeFolderModal(); showToast('Folder created'); };
@@ -347,7 +416,6 @@
                 const val = p.main[textProp] || '';
                 return `<div class="step-item"><div class="step-content"><div class="step-label">${label}</div><div class="field-with-copy"><textarea class="inline-input" rows="${rows}" placeholder="${label}" onchange="updateMainTextField('${p.id}', '${textProp}', this.value)">${escapeHtml(val)}</textarea><button class="copy-btn-small" onclick="copyToClipboard(this.previousElementSibling.value, '${label}')">📋 Copy</button></div></div></div>`;
             } else {
-                // For folder and youtubeLink: ensure object exists
                 if(!p.main[key]) p.main[key] = { done: false, link: '' };
                 const data = p.main[key];
                 return `<div class="step-item"><input type="checkbox" class="step-check pipeline-checkbox" ${data.done ? 'checked' : ''} onchange="updateMainDone('${p.id}', '${key}', this.checked)"><div class="step-content"><div class="step-label">${label}</div><div class="field-with-copy"><input type="text" class="inline-input" placeholder="${label} Link" value="${escapeHtml(data.link||'')}" onchange="updateMainField('${p.id}', '${key}', 'link', this.value)" id="input_${p.id}_${key}"><button class="copy-btn-small" onclick="copyToClipboard(document.getElementById('input_${p.id}_${key}').value, '${label} Link')">📋 Copy</button></div></div></div>`;
@@ -485,7 +553,7 @@
         document.getElementById('final-delete-btn').onclick = () => { if(pendingDeleteId) { projects = projects.filter(p => p.id !== pendingDeleteId); saveToLocal(); renderProjects(); updateStats(); hideDeleteModal(); showToast('DELETED'); } };
         window.importDatabase = () => document.getElementById('import-input').click();
         window.handleImport = (inputEl) => { const file = inputEl.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = async (e) => { try { const data = JSON.parse(e.target.result); if(data.p && Array.isArray(data.p)) for(const p of data.p) await window.saveProjectToDB(p.id || Date.now()+Math.random(), p); if(data.pipe && Array.isArray(data.pipe)) for(const pipe of data.pipe) await window.savePipelineToDB(pipe.id || Date.now()+Math.random(), pipe); showToast('Restore successful'); renderProjects(); renderPipelineCards(); updateStats(); } catch(err) { alert('Restore failed: '+err.message); } }; reader.readAsText(file); };
-        window.exportDatabase = () => { const d = JSON.stringify({p:projects, pipe:pipelineProjects}); const a = document.createElement('a'); a.href = "data:text/json;charset=utf-8,"+encodeURIComponent(d); a.download = `hst_backup_V8.3_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`; a.click(); };
+        window.exportDatabase = () => { const d = JSON.stringify({p:projects, pipe:pipelineProjects}); const a = document.createElement('a'); a.href = "data:text/json;charset=utf-8,"+encodeURIComponent(d); a.download = `hst_backup_V8.4_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`; a.click(); };
         window.switchTab = (tab) => { document.getElementById('tab-archive').classList.toggle('active', tab==='archive'); document.getElementById('tab-pipeline').classList.toggle('active', tab==='pipeline'); document.getElementById('view-archive').classList.toggle('hidden', tab!=='archive'); document.getElementById('view-pipeline').classList.toggle('hidden', tab!=='pipeline'); if (tab === 'pipeline') setTimeout(() => renderPipelineCards(), 100); };
         
         const init = () => { loadFromLocal(); renderProjects(); renderPipelineCards(); updateStats(); document.getElementById('loader').style.opacity = '0'; setTimeout(() => document.getElementById('loader').classList.add('hidden'), 500); document.getElementById('import-input').addEventListener('change', (e) => window.handleImport(e.target)); document.getElementById('db-status').innerText = 'Local Storage Mode'; };
